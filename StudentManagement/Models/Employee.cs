@@ -3,12 +3,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace StudentManagementSystem.Models
 {
-    [Table("Students")]
-    public class Student
+    [Table("Employees")]
+    public class Employee
     {
         [Key]
         [StringLength(10)]
-        public string StudentId { get; set; } = string.Empty;
+        public string EmployeeId { get; set; } = string.Empty;
 
         [Required]
         [StringLength(100)]
@@ -22,21 +22,22 @@ namespace StudentManagementSystem.Models
         [StringLength(15)]
         public string? PhoneNumber { get; set; }
 
+        [StringLength(50)]
+        public string? Department { get; set; }
+
+        [StringLength(50)]
+        public string? Position { get; set; }
+
         [Column(TypeName = "date")]
         public DateTime? DateOfBirth { get; set; }
 
-        [StringLength(255)]
-        public string? Address { get; set; }
+        [Column(TypeName = "date")]
+        public DateTime HireDate { get; set; } = DateTime.Today;
 
-        [Required]
-        [StringLength(10)]
-        public string ClassId { get; set; } = string.Empty;
+        [Column(TypeName = "decimal(12,2)")]
+        public decimal? Salary { get; set; }
 
         // Navigation properties
-        [ForeignKey("ClassId")]
-        public virtual Class Class { get; set; } = null!;
-
         public virtual ICollection<User> Users { get; set; } = new List<User>();
-        public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
     }
 }
