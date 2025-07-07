@@ -34,7 +34,7 @@ namespace StudentManagementSystem.Services
                 throw new InvalidOperationException("Student ID already exists");
             }
 
-            // Check if Email already exists
+
             if (await _studentRepository.IsEmailExistsAsync(createStudentDto.Email))
             {
                 throw new InvalidOperationException("Email already exists");
@@ -43,7 +43,7 @@ namespace StudentManagementSystem.Services
             var student = MapToStudent(createStudentDto);
             var createdStudent = await _studentRepository.AddAsync(student);
 
-            // Get student with class information
+
             var studentWithClass = await _studentRepository.GetStudentWithClassAsync(createdStudent.StudentId);
             return MapToResponseDto(studentWithClass!);
         }
@@ -54,7 +54,7 @@ namespace StudentManagementSystem.Services
             if (student == null)
                 return null;
 
-            // Check if Email already exists (excluding current student)
+
             if (await _studentRepository.IsEmailExistsAsync(updateStudentDto.Email, studentId))
             {
                 throw new InvalidOperationException("Email already exists");
@@ -115,7 +115,7 @@ namespace StudentManagementSystem.Services
             return await _studentRepository.IsStudentIdExistsAsync(studentId);
         }
 
-        // Mapping methods
+        
         private StudentResponseDto MapToResponseDto(Student student)
         {
             return new StudentResponseDto

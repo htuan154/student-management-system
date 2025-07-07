@@ -148,7 +148,7 @@ namespace StudentManagementSystem.Data
                 .HasOne(e => e.Teacher)
                 .WithMany(t => t.Enrollments)
                 .HasForeignKey(e => e.TeacherId)
-                .OnDelete(DeleteBehavior.NoAction); // Avoid multiple cascade paths
+                .OnDelete(DeleteBehavior.NoAction); 
 
             modelBuilder.Entity<Score>()
                 .HasOne(s => s.Enrollment)

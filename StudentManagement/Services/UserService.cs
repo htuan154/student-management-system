@@ -139,7 +139,7 @@ namespace StudentManagementSystem.Services
             RefreshTokenExpiryTime = u.RefreshTokenExpiryTime
         };
 
-        // Hàm hash password (ví dụ dùng SHA256, hoặc tốt hơn là BCrypt)
+        
         private static string HashPassword(string password)
         {
             using var sha256 = System.Security.Cryptography.SHA256.Create();

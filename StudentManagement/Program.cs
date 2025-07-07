@@ -10,6 +10,7 @@ using StudentManagementSystem.Data.Interfaces;
 using StudentManagementSystem.Data.Repositories;
 using StudentManagementSystem.Services;
 using StudentManagementSystem.Services.Interfaces;
+using StudentManagementSystem.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +33,6 @@ builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IScoreRepository, ScoreRepository>();
 builder.Services.AddScoped<ITeacherCourseRepository, TeacherCourseRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-
 
 // Service Pattern DI
 builder.Services.AddScoped<IClassService, ClassService>();
@@ -98,7 +98,7 @@ builder.Services.AddVersionedApiExplorer(options =>
 // Swagger với versioning
 builder.Services.AddSwaggerGen(options =>
 {
-    // Đăng ký JWT Auth cho Swagger UI
+
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
@@ -128,40 +128,25 @@ builder.Services.AddMemoryCache();
 builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
 builder.Services.AddInMemoryRateLimiting();
 builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
-
+// Redis Distributed Cache
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
+    options.InstanceName = "StudentManagement_";
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Student Management API V1");
-        c.RoutePrefix = string.Empty; // Makes Swagger UI available at root
-    });
-}
-
-// Only use HTTPS redirect in production
-if (!app.Environment.IsDevelopment())
-{
-    app.UseHttpsRedirection();
-}
-
-app.UseIpRateLimiting();
-app.UseCors();
-app.UseAuthentication();
-app.UseAuthorization();
-
-if (app.Environment.IsDevelopment())
-{
     var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
-    app.UseSwagger();
     app.UseSwaggerUI(options =>
     {
         foreach (var description in provider.ApiVersionDescriptions)
         {
-            options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json", description.GroupName.ToUpperInvariant());
+            options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json",
+                description.GroupName.ToUpperInvariant());
         }
         options.RoutePrefix = string.Empty;
     });
@@ -170,6 +155,26 @@ else
 {
     app.UseHttpsRedirection();
 }
+
+// IMPORTANT: Add custom middleware in correct order
+// 1. Global Exception Handling (should be first)
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
+// 2. Request/Response Logging
+app.UseMiddleware<RequestResponseLoggingMiddleware>();
+
+// 3. API Key validation (if needed - before rate limiting)
+// app.UseMiddleware<ApiKeyMiddleware>();
+
+// 4. Rate limiting
+app.UseIpRateLimiting();
+
+// 5. CORS
+app.UseCors();
+
+// 6. Authentication & Authorization
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 app.MapGet("/", () => "Student Management System API is running!");

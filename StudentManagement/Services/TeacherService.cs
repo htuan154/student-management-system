@@ -46,7 +46,7 @@ namespace StudentManagementSystem.Services
 
         public async Task<TeacherResponseDto> CreateTeacherAsync(CreateTeacherDto createTeacherDto)
         {
-            // Check if TeacherId already exists
+
             if (await _teacherRepository.IsTeacherIdExistsAsync(createTeacherDto.TeacherId))
             {
                 throw new InvalidOperationException("Teacher ID already exists");
@@ -70,7 +70,7 @@ namespace StudentManagementSystem.Services
             if (teacher == null)
                 return null;
 
-            // Check if Email already exists (excluding current teacher)
+
             if (await _teacherRepository.IsEmailExistsAsync(updateTeacherDto.Email, teacherId))
             {
                 throw new InvalidOperationException("Email already exists");
@@ -206,7 +206,7 @@ namespace StudentManagementSystem.Services
             return await _teacherRepository.GetDistinctDegreesAsync();
         }
 
-        // Mapping methods
+        
         private async Task<TeacherResponseDto> MapToResponseDtoAsync(Teacher teacher)
         {
             var courseCount = await _teacherRepository.GetTeacherCourseCountAsync(teacher.TeacherId);
