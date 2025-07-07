@@ -31,7 +31,7 @@ namespace StudentManagementSystem.Services
             var accessToken = GenerateJwtToken(user);
             var refreshToken = GenerateRefreshToken();
 
-            await _userService.UpdateRefreshTokenAsync(user.UserId, refreshToken, DateTime.UtcNow.AddDays(int.Parse(_config["Jwt:RefreshTokenExpiresInDays"])));
+            await _userService.UpdateRefreshTokenAsync(user.UserId, refreshToken, DateTime.UtcNow.AddDays(int.Parse(_config["Jwt:RefreshTokenExpiresInDays"]!)));
 
             return (accessToken, refreshToken);
         }
@@ -45,7 +45,7 @@ namespace StudentManagementSystem.Services
             var newAccessToken = GenerateJwtToken(user);
             var newRefreshToken = GenerateRefreshToken();
 
-            await _userService.UpdateRefreshTokenAsync(user.UserId, newRefreshToken, DateTime.UtcNow.AddDays(int.Parse(_config["Jwt:RefreshTokenExpiresInDays"])));
+            await _userService.UpdateRefreshTokenAsync(user.UserId, newRefreshToken, DateTime.UtcNow.AddDays(int.Parse(_config["Jwt:RefreshTokenExpiresInDays"]!)));
 
             return (newAccessToken, newRefreshToken);
         }
@@ -59,14 +59,14 @@ namespace StudentManagementSystem.Services
                 new Claim(ClaimTypes.Role, user.RoleId)
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],
                 audience: _config["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(int.Parse(_config["Jwt:ExpiresInMinutes"])),
+                expires: DateTime.UtcNow.AddMinutes(int.Parse(_config["Jwt:ExpiresInMinutes"]!)),
                 signingCredentials: creds
             );
 
