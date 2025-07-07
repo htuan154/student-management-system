@@ -182,4 +182,6 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapGet("/", () => "Student Management System API is running!");
 
+
 app.Run();
+// test
