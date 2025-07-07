@@ -11,6 +11,7 @@ using StudentManagementSystem.Data.Repositories;
 using StudentManagementSystem.Services;
 using StudentManagementSystem.Services.Interfaces;
 using StudentManagementSystem.Middleware;
+using Microsoft.Extensions.Caching.Distributed;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -128,6 +129,13 @@ builder.Services.AddMemoryCache();
 builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
 builder.Services.AddInMemoryRateLimiting();
 builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+// Redis Distributed Cache
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
+    options.InstanceName = "StudentManagement_";
+});
+
 
 var app = builder.Build();
 

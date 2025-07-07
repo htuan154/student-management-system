@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: . # Context là thư mục gốc của repository
+      dockerfile: ./StudentManagement/Dockerfile # Đường dẫn đến Dockerfile backend của bạn
+    ports:
+      - "8080:80" # Map host port 8080 to container port 80
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=db;Database=StudentManagementDb;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;
+      - Jwt__Key=ThisIsAStrongSecretKeyForJWTAuthenticationThatIsAtLeast32BytesLong
+      - Jwt__Issuer=StudentManagementSystem
+      - Jwt__Audience=StudentUsers
+      - Jwt__ExpiresInMinutes=60
+      - Jwt__RefreshTokenExpiresInDays=7
+    depends_on:
+      - db
+      - redis
+    networks:
+      - app-network
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest # Hoặc postgres:latest nếu dùng PostgreSQL
+    environment:
+      SA_PASSWORD: "YourStrong(!)Password" # Mật khẩu mạnh cho tài khoản SA (SQL Server)
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql # Giúp lưu trữ dữ liệu database
+    networks:
+      - app-network
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+volumes:
+  sqlserver_data: # Định nghĩa volume để lưu trữ dữ liệu database
+
+networks:
+  app-network: # Định nghĩa network chung cho các services
+    driver: bridge
