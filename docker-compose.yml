@@ -3,18 +3,18 @@ version: '3.8'
 services:
   backend:
     build:
-      context: . # Context là thư mục gốc của repository
-      dockerfile: ./StudentManagement/Dockerfile # Đường dẫn đến Dockerfile backend của bạn
+      context: .
+      dockerfile: ./StudentManagement/Dockerfile
     ports:
-      - "8080:80" # Map host port 8080 to container port 80
+      - "8080:80" # API của bạn sẽ truy cập được từ http://localhost:8080
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=db;Database=StudentManagementDb;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;
-      - Jwt__Key=ThisIsAStrongSecretKeyForJWTAuthenticationThatIsAtLeast32BytesLong
+      # SỬA LỖI: Thay thế chuỗi kết nối để trỏ đến service 'db'
+      - ConnectionStrings__DefaultConnection=Server=db;Database=StudentManagementSystem;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;
+      - ConnectionStrings__RedisConnection=redis:6379
+      - Jwt__Key=u7$P!x9@Qw3#Zr8^Lm2&bT6*Vh1%Yj4!sN0
       - Jwt__Issuer=StudentManagementSystem
-      - Jwt__Audience=StudentUsers
-      - Jwt__ExpiresInMinutes=60
-      - Jwt__RefreshTokenExpiresInDays=7
+      - Jwt__Audience=StudentManagementSystem
     depends_on:
       - db
       - redis
@@ -22,14 +22,14 @@ services:
       - app-network
 
   db:
-    image: mcr.microsoft.com/mssql/server:2022-latest # Hoặc postgres:latest nếu dùng PostgreSQL
+    image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
-      SA_PASSWORD: "YourStrong(!)Password" # Mật khẩu mạnh cho tài khoản SA (SQL Server)
+      SA_PASSWORD: "YourStrong(!)Password"
       ACCEPT_EULA: "Y"
     ports:
       - "1433:1433"
     volumes:
-      - sqlserver_data:/var/opt/mssql # Giúp lưu trữ dữ liệu database
+      - sqlserver_data:/var/opt/mssql
     networks:
       - app-network
 
@@ -40,9 +40,35 @@ services:
     networks:
       - app-network
 
+  # --- DỊCH VỤ MỚI ---
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090" # Giao diện Prometheus sẽ ở http://localhost:9090
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - app-network
+    depends_on:
+      - backend
+
+  # --- DỊCH VỤ MỚI ---
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    ports:
+      - "3000:3000" # Giao diện Grafana sẽ ở http://localhost:3000
+    depends_on:
+      - prometheus
+    networks:
+      - app-network
+
 volumes:
-  sqlserver_data: # Định nghĩa volume để lưu trữ dữ liệu database
+  sqlserver_data:
 
 networks:
-  app-network: # Định nghĩa network chung cho các services
+  app-network:
     driver: bridge

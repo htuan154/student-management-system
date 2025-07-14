@@ -6,11 +6,11 @@ namespace StudentManagementSystem.Data.Repositories
 {
     public class UserRepository : GenericRepository<User>, IUserRepository
     {
-        private readonly ApplicationDbContext _context;
+
 
         public UserRepository(ApplicationDbContext context) : base(context)
         {
-            _context = context;
+
         }
 
         public async Task<bool> IsUsernameExistsAsync(string username, string? excludeUserId = null)
@@ -29,7 +29,9 @@ namespace StudentManagementSystem.Data.Repositories
 
         public async Task<User?> GetByUsernameAsync(string username)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            return await _context.Users
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.Username == username);
         }
 
         public async Task<IEnumerable<User>> SearchUsersAsync(string searchTerm)

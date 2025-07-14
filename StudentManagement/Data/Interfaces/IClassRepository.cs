@@ -13,5 +13,6 @@ namespace StudentManagementSystem.Data.Interfaces
         Task<IEnumerable<Class>> GetClassesByMajorAsync(string major);
         Task<IEnumerable<Class>> GetClassesByAcademicYearAsync(string academicYear);
         Task<int> GetStudentCountInClassAsync(string classId);
+        Task<bool> CanDeleteClassAsync(string classId);
     }
 }

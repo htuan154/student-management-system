@@ -1,26 +1,54 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using AspNetCoreRateLimit;
-using Microsoft.AspNetCore.Mvc.Versioning;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
+using Serilog;
 using StudentManagementSystem.Data;
+using StudentManagementSystem.Models;
 using StudentManagementSystem.Data.Interfaces;
 using StudentManagementSystem.Data.Repositories;
-using StudentManagementSystem.Services;
 using StudentManagementSystem.Services.Interfaces;
+using StudentManagementSystem.Services;
 using StudentManagementSystem.Middleware;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Caching.Distributed;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllers();
+// --- 1. Cấu hình Serilog cơ bản ---
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration) // Đọc cấu hình từ appsettings.json
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("logs/app-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
 
-// Entity Framework
+builder.Host.UseSerilog();
+
+// --- 2. Thêm các dịch vụ vào container ---
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
+// Entity Framework - sử dụng In-Memory Database cho test
+// builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//     options.UseInMemoryDatabase("StudentManagementSystem"));
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
 // Repository Pattern DI
 builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
@@ -47,141 +75,115 @@ builder.Services.AddScoped<ITeacherCourseService, TeacherCourseService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Caching Services - Sử dụng Memory Cache thay cho Redis
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<IDistributedCache, MemoryDistributedCache>();
+builder.Services.AddScoped<ICacheService, CacheService>();
 
-// Add CORS if needed
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
-});
+// =================================================================
 
 // JWT Authentication
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-builder.Services.AddAuthentication(options =>
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (!string.IsNullOrEmpty(jwtKey))
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
-    };
-});
-
-// API Versioning
-builder.Services.AddApiVersioning(options =>
-{
-    options.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
-    options.AssumeDefaultVersionWhenUnspecified = true;
-    options.ReportApiVersions = true;
-});
-builder.Services.AddVersionedApiExplorer(options =>
-{
-    options.GroupNameFormat = "'v'VVV";
-    options.SubstituteApiVersionInUrl = true;
-});
-
-// Swagger với versioning
-builder.Services.AddSwaggerGen(options =>
-{
-
-    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-    {
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-        Name = "Authorization",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-        Scheme = "bearer"
-    });
-    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-    {
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
         {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            options.TokenValidationParameters = new TokenValidationParameters
             {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                ValidAudience = builder.Configuration["Jwt:Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+            };
+
+            // Thêm Events để handle authentication/authorization errors
+            options.Events = new JwtBearerEvents
+            {
+                OnChallenge = context =>
                 {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "Bearer"
+                    context.HandleResponse();
+                    context.Response.StatusCode = 401;
+                    context.Response.ContentType = "application/json";
+
+                    var response = new
+                    {
+                        message = "Token is invalid or missing",
+                        statusCode = 401,
+                        traceId = context.HttpContext.TraceIdentifier,
+                        timestamp = DateTime.UtcNow
+                    };
+
+                    return context.Response.WriteAsync(JsonSerializer.Serialize(response));
+                },
+                OnForbidden = context =>
+                {
+                    context.Response.StatusCode = 403;
+                    context.Response.ContentType = "application/json";
+
+                    var response = new
+                    {
+                        message = "You don't have permission to access this resource",
+                        statusCode = 403,
+                        traceId = context.HttpContext.TraceIdentifier,
+                        timestamp = DateTime.UtcNow
+                    };
+
+                    return context.Response.WriteAsync(JsonSerializer.Serialize(response));
                 }
-            },
-            new string[] {}
-        }
-    });
-});
+            };
+        });
+    builder.Services.AddAuthorization();
+}
 
-// Rate Limiting
-builder.Services.AddMemoryCache();
-builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
-builder.Services.AddInMemoryRateLimiting();
-builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
-// Redis Distributed Cache
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
-    options.InstanceName = "StudentManagement_";
-});
+// Health Checks cơ bản
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<ApplicationDbContext>();
 
-
+// Build application
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// --- 3. Cấu hình middleware pipeline ---
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
-    app.UseSwaggerUI(options =>
+    app.UseSwaggerUI(c =>
     {
-        foreach (var description in provider.ApiVersionDescriptions)
-        {
-            options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json",
-                description.GroupName.ToUpperInvariant());
-        }
-        options.RoutePrefix = string.Empty;
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Student Management API V1");
+        c.RoutePrefix = string.Empty;
     });
 }
-else
-{
-    app.UseHttpsRedirection();
-}
 
-// IMPORTANT: Add custom middleware in correct order
-// 1. Global Exception Handling (should be first)
-app.UseMiddleware<GlobalExceptionMiddleware>();
-
-// 2. Request/Response Logging
-app.UseMiddleware<RequestResponseLoggingMiddleware>();
-
-// 3. API Key validation (if needed - before rate limiting)
-// app.UseMiddleware<ApiKeyMiddleware>();
-
-// 4. Rate limiting
-app.UseIpRateLimiting();
-
-// 5. CORS
 app.UseCors();
 
-// 6. Authentication & Authorization
-app.UseAuthentication();
-app.UseAuthorization();
+if (!string.IsNullOrEmpty(jwtKey))
+{
+    app.UseAuthentication();
+    app.UseAuthorization();
+}
+
+// Thêm Global Exception Middleware sau Authentication/Authorization
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.MapControllers();
+app.MapHealthChecks("/health");
 app.MapGet("/", () => "Student Management System API is running!");
 
+// Khởi tạo database
+try
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await context.Database.EnsureCreatedAsync();
+    Log.Information("Database initialized successfully");
+}
+catch (Exception ex)
+{
+    Log.Error(ex, "An error occurred while initializing the database");
+}
 
+Log.Information("Starting Student Management System API");
 app.Run();
-// test

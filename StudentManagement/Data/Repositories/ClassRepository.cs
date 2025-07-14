@@ -97,5 +97,13 @@ namespace StudentManagementSystem.Data.Repositories
             return await _context.Students
                 .CountAsync(s => s.ClassId == classId);
         }
+        public async Task<bool> CanDeleteClassAsync(string classId)
+        {
+
+            var hasStudents = await _context.Students.AnyAsync(s => s.ClassId == classId);
+
+
+            return !hasStudents;
+        }
     }
 }

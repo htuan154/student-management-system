@@ -1,0 +1,9 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'student-management-api'
+    metrics_path: /metrics # Endpoint mà bạn đã tạo trong Program.cs
+    static_configs:
+      # Prometheus sẽ kết nối đến service 'backend' qua port 80 (port nội bộ của container)
+      - targets: ['backend:80']

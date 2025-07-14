@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using StudentManagementSystem.Dtos.Score;
 using StudentManagementSystem.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace StudentManagementSystem.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ScoreController : ControllerBase

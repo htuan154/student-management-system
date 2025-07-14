@@ -1,15 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
 using StudentManagementSystem.Dtos.Role;
 using StudentManagementSystem.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace StudentManagementSystem.Controllers
 {
+    [Authorize(Roles = "Admin,SuperAdmin")]
     [ApiController]
     [Route("api/[controller]")]
     public class RoleController : ControllerBase
     {
         private readonly IRoleService _roleService;
-        
+
         public RoleController(IRoleService roleService)
         {
             _roleService = roleService;

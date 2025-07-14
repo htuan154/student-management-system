@@ -11,5 +11,8 @@ namespace StudentManagementSystem.Dtos.User
         public string? TeacherId { get; set; }
         public bool IsActive { get; set; }
         public DateTime? RefreshTokenExpiryTime { get; set; }
+
+        public string RoleName { get; set; } = string.Empty;
+
     }
 }

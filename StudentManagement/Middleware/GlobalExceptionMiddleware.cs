@@ -16,6 +16,8 @@ namespace StudentManagementSystem.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
+            _logger.LogInformation("Processing request: {Method} {Path}", context.Request.Method, context.Request.Path);
+
             try
             {
                 await _next(context);
@@ -26,7 +28,6 @@ namespace StudentManagementSystem.Middleware
                 await HandleExceptionAsync(context, ex);
             }
         }
-
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
             context.Response.ContentType = "application/json";

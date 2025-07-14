@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using StudentManagementSystem.DTOs.Teacher;
 using StudentManagementSystem.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace StudentManagementSystem.Controllers
 {
+    [Authorize(Roles = "Admin,SuperAdmin")]
     [ApiController]
     [Route("api/[controller]")]
     public class TeachersController : ControllerBase
