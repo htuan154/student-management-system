@@ -58,6 +58,7 @@
     <!-- System packages to resolve conflicts -->
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.8" />
+    <InternalsVisibleTo Include="StudentManagement.IntegrationTests" />
   </ItemGroup>
 
 </Project>

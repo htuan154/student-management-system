@@ -85,7 +85,7 @@ namespace StudentManagementSystem.Services
             var teacher = await _teacherRepository.GetByIdAsync(teacherId);
             if (teacher == null)
             {
-                 _logger.LogWarning("Update failed. Teacher with ID {TeacherId} not found.", teacherId);
+                _logger.LogWarning("Update failed. Teacher with ID {TeacherId} not found.", teacherId);
                 return null;
             }
 
@@ -94,7 +94,7 @@ namespace StudentManagementSystem.Services
                 throw new InvalidOperationException("Email already exists.");
             }
 
-            // SỬA LỖI: Cập nhật đầy đủ các thuộc tính
+
             teacher.FullName = updateTeacherDto.FullName;
             teacher.Email = updateTeacherDto.Email;
             teacher.PhoneNumber = updateTeacherDto.PhoneNumber;
@@ -138,8 +138,8 @@ namespace StudentManagementSystem.Services
         {
             var tasks = new List<Task>
             {
-                _cacheService.RemoveDataAsync($"{CachePrefix}es:distinct_departments"),
-                _cacheService.RemoveDataAsync($"{CachePrefix}es:distinct_degrees")
+                _cacheService.RemoveDataAsync($"{CachePrefix}s:distinct_departments"),
+                _cacheService.RemoveDataAsync($"{CachePrefix}s:distinct_degrees")
             };
             return Task.WhenAll(tasks);
         }
@@ -283,7 +283,7 @@ namespace StudentManagementSystem.Services
 
         private TeacherDetailResponseDto MapToDetailResponseDto(Teacher teacher)
         {
-             return new TeacherDetailResponseDto
+            return new TeacherDetailResponseDto
             {
                 TeacherId = teacher.TeacherId,
                 FullName = teacher.FullName,

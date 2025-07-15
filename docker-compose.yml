@@ -9,7 +9,6 @@ services:
       - "8080:80" # API của bạn sẽ truy cập được từ http://localhost:8080
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      # SỬA LỖI: Thay thế chuỗi kết nối để trỏ đến service 'db'
       - ConnectionStrings__DefaultConnection=Server=db;Database=StudentManagementSystem;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;
       - ConnectionStrings__RedisConnection=redis:6379
       - Jwt__Key=u7$P!x9@Qw3#Zr8^Lm2&bT6*Vh1%Yj4!sN0
@@ -60,7 +59,7 @@ services:
     image: grafana/grafana-oss:latest
     container_name: grafana
     ports:
-      - "3000:3000" # Giao diện Grafana sẽ ở http://localhost:3000
+      - "3000:3000"
     depends_on:
       - prometheus
     networks:

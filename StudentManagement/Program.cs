@@ -18,7 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // --- 1. Cấu hình Serilog cơ bản ---
 Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration) // Đọc cấu hình từ appsettings.json
+    .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
     .WriteTo.Console()
     .WriteTo.File("logs/app-.txt", rollingInterval: RollingInterval.Day)
@@ -187,3 +187,4 @@ catch (Exception ex)
 
 Log.Information("Starting Student Management System API");
 app.Run();
+public partial class Program { }
