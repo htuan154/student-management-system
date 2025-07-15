@@ -13,6 +13,7 @@ using StudentManagementSystem.Services;
 using StudentManagementSystem.Middleware;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Caching.Distributed;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -158,7 +159,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
-
+// Prometheus metrics
+app.UseMetricServer();
+app.UseHttpMetrics();
 if (!string.IsNullOrEmpty(jwtKey))
 {
     app.UseAuthentication();
