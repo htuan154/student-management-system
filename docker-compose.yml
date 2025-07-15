@@ -1,4 +1,4 @@
-version: '3.8'
+# version: '3.8'
 
 services:
   backend:
@@ -6,14 +6,15 @@ services:
       context: .
       dockerfile: ./StudentManagement/Dockerfile
     ports:
-      - "8080:80" # API của bạn sẽ truy cập được từ http://localhost:8080
+      - "5049:80" # API của bạn sẽ truy cập được từ http://localhost:5049
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=db;Database=StudentManagementSystem;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;
-      - ConnectionStrings__RedisConnection=redis:6379
-      - Jwt__Key=u7$P!x9@Qw3#Zr8^Lm2&bT6*Vh1%Yj4!sN0
-      - Jwt__Issuer=StudentManagementSystem
-      - Jwt__Audience=StudentManagementSystem
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Server=DESKTOP-1M9Q7HG\\HTUAN;Database=StudentManagementSystem;Trusted_Connection=True;TrustServerCertificate=True;"
+      ConnectionStrings__RedisConnection: "redis:6379"
+      # Jwt__Key: "u7$$P!x9@Qw3#Zr8^Lm2&bT6*Vh1%Yj4!sN0"
+      Jwt__Issuer: "StudentManagementSystem"
+      Jwt__Audience: "StudentManagementSystem"
+
     depends_on:
       - db
       - redis
