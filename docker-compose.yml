@@ -6,30 +6,39 @@ services:
       context: .
       dockerfile: ./StudentManagement/Dockerfile
     ports:
-      - "5049:80" # API của bạn sẽ truy cập được từ http://localhost:5049
+      - "5049:80"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: "Server=DESKTOP-1M9Q7HG\\HTUAN;Database=StudentManagementSystem;Trusted_Connection=True;TrustServerCertificate=True;"
+      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=StudentManagementSystem;User Id=sa;Password=Aa123456!;TrustServerCertificate=True;"
       ConnectionStrings__RedisConnection: "redis:6379"
-      # Jwt__Key: "u7$$P!x9@Qw3#Zr8^Lm2&bT6*Vh1%Yj4!sN0"
       Jwt__Issuer: "StudentManagementSystem"
       Jwt__Audience: "StudentManagementSystem"
-
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - app-network
 
   db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    # Sử dụng phiên bản SQL Server 2019 để ổn định hơn
+    image: mcr.microsoft.com/mssql/server:2019-latest
     environment:
-      SA_PASSWORD: "YourStrong(!)Password"
+      SA_PASSWORD: "Aa123456!"
       ACCEPT_EULA: "Y"
     ports:
       - "1433:1433"
     volumes:
       - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      # --- ĐÃ SỬA ---
+      # Cập nhật mật khẩu mới của bạn trong lệnh kiểm tra
+      test: ["CMD", "/opt/mssql-tools/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "Aa123456!", "-Q", "SELECT 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
     networks:
       - app-network
 
@@ -37,15 +46,19 @@ services:
     image: redis:latest
     ports:
       - "6379:6379"
+    healthcheck:
+        test: ["CMD", "redis-cli", "ping"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
     networks:
       - app-network
 
-  # --- DỊCH VỤ MỚI ---
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
     ports:
-      - "9090:9090" # Giao diện Prometheus sẽ ở http://localhost:9090
+      - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     command:
@@ -55,7 +68,6 @@ services:
     depends_on:
       - backend
 
-  # --- DỊCH VỤ MỚI ---
   grafana:
     image: grafana/grafana-oss:latest
     container_name: grafana
