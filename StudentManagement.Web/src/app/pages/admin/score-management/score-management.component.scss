@@ -1,0 +1,52 @@
+.score-management {
+  max-width: 600px;
+  margin: auto;
+
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  form {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 20px;
+
+    label {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    input {
+      padding: 6px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    button {
+      padding: 6px 12px;
+      margin-right: 8px;
+    }
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th, td {
+      padding: 8px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+
+    th {
+      background-color: #f3f3f3;
+    }
+  }
+
+  .error {
+    color: red;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+}

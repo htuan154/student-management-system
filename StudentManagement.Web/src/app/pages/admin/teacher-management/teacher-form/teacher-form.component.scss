@@ -1,0 +1,78 @@
+.teacher-form-container {
+  max-width: 600px;
+  margin: 0 auto;
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  h2 {
+    text-align: center;
+    color: #2c3e50;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      transition: border-color 0.3s;
+
+      &:focus {
+        border-color: #007bff;
+        outline: none;
+      }
+
+      &[readonly] {
+        background-color: #f8f9fa;
+      }
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: center;
+
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+
+      &:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+      }
+
+      &:hover:not(:disabled) {
+        background-color: #0056b3;
+      }
+    }
+  }
+
+  .error-message {
+    margin-top: 16px;
+    color: red;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  .loading {
+    text-align: center;
+    font-size: 18px;
+    padding: 40px;
+  }
+}

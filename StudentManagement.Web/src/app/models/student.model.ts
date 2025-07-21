@@ -12,6 +12,6 @@ export interface Student {
   address?: string | null;
   dateOfBirth?: string | Date | null;
   class: Class;
-  users?: User[];
+  user?: User[];
   enrollments?: Enrollment[];
 }

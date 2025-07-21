@@ -1,27 +1,42 @@
-<div class="user-management">
-  <h2>Quản lý người dùng</h2>
+<h2>Quản lý người dùng</h2>
 
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Tên đăng nhập</th>
-        <th>Email</th>
-        <th>Họ và tên</th>
-        <th>Hành động</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let user of users">
-        <td>{{ user.username }}</td>
-        <td>{{ user.email }}</td>
-        <td>
-          {{ user.employee?.fullName || user.teacher?.fullName || user.student?.fullName || 'N/A' }}
-        </td>
-        <td>
-          <button class="btn btn-primary btn-sm" (click)="editUser(user.userId)">Chỉnh sửa</button>
-          <button class="btn btn-danger btn-sm" (click)="deleteUser(user.userId)">Xóa</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+<form (ngSubmit)="editingUserId ? updateUser() : createUser()">
+  <input [(ngModel)]="newUser.username" name="username" placeholder="Tên đăng nhập" required>
+  <input [(ngModel)]="newUser.email" name="email" placeholder="Email" required>
+  <input [(ngModel)]="newUser.passwordHash" name="passwordHash" placeholder="Mật khẩu" required>
+  <input [(ngModel)]="newUser.roleId" name="roleId" placeholder="Quyền" required>
+  <label>
+    <input type="checkbox" [(ngModel)]="newUser.isActive" name="isActive"> Hoạt động
+  </label>
+
+  <button type="submit">{{ editingUserId ? 'Cập nhật' : 'Tạo mới' }}</button>
+  <button type="button" (click)="cancelEdit()" *ngIf="editingUserId">Hủy</button>
+</form>
+
+<hr>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Tên đăng nhập</th>
+      <th>Email</th>
+      <th>Quyền</th>
+      <th>Hoạt động</th>
+      <th>Hành động</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let user of users">
+      <td>{{ user.userId }}</td>
+      <td>{{ user.username }}</td>
+      <td>{{ user.email }}</td>
+      <td>{{ user.roleId }}</td>
+      <td>{{ user.isActive ? '✔' : '✘' }}</td>
+      <td>
+        <button (click)="editUser(user.userId)">Sửa</button>
+        <button (click)="deleteUser(user.userId)">Xóa</button>
+      </td>
+    </tr>
+  </tbody>
+</table>

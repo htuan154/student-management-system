@@ -1,0 +1,64 @@
+<div class="form-container">
+  <header class="form-header">
+    <h1>{{ isEditMode ? 'Sửa sinh viên' : 'Thêm sinh viên' }}</h1>
+    <button class="btn btn-secondary" routerLink="/admin/students">Quay lại danh sách</button>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-indicator">Đang tải...</div>
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+  <form [formGroup]="studentForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading">
+    <div class="form-grid">
+      <!-- Student ID -->
+      <div class="form-group">
+        <label for="studentId">Mã Sinh Viên</label>
+        <input id="studentId" type="text" formControlName="studentId" class="form-control">
+      </div>
+
+      <!-- Full Name -->
+      <div class="form-group">
+        <label for="fullName">Họ và tên</label>
+        <input id="fullName" type="text" formControlName="fullName" class="form-control">
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" type="email" formControlName="email" class="form-control">
+      </div>
+
+      <!-- Phone Number -->
+      <div class="form-group">
+        <label for="phoneNumber">Số điện thoại</label>
+        <input id="phoneNumber" type="text" formControlName="phoneNumber" class="form-control">
+      </div>
+
+      <!-- Date of Birth -->
+      <div class="form-group">
+        <label for="dateOfBirth">Ngày tháng năm sinh</label>
+        <input id="dateOfBirth" type="date" formControlName="dateOfBirth" class="form-control">
+      </div>
+
+      <!-- Class -->
+      <div class="form-group">
+        <label for="classId">Lớp</label>
+        <select id="classId" formControlName="classId" class="form-control">
+          <option [ngValue]="null" disabled>Select a class</option>
+          <option *ngFor="let class of classes" [value]="class.classId">{{ class.className }}</option>
+        </select>
+      </div>
+
+      <!-- Address -->
+      <div class="form-group full-width">
+        <label for="address">Địa chỉ</label>
+        <textarea id="address" formControlName="address" class="form-control" rows="3"></textarea>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="studentForm.invalid || isLoading">
+        {{ isEditMode ? 'Sửa sinh viên' : 'Thêm sinh viên' }}
+      </button>
+    </div>
+  </form>
+</div>

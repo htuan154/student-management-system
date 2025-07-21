@@ -1,49 +1,42 @@
-<div class="management-container">
-  <header class="management-header">
-    <h1>Quản lý Lớp học</h1>
-    <button class="btn btn-primary">Thêm mới Lớp học</button>
-  </header>
+<h2>Quản lý lớp học</h2>
 
-  <div *ngIf="isLoading" class="loading-indicator">
-    Đang tải dữ liệu...
-  </div>
+<form (ngSubmit)="saveClass()">
+  <label>Tên lớp:</label>
+  <input [(ngModel)]="formClass.className" name="name" required />
 
-  <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage }}
-  </div>
+  <label>Chuyên ngành:</label>
+  <input [(ngModel)]="formClass.major" name="major" required />
 
-  <div *ngIf="!isLoading && !errorMessage" class="table-container">
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>Mã Lớp</th>
-          <th>Tên Lớp</th>
-          <th>Chuyên ngành</th>
-          <th>Năm học</th>
-          <th>Trạng thái</th>
-          <th>Hành động</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let class of classes">
-          <td>{{ class.classId }}</td>
-          <td>{{ class.className }}</td>
-          <td>{{ class.major }}</td>
-          <td>{{ class.academicYear || 'N/A' }}</td>
-          <td>
-            <span [ngClass]="class.isActive ? 'status-active' : 'status-inactive'">
-              {{ class.isActive ? 'Hoạt động' : 'Không hoạt động' }}
-            </span>
-          </td>
-          <td>
-            <button (click)="editClass(class.classId)" class="btn btn-sm btn-secondary">Sửa</button>
-            <button (click)="deleteClass(class.classId)" class="btn btn-sm btn-danger">Xóa</button>
-          </td>
-        </tr>
-        <tr *ngIf="classes.length === 0">
-          <td colspan="6" class="text-center">Không có dữ liệu lớp học.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+  <label>Năm học:</label>
+  <input [(ngModel)]="formClass.academicYear" name="academicYear" required />
+
+  <button type="submit">{{ editingId ? 'Cập nhật' : 'Thêm mới' }}</button>
+  <button type="button" (click)="cancelEdit()" *ngIf="editingId">Hủy</button>
+</form>
+
+<hr />
+
+<div *ngIf="isLoading">Đang tải dữ liệu...</div>
+<div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+<table *ngIf="!isLoading && classes.length > 0" border="1">
+  <thead>
+    <tr>
+      <th>Tên lớp</th>
+      <th>Chuyên ngành</th>
+      <th>Năm học</th>
+      <th>Hành động</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let cls of classes">
+      <td>{{ cls.className }}</td>
+      <td>{{ cls.major }}</td>
+      <td>{{ cls.academicYear }}</td>
+      <td>
+        <button (click)="editClass(cls.classId)">Sửa</button>
+        <button (click)="deleteClass(cls.classId)">Xóa</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
