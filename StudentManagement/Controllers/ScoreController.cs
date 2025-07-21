@@ -39,13 +39,19 @@ namespace StudentManagementSystem.Controllers
             var scores = await _scoreService.SearchScoresAsync(term);
             return Ok(scores);
         }
-
-        [HttpGet("paged")]
-        public async Task<IActionResult> GetPaged([FromQuery] int pageNumber, [FromQuery] int pageSize, [FromQuery] string? searchTerm = null)
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
         {
-            var (scores, totalCount) = await _scoreService.GetPagedScoresAsync(pageNumber, pageSize, searchTerm);
-            return Ok(new { scores, totalCount });
+            var scores = await _scoreService.GetAllAsync();
+            return Ok(scores);
         }
+
+        // [HttpGet("paged")]
+        // public async Task<IActionResult> GetPaged([FromQuery] int pageNumber, [FromQuery] int pageSize, [FromQuery] string? searchTerm = null)
+        // {
+        //     var (scores, totalCount) = await _scoreService.GetPagedScoresAsync(pageNumber, pageSize, searchTerm);
+        //     return Ok(new { scores, totalCount });
+        // }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ScoreCreateDto dto)

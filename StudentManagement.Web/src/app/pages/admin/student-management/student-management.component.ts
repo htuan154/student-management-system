@@ -2,9 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Student } from '../../../models';
 import { StudentService } from '../../../services/student.service';
-
+import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-student-management',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './student-management.component.html',
   styleUrls: ['./student-management.component.scss']
 })

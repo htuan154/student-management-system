@@ -22,7 +22,12 @@ namespace StudentManagementSystem.Services
             _cacheService = cacheService;
             _logger = logger;
         }
-
+            public async Task<IEnumerable<ScoreDto>> GetAllAsync()
+            {
+                _logger.LogInformation("Fetching all scores from repository.");
+                var scores = await _scoreRepository.GetAllAsync();
+                return scores.Select(MapToDto);
+            }
         public async Task<ScoreDto?> GetByIdAsync(int scoreId)
         {
             _logger.LogInformation("Getting score by ID: {ScoreId}", scoreId);

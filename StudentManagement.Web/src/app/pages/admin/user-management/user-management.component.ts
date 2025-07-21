@@ -14,14 +14,12 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./user-management.component.scss']
 })
 export class UserManagementComponent implements OnInit {
-  // Biến để lưu danh sách người dùng từ API
+
   users: User[] = [];
   isLoading = false;
 
-  // Tiêm UserService vào để sử dụng
   constructor(private userService: UserService) { }
 
-  // ngOnInit là một lifecycle hook, được gọi một lần khi component được khởi tạo
   ngOnInit(): void {
     this.loadUsers();
   }
@@ -40,15 +38,20 @@ export class UserManagementComponent implements OnInit {
       }
     });
   }
-
-  // Placeholder cho các hàm trong tương lai
+  /**
+   * Chỉnh sửa thông tin người dùng.
+   * @param id ID của người dùng cần chỉnh sửa.
+   */
   editUser(id: string): void {
     console.log(`Chỉnh sửa người dùng với ID: ${id}`);
-    // Logic để mở popup hoặc điều hướng đến trang chỉnh sửa
-  }
 
+  }
+  /**
+   * Xóa người dùng sau khi xác nhận.
+   * @param id ID của người dùng cần xóa.
+   */
   deleteUser(id: string): void {
     console.log(`Xóa người dùng với ID: ${id}`);
-    // Logic để gọi API xóa và cập nhật lại danh sách
+
   }
 }

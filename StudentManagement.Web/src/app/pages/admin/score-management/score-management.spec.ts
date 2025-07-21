@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ScoreManagement } from './score-management.component';
+import { ScoreManagementComponent } from './score-management.component';
 
-describe('ScoreManagement', () => {
-  let component: ScoreManagement;
-  let fixture: ComponentFixture<ScoreManagement>;
+describe('ScoreManagementComponent', () => {
+  let component: ScoreManagementComponent;
+  let fixture: ComponentFixture<ScoreManagementComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ScoreManagement]
+      declarations: [ScoreManagementComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ScoreManagement);
+    fixture = TestBed.createComponent(ScoreManagementComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

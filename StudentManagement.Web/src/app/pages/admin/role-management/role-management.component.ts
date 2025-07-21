@@ -2,9 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Role } from '../../../models';
 import { RoleService } from '../../../services/role.service';
-
+import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-role-management',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './role-management.component.html',
   styleUrls: ['./role-management.component.scss']
 })

@@ -27,7 +27,12 @@ export class ScoreService {
   getScoreById(id: number): Observable<Score> {
     return this.http.get<Score>(`${this.apiUrl}/${id}`);
   }
-
+  /**
+   * Lấy toàn bộ danh sách điểm không phân trang.
+   */
+  getAllScores(): Observable<Score[]> {
+    return this.http.get<Score[]>(this.apiUrl);
+  }
   /**
    * Lấy thông tin điểm theo ID của lượt đăng ký.
    * @param enrollmentId ID của lượt đăng ký.
