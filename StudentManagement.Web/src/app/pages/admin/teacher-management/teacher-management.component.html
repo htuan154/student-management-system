@@ -1,45 +1,45 @@
-<div class="management-container">
-  <header class="management-header">
-    <h1>Quản lý Giáo viên</h1>
-    <button class="btn btn-primary">Thêm mới Giáo viên</button>
-  </header>
+<h2>Quản lý Giáo Viên</h2>
 
-  <div *ngIf="isLoading" class="loading-indicator">
-    Đang tải dữ liệu...
-  </div>
+<form (ngSubmit)="saveTeacher()">
+  <input [(ngModel)]="formTeacher.fullName" name="fullName" placeholder="Họ tên" required>
+  <input [(ngModel)]="formTeacher.email" name="email" placeholder="Email" required type="email">
+  <input [(ngModel)]="formTeacher.degree" name="degree" placeholder="Bằng cấp">
+  <input [(ngModel)]="formTeacher.department" name="department" placeholder="Khoa">
+  <input [(ngModel)]="formTeacher.salary" name="salary" placeholder="Lương" type="number">
 
-  <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage }}
-  </div>
+  <button type="submit">{{ editingTeacherId ? 'Cập nhật' : 'Thêm mới' }}</button>
+  <button type="button" (click)="cancelEdit()" *ngIf="editingTeacherId">Hủy</button>
+</form>
 
-  <div *ngIf="!isLoading && !errorMessage" class="table-container">
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>Mã GV</th>
-          <th>Họ và Tên</th>
-          <th>Email</th>
-          <th>Khoa</th>
-          <th>Ngày vào làm</th>
-          <th>Hành động</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let teacher of teachers">
-          <td>{{ teacher.teacherId }}</td>
-          <td>{{ teacher.fullName }}</td>
-          <td>{{ teacher.email }}</td>
-          <td>{{ teacher.department || 'N/A' }}</td>
-          <td>{{ teacher.hireDate | date: 'dd/MM/yyyy' }}</td>
-          <td>
-            <button (click)="editTeacher(teacher.teacherId)" class="btn btn-sm btn-secondary">Sửa</button>
-            <button (click)="deleteTeacher(teacher.teacherId)" class="btn btn-sm btn-danger">Xóa</button>
-          </td>
-        </tr>
-        <tr *ngIf="teachers.length === 0">
-          <td colspan="6" class="text-center">Không có dữ liệu giáo viên.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+<hr>
+
+<div *ngIf="isLoading">Đang tải dữ liệu...</div>
+<div *ngIf="errorMessage">{{ errorMessage }}</div>
+
+<table border="1" *ngIf="!isLoading && teachers.length > 0">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Họ tên</th>
+      <th>Email</th>
+      <th>Bằng cấp</th>
+      <th>Khoa</th>
+      <th>Lương</th>
+      <th>Hành động</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let teacher of teachers">
+      <td>{{ teacher.teacherId }}</td>
+      <td>{{ teacher.fullName }}</td>
+      <td>{{ teacher.email }}</td>
+      <td>{{ teacher.degree }}</td>
+      <td>{{ teacher.department }}</td>
+      <td>{{ teacher.salary | number:'1.0-0' }}</td>
+      <td>
+        <button (click)="editTeacher(teacher.teacherId)">Sửa</button>
+        <button (click)="deleteTeacher(teacher.teacherId)">Xóa</button>
+      </td>
+    </tr>
+  </tbody>
+</table>

@@ -1,0 +1,64 @@
+<div class="teacher-form-container" *ngIf="!isLoading; else loadingTpl">
+  <h2>{{ isEditMode ? 'Chỉnh sửa giảng viên' : 'Thêm giảng viên' }}</h2>
+
+  <form [formGroup]="teacherForm" (ngSubmit)="onSubmit()" novalidate>
+    <div class="form-group">
+      <label for="teacherId">Mã giảng viên</label>
+      <input id="teacherId" type="text" formControlName="teacherId" [readonly]="isEditMode" />
+    </div>
+
+    <div class="form-group">
+      <label for="fullName">Họ và tên</label>
+      <input id="fullName" type="text" formControlName="fullName" />
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input id="email" type="email" formControlName="email" />
+    </div>
+
+    <div class="form-group">
+      <label for="phoneNumber">Số điện thoại</label>
+      <input id="phoneNumber" type="text" formControlName="phoneNumber" />
+    </div>
+
+    <div class="form-group">
+      <label for="department">Khoa</label>
+      <input id="department" type="text" formControlName="department" />
+    </div>
+
+    <div class="form-group">
+      <label for="degree">Trình độ</label>
+      <input id="degree" type="text" formControlName="degree" />
+    </div>
+
+    <div class="form-group">
+      <label for="dateOfBirth">Ngày sinh</label>
+      <input id="dateOfBirth" type="date" formControlName="dateOfBirth" />
+    </div>
+
+    <div class="form-group">
+      <label for="hireDate">Ngày vào làm</label>
+      <input id="hireDate" type="date" formControlName="hireDate" />
+    </div>
+
+    <div class="form-group">
+      <label for="salary">Lương</label>
+      <input id="salary" type="number" formControlName="salary" />
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" [disabled]="teacherForm.invalid">
+        {{ isEditMode ? 'Cập nhật' : 'Thêm mới' }}
+      </button>
+    </div>
+
+    <div class="error-message" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+  </form>
+</div>
+
+<ng-template #loadingTpl>
+  <div class="loading">Đang tải dữ liệu...</div>
+</ng-template>

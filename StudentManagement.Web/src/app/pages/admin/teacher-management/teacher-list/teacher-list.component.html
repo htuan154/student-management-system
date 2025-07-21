@@ -1,0 +1,51 @@
+<div class="teacher-management-container">
+  <header class="management-header">
+    <h1>Quản lý Giảng viên</h1>
+    <button class="btn btn-primary" routerLink="new">
+      <i class="fas fa-plus"></i> Thêm giảng viên
+    </button>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-indicator">
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage" class="table-container">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Mã GV</th>
+          <th>Họ và tên</th>
+          <th>Email</th>
+          <th>Khoa</th>
+          <th>Ngày tuyển</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let teacher of teachers">
+          <td>{{ teacher.teacherId }}</td>
+          <td>{{ teacher.fullName }}</td>
+          <td>{{ teacher.email }}</td>
+          <td>{{ teacher.department || 'Chưa rõ' }}</td>
+          <td>{{ teacher.hireDate | date: 'dd/MM/yyyy' }}</td>
+          <td class="action-buttons">
+            <button [routerLink]="['edit', teacher.teacherId]" class="btn btn-sm btn-secondary">
+              Edit
+            </button>
+            <button (click)="deleteTeacher(teacher.teacherId)" class="btn btn-sm btn-danger">
+              Delete
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="teachers.length === 0">
+          <td colspan="6" class="text-center">Không có dữ liệu giảng viên.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

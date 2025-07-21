@@ -1,12 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Course } from '../../../models';
 import { CourseService } from '../../../services/course.service';
-import { CommonModule } from '@angular/common';
+
 @Component({
   selector: 'app-course-management',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './course-management.component.html',
   styleUrls: ['./course-management.component.scss']
 })
@@ -15,7 +17,17 @@ export class CourseManagementComponent implements OnInit {
   isLoading = false;
   errorMessage: string | null = null;
 
-  constructor(private courseService: CourseService) { }
+  formCourse: Partial<Course> = {
+    courseName: '',
+    department: '',
+    description: '',
+    credits: 0,
+    isActive: true
+  };
+
+  editingCourseId: string | null = null;
+
+  constructor(private courseService: CourseService) {}
 
   ngOnInit(): void {
     this.loadCourses();
@@ -37,16 +49,60 @@ export class CourseManagementComponent implements OnInit {
     });
   }
 
+  saveCourse(): void {
+    if (!this.formCourse.courseName || !this.formCourse.department) {
+      alert('Vui lòng nhập đầy đủ tên môn học và khoa.');
+      return;
+    }
+
+    if (this.editingCourseId) {
+      // Update
+      this.courseService.updateCourse(this.editingCourseId, this.formCourse).subscribe({
+        next: () => {
+          alert('Cập nhật môn học thành công!');
+          this.cancelEdit();
+          this.loadCourses();
+        },
+        error: (err) => {
+          console.error('Lỗi cập nhật:', err);
+          alert('Cập nhật thất bại.');
+        }
+      });
+    } else {
+      // Create
+      this.courseService.createCourse(this.formCourse as any).subscribe({
+        next: () => {
+          alert('Tạo môn học thành công!');
+          this.formCourse = {};
+          this.loadCourses();
+        },
+        error: (err) => {
+          console.error('Lỗi tạo:', err);
+          alert('Tạo môn học thất bại.');
+        }
+      });
+    }
+  }
+
   editCourse(id: string): void {
-    console.log('Chỉnh sửa môn học:', id);
-    // Logic để mở modal hoặc điều hướng đến trang chỉnh sửa
+    const course = this.courses.find(c => c.courseId === id);
+    if (course) {
+      this.editingCourseId = id;
+      this.formCourse = { ...course };
+    }
+  }
+
+  cancelEdit(): void {
+    this.editingCourseId = null;
+    this.formCourse = {};
   }
 
   deleteCourse(id: string): void {
     if (confirm('Bạn có chắc chắn muốn xóa môn học này không?')) {
       this.courseService.deleteCourse(id).subscribe({
         next: () => {
-          this.loadCourses(); // Tải lại danh sách sau khi xóa
+          alert('Xóa thành công!');
+          this.loadCourses();
         },
         error: (err: HttpErrorResponse) => {
           this.errorMessage = 'Đã có lỗi xảy ra khi xóa môn học.';

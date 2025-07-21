@@ -1,49 +1,46 @@
-<div class="management-container">
-  <header class="management-header">
-    <h1>Quản lý Môn học</h1>
-    <button class="btn btn-primary">Thêm mới Môn học</button>
-  </header>
+<h2>Quản lý Môn Học</h2>
 
-  <div *ngIf="isLoading" class="loading-indicator">
-    Đang tải dữ liệu...
-  </div>
+<form (ngSubmit)="saveCourse()">
+  <input [(ngModel)]="formCourse.courseName" name="courseName" placeholder="Tên môn học" required>
+  <input [(ngModel)]="formCourse.department" name="department" placeholder="Khoa" required>
+  <input [(ngModel)]="formCourse.credits" name="credits" placeholder="Số tín chỉ" type="number">
+  <input [(ngModel)]="formCourse.description" name="description" placeholder="Mô tả">
+  <label>
+    <input type="checkbox" [(ngModel)]="formCourse.isActive" name="isActive">
+    Kích hoạt
+  </label>
 
-  <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage }}
-  </div>
+  <button type="submit">{{ editingCourseId ? 'Cập nhật' : 'Thêm mới' }}</button>
+  <button type="button" (click)="cancelEdit()" *ngIf="editingCourseId">Hủy</button>
+</form>
 
-  <div *ngIf="!isLoading && !errorMessage" class="table-container">
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>Mã Môn học</th>
-          <th>Tên Môn học</th>
-          <th>Số tín chỉ</th>
-          <th>Khoa</th>
-          <th>Trạng thái</th>
-          <th>Hành động</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let course of courses">
-          <td>{{ course.courseId }}</td>
-          <td>{{ course.courseName }}</td>
-          <td>{{ course.credits }}</td>
-          <td>{{ course.department || 'N/A' }}</td>
-          <td>
-            <span [ngClass]="course.isActive ? 'status-active' : 'status-inactive'">
-              {{ course.isActive ? 'Hoạt động' : 'Không hoạt động' }}
-            </span>
-          </td>
-          <td>
-            <button (click)="editCourse(course.courseId)" class="btn btn-sm btn-secondary">Sửa</button>
-            <button (click)="deleteCourse(course.courseId)" class="btn btn-sm btn-danger">Xóa</button>
-          </td>
-        </tr>
-        <tr *ngIf="courses.length === 0">
-          <td colspan="6" class="text-center">Không có dữ liệu môn học.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+<hr>
+
+<div *ngIf="isLoading">Đang tải dữ liệu...</div>
+<div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+<table border="1" *ngIf="!isLoading && courses.length > 0">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Tên môn học</th>
+      <th>Khoa</th>
+      <th>Tín chỉ</th>
+      <th>Kích hoạt</th>
+      <th>Hành động</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let course of courses">
+      <td>{{ course.courseId }}</td>
+      <td>{{ course.courseName }}</td>
+      <td>{{ course.department }}</td>
+      <td>{{ course.credits }}</td>
+      <td>{{ course.isActive ? '✔' : '✘' }}</td>
+      <td>
+        <button (click)="editCourse(course.courseId)">Sửa</button>
+        <button (click)="deleteCourse(course.courseId)">Xóa</button>
+      </td>
+    </tr>
+  </tbody>
+</table>

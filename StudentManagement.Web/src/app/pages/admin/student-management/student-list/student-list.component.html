@@ -1,0 +1,51 @@
+<div class="management-container">
+  <header class="management-header">
+    <h1>Quản lý sinh viên</h1>
+
+    <button class="btn btn-primary" routerLink="new">
+      <i class="fas fa-plus"></i> Thêm sinh viên
+    </button>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-indicator">
+    <p>Loading data...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage" class="table-container">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Mã sinh viên</th>
+          <th>Họ và tên</th>
+          <th>Email</th>
+          <th>Mã lớp</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let student of students">
+          <td>{{ student.studentId }}</td>
+          <td>{{ student.fullName }}</td>
+          <td>{{ student.email }}</td>
+          <td>{{ student.classId|| 'N/A' }}</td>
+          <td class="action-buttons">
+            <button [routerLink]="['edit', student.studentId]" class="btn btn-sm btn-secondary" title="Edit">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button (click)="deleteStudent(student.studentId)" class="btn btn-sm btn-danger" title="Delete">
+              <i class="fas fa-trash-alt"></i> Delete
+            </button>
+          </td>
+
+        </tr>
+        <tr *ngIf="students.length === 0">
+          <td colspan="5" class="text-center">No student data to display.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

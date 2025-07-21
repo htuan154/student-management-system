@@ -1,49 +1,52 @@
-<div class="management-container">
-  <header class="management-header">
-    <h1>Quản lý Đăng ký</h1>
-    <button class="btn btn-primary">Thêm mới Đăng ký</button>
-  </header>
+<h2>Quản lý lượt đăng ký</h2>
 
-  <div *ngIf="isLoading" class="loading-indicator">
-    Đang tải dữ liệu...
-  </div>
+<form (ngSubmit)="saveEnrollment()">
+  <label>Student ID:</label>
+  <input [(ngModel)]="formData.studentId" name="studentId" required />
 
-  <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage }}
-  </div>
+  <label>Course ID:</label>
+  <input [(ngModel)]="formData.courseId" name="courseId" required />
 
-  <div *ngIf="!isLoading && !errorMessage" class="table-container">
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Sinh viên</th>
-          <th>Môn học</th>
-          <th>Giáo viên</th>
-          <th>Học kỳ</th>
-          <th>Trạng thái</th>
-          <th>Hành động</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let enrollment of enrollments">
-          <td>{{ enrollment.enrollmentId }}</td>
-          <td>{{ enrollment.student?.fullName || 'N/A' }}</td>
-          <td>{{ enrollment.course?.courseName || 'N/A' }}</td>
-          <td>{{ enrollment.teacher?.fullName || 'Chưa phân công' }}</td>
-          <td>{{ enrollment.semester || 'N/A' }}</td>
-          <td>
-            <span class="status-{{ enrollment.status | lowercase }}">{{ enrollment.status }}</span>
-          </td>
-          <td>
-            <button (click)="editEnrollment(enrollment.enrollmentId)" class="btn btn-sm btn-secondary">Sửa</button>
-            <button (click)="deleteEnrollment(enrollment.enrollmentId)" class="btn btn-sm btn-danger">Xóa</button>
-          </td>
-        </tr>
-        <tr *ngIf="enrollments.length === 0">
-          <td colspan="7" class="text-center">Không có dữ liệu đăng ký.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <button type="submit">{{ editingId ? 'Cập nhật' : 'Thêm mới' }}</button>
+  <button *ngIf="editingId" type="button" (click)="cancelEdit()">Hủy</button>
+</form>
+
+<hr />
+
+<div>
+  <input [(ngModel)]="searchTerm" placeholder="Tìm kiếm..." name="search" />
+  <button (click)="search()">Tìm</button>
+</div>
+
+<div *ngIf="isLoading">Đang tải dữ liệu...</div>
+<div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+<table *ngIf="!isLoading && enrollments.length > 0" border="1">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Student ID</th>
+      <th>Course ID</th>
+      <th>Điểm (nếu có)</th>
+      <th>Hành động</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let e of enrollments">
+      <td>{{ e.enrollmentId }}</td>
+      <td>{{ e.studentId }}</td>
+      <td>{{ e.courseId }}</td>
+      <td>{{ e.score ?? 'N/A' }}</td>
+      <td>
+        <button (click)="editEnrollment(e.enrollmentId)">Sửa</button>
+        <button (click)="deleteEnrollment(e.enrollmentId)">Xóa</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<div *ngIf="totalCount > pageSize" class="pagination">
+  <button (click)="pageChanged(currentPage - 1)" [disabled]="currentPage === 1">Trước</button>
+  <span>Trang {{ currentPage }} / {{ totalPages }}</span>
+  <button (click)="pageChanged(currentPage + 1)" [disabled]="currentPage === totalPages">Sau</button>
 </div>

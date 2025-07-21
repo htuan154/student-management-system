@@ -1,56 +1,57 @@
-<div class="management-container">
-  <header class="management-header">
-    <h1>Quản lý Điểm</h1>
-    <button class="btn btn-primary">Nhập điểm</button>
-  </header>
+<div class="score-management">
+  <h2>Quản lý điểm</h2>
 
-  <div *ngIf="isLoading" class="loading-indicator">
-    Đang tải dữ liệu...
-  </div>
+  <form [formGroup]="scoreForm" (ngSubmit)="submitForm()">
+    <div>
+      <label>Mã đăng ký học</label>
+      <input formControlName="enrollmentId" type="number" />
+    </div>
+    <div>
+      <label>Điểm quá trình</label>
+      <input formControlName="processScore" type="number" />
+    </div>
+    <div>
+      <label>Điểm giữa kỳ</label>
+      <input formControlName="midtermScore" type="number" />
+    </div>
+    <div>
+      <label>Điểm cuối kỳ</label>
+      <input formControlName="finalScore" type="number" />
+    </div>
 
-  <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage }}
-  </div>
+    <button type="submit">
+      {{ isEditMode ? 'Cập nhật' : 'Thêm mới' }}
+    </button>
+    <button type="button" (click)="resetForm()">Hủy</button>
+  </form>
 
-  <div *ngIf="!isLoading && !errorMessage" class="table-container">
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Sinh viên</th>
-          <th>Môn học</th>
-          <th>Điểm quá trình</th>
-          <th>Điểm giữa kỳ</th>
-          <th>Điểm cuối kỳ</th>
-          <th>Tổng kết</th>
-          <th>Trạng thái</th>
-          <th>Hành động</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let score of scores">
-          <td>{{ score.scoreId }}</td>
-          <td>{{ score.enrollment?.student?.fullName || 'N/A' }}</td>
-          <td>{{ score.enrollment?.course?.courseName || 'N/A' }}</td>
-          <td>{{ score.processScore ?? 'N/A' }}</td>
-          <td>{{ score.midtermScore ?? 'N/A' }}</td>
-          <td>{{ score.finalScore ?? 'N/A' }}</td>
-          <td><strong>{{ score.totalScore ?? 'N/A' }}</strong></td>
-          <td>
-            <span *ngIf="score.isPassed != null" [ngClass]="score.isPassed ? 'status-active' : 'status-inactive'">
-              {{ score.isPassed ? 'Qua môn' : 'Trượt' }}
-            </span>
-            <span *ngIf="score.isPassed == null">Chưa có</span>
-          </td>
-          <td>
-            <button (click)="editScore(score.scoreId)" class="btn btn-sm btn-secondary">Sửa</button>
-            <button (click)="deleteScore(score.scoreId)" class="btn btn-sm btn-danger">Xóa</button>
-          </td>
-        </tr>
-        <tr *ngIf="scores.length === 0">
-          <td colspan="9" class="text-center">Không có dữ liệu điểm.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+  <div *ngIf="isLoading">Đang tải dữ liệu...</div>
+
+  <table *ngIf="!isLoading && scores.length > 0">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Mã đăng ký học</th>
+        <th>Quá trình</th>
+        <th>Giữa kỳ</th>
+        <th>Cuối kỳ</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let score of scores; index as i">
+        <td>{{ i + 1 }}</td>
+        <td>{{ score.enrollmentId }}</td>
+        <td>{{ score.processScore }}</td>
+        <td>{{ score.midtermScore }}</td>
+        <td>{{ score.finalScore }}</td>
+        <td>
+          <button (click)="editScore(score)">Sửa</button>
+          <button (click)="deleteScore(score.scoreId)">Xóa</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>

@@ -34,7 +34,7 @@ export class StudentService {
   }
 
   /** Tạo sinh viên mới */
-  createStudent(student: Omit<Student, 'studentId' | 'class' | 'users' | 'enrollments'>): Observable<Student> {
+  createStudent(student: Omit<Student, 'studentId' | 'class' | 'user' | 'enrollments'>): Observable<Student> {
     return this.http.post<Student>(this.apiUrl, student);
   }
 

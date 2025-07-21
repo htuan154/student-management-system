@@ -14,6 +14,7 @@ import { ClassManagementComponent } from './class-management/class-management.co
 import { StudentManagementComponent } from './student-management/student-management.component';
 import { EnrollmentManagementComponent } from './enrollment-management/enrollment-management.component';
 import { ScoreManagementComponent } from './score-management/score-management.component';
+import { EmployeeManagementComponent } from './employee-management/employee-management.component';
 
 @NgModule({
 
@@ -31,7 +32,8 @@ import { ScoreManagementComponent } from './score-management/score-management.co
     ClassManagementComponent,
     StudentManagementComponent,
     EnrollmentManagementComponent,
-    ScoreManagementComponent
+    ScoreManagementComponent,
+    EmployeeManagementComponent
   ],
 
 })

@@ -1,51 +1,39 @@
-<div class="management-container">
-  <header class="management-header">
-    <h1>Quản lý Phân công Giảng dạy</h1>
-    <button class="btn btn-primary">Thêm mới Phân công</button>
-  </header>
+<h2>Quản lý phân công giảng dạy</h2>
 
-  <div *ngIf="isLoading" class="loading-indicator">
-    Đang tải dữ liệu...
-  </div>
+<form (ngSubmit)="saveAssignment()">
+  <label>Giáo viên ID:</label>
+  <input [(ngModel)]="formAssignment.teacherId" name="teacherId" placeholder="Nhập mã giáo viên" required>
 
-  <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage }}
-  </div>
+  <label>Khóa học ID:</label>
+  <input [(ngModel)]="formAssignment.courseId" name="courseId" placeholder="Nhập mã môn học" required>
 
-  <div *ngIf="!isLoading && !errorMessage" class="table-container">
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Giáo viên</th>
-          <th>Môn học</th>
-          <th>Học kỳ</th>
-          <th>Năm học</th>
-          <th>Trạng thái</th>
-          <th>Hành động</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let assignment of assignments">
-          <td>{{ assignment.teacherCourseId }}</td>
-          <td>{{ assignment.teacher?.fullName || 'N/A' }}</td>
-          <td>{{ assignment.course?.courseName || 'N/A' }}</td>
-          <td>{{ assignment.semester || 'N/A' }}</td>
-          <td>{{ assignment.year || 'N/A' }}</td>
-          <td>
-            <span [ngClass]="assignment.isActive ? 'status-active' : 'status-inactive'">
-              {{ assignment.isActive ? 'Hoạt động' : 'Không hoạt động' }}
-            </span>
-          </td>
-          <td>
-            <button (click)="editAssignment(assignment.teacherCourseId)" class="btn btn-sm btn-secondary">Sửa</button>
-            <button (click)="deleteAssignment(assignment.teacherCourseId)" class="btn btn-sm btn-danger">Xóa</button>
-          </td>
-        </tr>
-        <tr *ngIf="assignments.length === 0">
-          <td colspan="7" class="text-center">Không có dữ liệu phân công.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+  <button type="submit">{{ editingId ? 'Cập nhật' : 'Thêm mới' }}</button>
+  <button type="button" (click)="cancelEdit()" *ngIf="editingId">Hủy</button>
+</form>
+
+<hr>
+
+<div *ngIf="isLoading">Đang tải dữ liệu...</div>
+<div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+<table border="1" *ngIf="!isLoading && assignments.length > 0">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Giáo viên ID</th>
+      <th>Môn học ID</th>
+      <th>Hành động</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let a of assignments">
+      <td>{{ a.teacherCourseId }}</td>
+      <td>{{ a.teacherId }}</td>
+      <td>{{ a.courseId }}</td>
+      <td>
+        <button (click)="editAssignment(a.teacherCourseId)">Sửa</button>
+        <button (click)="deleteAssignment(a.teacherCourseId)">Xóa</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
