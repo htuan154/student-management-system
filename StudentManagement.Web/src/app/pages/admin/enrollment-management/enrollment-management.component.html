@@ -1,0 +1,49 @@
+<div class="management-container">
+  <header class="management-header">
+    <h1>Quản lý Đăng ký</h1>
+    <button class="btn btn-primary">Thêm mới Đăng ký</button>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-indicator">
+    Đang tải dữ liệu...
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage" class="table-container">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Sinh viên</th>
+          <th>Môn học</th>
+          <th>Giáo viên</th>
+          <th>Học kỳ</th>
+          <th>Trạng thái</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let enrollment of enrollments">
+          <td>{{ enrollment.enrollmentId }}</td>
+          <td>{{ enrollment.student?.fullName || 'N/A' }}</td>
+          <td>{{ enrollment.course?.courseName || 'N/A' }}</td>
+          <td>{{ enrollment.teacher?.fullName || 'Chưa phân công' }}</td>
+          <td>{{ enrollment.semester || 'N/A' }}</td>
+          <td>
+            <span class="status-{{ enrollment.status | lowercase }}">{{ enrollment.status }}</span>
+          </td>
+          <td>
+            <button (click)="editEnrollment(enrollment.enrollmentId)" class="btn btn-sm btn-secondary">Sửa</button>
+            <button (click)="deleteEnrollment(enrollment.enrollmentId)" class="btn btn-sm btn-danger">Xóa</button>
+          </td>
+        </tr>
+        <tr *ngIf="enrollments.length === 0">
+          <td colspan="7" class="text-center">Không có dữ liệu đăng ký.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

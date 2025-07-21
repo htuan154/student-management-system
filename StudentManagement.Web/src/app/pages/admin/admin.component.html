@@ -1,0 +1,41 @@
+<div class="admin-layout" [class.sidebar-open]="isSidebarOpen">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h3>Admin Panel</h3>
+    </div>
+    <nav class="sidebar-nav">
+      <ul>
+        <li><a routerLink="dashboard" routerLinkActive="active"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
+        <li><a routerLink="users" routerLinkActive="active"><i class="fas fa-users-cog"></i><span>Quản lý người dùng</span></a></li>
+        <li><a routerLink="students" routerLinkActive="active"><i class="fas fa-user-graduate"></i><span>Quản lý Sinh viên</span></a></li>
+        <li><a routerLink="teachers" routerLinkActive="active"><i class="fas fa-chalkboard-teacher"></i><span>Quản lý Giáo viên</span></a></li>
+        <li><a routerLink="roles" routerLinkActive="active"><i class="fas fa-user-tag"></i><span>Quản lý Vai trò</span></a></li>
+        <li><a routerLink="courses" routerLinkActive="active"><i class="fas fa-book"></i><span>Quản lý khóa học</span></a></li>
+        <li><a routerLink="classes" routerLinkActive="active"><i class="fas fa-school"></i><span>Quản lý Lớp học</span></a></li>
+        <li><a routerLink="assignments" routerLinkActive="active"><i class="fas fa-tasks"></i><span>Quản lý Phân công</span></a></li>
+        <li><a routerLink="enrollments" routerLinkActive="active"><i class="fas fa-clipboard-list"></i><span>Quản lý Đăng ký</span></a></li>
+        <li><a routerLink="scores" routerLinkActive="active"><i class="fas fa-marker"></i><span>Quản lý Điểm</span></a></li>
+      </ul>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="logout-btn" (click)="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Đăng xuất</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <header class="main-header">
+      <button class="sidebar-toggle" (click)="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+      </button>
+      <h1 class="page-title">{{ currentPage }}</h1>
+    </header>
+    <main class="content-area">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

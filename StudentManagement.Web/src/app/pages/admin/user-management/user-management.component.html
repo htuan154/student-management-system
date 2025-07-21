@@ -1,0 +1,27 @@
+<div class="user-management">
+  <h2>Quản lý người dùng</h2>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Tên đăng nhập</th>
+        <th>Email</th>
+        <th>Họ và tên</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of users">
+        <td>{{ user.username }}</td>
+        <td>{{ user.email }}</td>
+        <td>
+          {{ user.employee?.fullName || user.teacher?.fullName || user.student?.fullName || 'N/A' }}
+        </td>
+        <td>
+          <button class="btn btn-primary btn-sm" (click)="editUser(user.userId)">Chỉnh sửa</button>
+          <button class="btn btn-danger btn-sm" (click)="deleteUser(user.userId)">Xóa</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

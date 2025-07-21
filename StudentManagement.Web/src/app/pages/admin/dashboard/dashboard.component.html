@@ -1,0 +1,165 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h1 class="dashboard-title">
+      <i class="fas fa-tachometer-alt"></i>
+      Bảng điều khiển
+    </h1>
+    <p class="dashboard-subtitle">Tổng quan hệ thống quản lý</p>
+  </div>
+
+  <!-- Hiển thị khi đang tải dữ liệu -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+    </div>
+    <p class="loading-text">Đang tải dữ liệu...</p>
+  </div>
+
+  <!-- Hiển thị khi có lỗi -->
+  <div *ngIf="errorMessage" class="error-container">
+    <div class="error-card">
+      <i class="fas fa-exclamation-triangle"></i>
+      <p class="error-message">{{ errorMessage }}</p>
+    </div>
+  </div>
+
+  <!-- Lưới hiển thị các thẻ thống kê -->
+  <div *ngIf="!isLoading && !errorMessage" class="dashboard-content">
+    <div class="stats-grid">
+      <!-- Thẻ Người dùng -->
+      <div class="stat-card users">
+        <div class="card-header">
+          <div class="card-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="card-trend positive">
+            <i class="fas fa-arrow-up"></i>
+            <span>+12%</span>
+          </div>
+        </div>
+        <div class="card-content">
+          <div class="stat-number">{{ stats.users | number }}</div>
+          <div class="stat-label">Tổng người dùng</div>
+          <div class="stat-description">Đang hoạt động</div>
+        </div>
+      </div>
+
+      <!-- Thẻ Sinh viên -->
+      <div class="stat-card students">
+        <div class="card-header">
+          <div class="card-icon">
+            <i class="fas fa-user-graduate"></i>
+          </div>
+          <div class="card-trend positive">
+            <i class="fas fa-arrow-up"></i>
+            <span>+8%</span>
+          </div>
+        </div>
+        <div class="card-content">
+          <div class="stat-number">{{ stats.students | number }}</div>
+          <div class="stat-label">Sinh viên</div>
+          <div class="stat-description">Đã đăng ký</div>
+        </div>
+      </div>
+
+      <!-- Thẻ Giáo viên -->
+      <div class="stat-card teachers">
+        <div class="card-header">
+          <div class="card-icon">
+            <i class="fas fa-chalkboard-teacher"></i>
+          </div>
+          <div class="card-trend positive">
+            <i class="fas fa-arrow-up"></i>
+            <span>+5%</span>
+          </div>
+        </div>
+        <div class="card-content">
+          <div class="stat-number">{{ stats.teachers | number }}</div>
+          <div class="stat-label">Giáo viên</div>
+          <div class="stat-description">Đang giảng dạy</div>
+        </div>
+      </div>
+
+      <!-- Thẻ Khóa học -->
+      <div class="stat-card courses">
+        <div class="card-header">
+          <div class="card-icon">
+            <i class="fas fa-book"></i>
+          </div>
+          <div class="card-trend positive">
+            <i class="fas fa-arrow-up"></i>
+            <span>+15%</span>
+          </div>
+        </div>
+        <div class="card-content">
+          <div class="stat-number">{{ stats.courses | number }}</div>
+          <div class="stat-label">Khóa học</div>
+          <div class="stat-description">Đang mở</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Thêm phần biểu đồ và hoạt động gần đây -->
+    <div class="dashboard-widgets">
+      <div class="widget-row">
+        <!-- Biểu đồ thống kê -->
+        <div class="widget chart-widget">
+          <div class="widget-header">
+            <h3>Thống kê theo tháng</h3>
+            <div class="widget-actions">
+              <button class="btn-secondary">
+                <i class="fas fa-download"></i>
+                Xuất báo cáo
+              </button>
+            </div>
+          </div>
+          <div class="widget-content">
+            <div class="chart-placeholder">
+              <i class="fas fa-chart-line"></i>
+              <p>Biểu đồ sẽ được hiển thị tại đây</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hoạt động gần đây -->
+        <div class="widget activity-widget">
+          <div class="widget-header">
+            <h3>Hoạt động gần đây</h3>
+            <a href="#" class="view-all">Xem tất cả</a>
+          </div>
+          <div class="widget-content">
+            <div class="activity-list">
+              <div class="activity-item">
+                <div class="activity-icon user-icon">
+                  <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="activity-content">
+                  <p class="activity-title">Người dùng mới đăng ký</p>
+                  <p class="activity-time">5 phút trước</p>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon course-icon">
+                  <i class="fas fa-book-open"></i>
+                </div>
+                <div class="activity-content">
+                  <p class="activity-title">Khóa học mới được tạo</p>
+                  <p class="activity-time">2 giờ trước</p>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon teacher-icon">
+                  <i class="fas fa-user-check"></i>
+                </div>
+                <div class="activity-content">
+                  <p class="activity-title">Giáo viên mới được duyệt</p>
+                  <p class="activity-time">1 ngày trước</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
