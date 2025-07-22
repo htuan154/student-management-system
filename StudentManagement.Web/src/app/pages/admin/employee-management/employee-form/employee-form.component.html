@@ -1,0 +1,64 @@
+<div class="form-container">
+  <header class="form-header">
+    <h1>{{ isEditMode ? 'Chỉnh sửa Nhân viên' : 'Tạo mới Nhân viên' }}</h1>
+    <button class="btn btn-secondary" routerLink="/admin/employees">Quay lại Danh sách</button>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-indicator">Đang tải dữ liệu...</div>
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+  <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading">
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="employeeId">Mã nhân viên</label>
+        <input id="employeeId" type="text" formControlName="employeeId" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="fullName">Họ và tên</label>
+        <input id="fullName" type="text" formControlName="fullName" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" type="email" formControlName="email" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="phoneNumber">Số điện thoại</label>
+        <input id="phoneNumber" type="text" formControlName="phoneNumber" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="hireDate">Ngày vào làm</label>
+        <input id="hireDate" type="date" formControlName="hireDate" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="dateOfBirth">Ngày sinh</label>
+        <input id="dateOfBirth" type="date" formControlName="dateOfBirth" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="department">Phòng ban</label>
+        <input id="department" type="text" formControlName="department" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="position">Chức vụ</label>
+        <input id="position" type="text" formControlName="position" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="salary">Lương</label>
+        <input id="salary" type="number" formControlName="salary" class="form-control">
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="employeeForm.invalid || isLoading">
+        {{ isEditMode ? 'Cập nhật Nhân viên' : 'Tạo Nhân viên' }}
+      </button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,53 @@
+<div class="management-container">
+  <header class="management-header">
+    <h1>Quản lý Nhân viên</h1>
+    <button class="btn btn-primary" routerLink="new">
+      Thêm nhân viên
+    </button>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-indicator">
+    Đang tải dữ liệu...
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage" class="table-container">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Mã nhân viên</th>
+          <th>Họ và tên</th>
+          <th>Email</th>
+          <th>Phòng ban</th>
+          <th>Chức vụ</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let employee of employees">
+          <td>{{ employee.employeeId }}</td>
+          <td>{{ employee.fullName }}</td>
+          <td>{{ employee.email }}</td>
+          <td>{{ employee.department || '—' }}</td>
+          <td>{{ employee.position || '—' }}</td>
+          <td class="action-buttons">
+            <button [routerLink]="['edit', employee.employeeId]" class="btn btn-secondary">
+              Edit
+            </button>
+            <button (click)="deleteEmployee(employee.employeeId)" class="btn btn-danger">
+              Delete
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="employees.length === 0">
+          <td colspan="6" class="text-center">
+            Không có dữ liệu nhân viên để hiển thị.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

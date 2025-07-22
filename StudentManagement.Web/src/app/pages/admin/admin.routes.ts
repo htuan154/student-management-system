@@ -15,14 +15,19 @@ import { ScoreManagementComponent } from './score-management/score-management.co
 const routes: Routes = [
   {
     path: '',
-    component: AdminComponent, // AdminComponent là layout chung
+    component: AdminComponent,
     children: [
-      // Route mặc định, chuyển hướng đến dashboard
+
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
 
       { path: 'dashboard', component: DashboardComponent },
-      { path: 'users', component: UserManagementComponent },
-
+      {
+        path: 'users',
+        loadChildren: () =>
+          import('./user-management/user-management.module').then(
+            (m) => m.UserManagementModule
+          ),
+      },
       {
         path: 'students',
         loadChildren: () =>
@@ -37,7 +42,13 @@ const routes: Routes = [
             (m) => m.TeacherManagementModule
           ),
       },
-
+      {
+        path: 'employees',
+        loadChildren: () =>
+          import('./employee-management/employee-management.module').then(
+            (m) => m.EmployeeManagementModule
+          ),
+      },
       { path: 'roles', component: RoleManagementComponent },
       { path: 'courses', component: CourseManagementComponent },
       { path: 'classes', component: ClassManagementComponent },
