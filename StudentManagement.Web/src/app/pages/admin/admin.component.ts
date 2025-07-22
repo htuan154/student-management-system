@@ -51,6 +51,7 @@ export class AdminComponent implements OnInit, OnDestroy {
     else if (url.includes('/users')) this.currentPage = 'Quản lý Người dùng';
     else if (url.includes('/students')) this.currentPage = 'Quản lý Sinh viên';
     else if (url.includes('/teachers')) this.currentPage = 'Quản lý Giáo viên';
+    else if (url.includes('/employees')) this.currentPage = 'Quản lý Nhân viên';
     else if (url.includes('/roles')) this.currentPage = 'Quản lý Vai trò';
     else if (url.includes('/courses')) this.currentPage = 'Quản lý Khóa học';
     else if (url.includes('/classes')) this.currentPage = 'Quản lý Lớp học';
