@@ -10,5 +10,8 @@ export interface Score {
   finalScore?: number | null;
   totalScore?: number | null;
   isPassed?: boolean | null;
-  enrollment: Enrollment;
+  enrollment?: Enrollment;
+// Thông tin sinh viên
+  studentId?: string | null;
+  fullName?: string | null;
 }

@@ -43,5 +43,21 @@ namespace StudentManagementSystem.Data.Repositories
 
             return (scores, totalCount);
         }
+        public async Task<IEnumerable<Score>> GetByTeacherAndSubjectAsync(string teacherId, string courseId)
+        {
+            return await _context.Scores
+                .Include(s => s.Enrollment)
+                    .ThenInclude(e => e.Teacher)
+                .Include(s => s.Enrollment)
+                    .ThenInclude(e => e.Course)
+                .Include(s => s.Enrollment)
+                    .ThenInclude(e => e.Student)
+                .Where(s =>
+                    s.Enrollment.TeacherId == teacherId &&
+                    s.Enrollment.CourseId == courseId)
+                .ToListAsync();
+        }
+        
+
     }
 }

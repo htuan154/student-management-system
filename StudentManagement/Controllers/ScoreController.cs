@@ -45,13 +45,21 @@ namespace StudentManagementSystem.Controllers
             var scores = await _scoreService.GetAllAsync();
             return Ok(scores);
         }
+        [HttpGet("teacher-subject")]
+        public async Task<IActionResult> GetByTeacherAndSubject([FromQuery] string teacherId, [FromQuery] string courseId)
+        {
+            if (string.IsNullOrWhiteSpace(teacherId) || string.IsNullOrWhiteSpace(courseId))
+                return BadRequest("teacherId và courseId không được để trống.");
 
-        // [HttpGet("paged")]
-        // public async Task<IActionResult> GetPaged([FromQuery] int pageNumber, [FromQuery] int pageSize, [FromQuery] string? searchTerm = null)
-        // {
-        //     var (scores, totalCount) = await _scoreService.GetPagedScoresAsync(pageNumber, pageSize, searchTerm);
-        //     return Ok(new { scores, totalCount });
-        // }
+            var scores = await _scoreService.GetByTeacherAndSubjectAsync(teacherId, courseId);
+            if (scores == null || !scores.Any())
+                return NotFound("Không tìm thấy điểm cho giáo viên và môn học đã chỉ định.");
+
+            return Ok(scores);
+        }
+
+
+
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ScoreCreateDto dto)

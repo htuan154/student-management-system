@@ -1,0 +1,50 @@
+<div class="form-container">
+  <header class="form-header">
+    <h1>{{ isEditMode ? 'Chỉnh sửa Môn học' : 'Tạo mới Môn học' }}</h1>
+    <button class="btn btn-secondary" routerLink="/admin/courses">Quay lại Danh sách</button>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-indicator">Đang tải...</div>
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+  <form [formGroup]="courseForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading" class="form-body">
+    <div class="form-group">
+      <label for="courseId">Mã Môn học</label>
+      <input id="courseId" type="text" formControlName="courseId" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label for="courseName">Tên Môn học</label>
+      <input id="courseName" type="text" formControlName="courseName" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label for="credits">Số tín chỉ</label>
+      <input id="credits" type="number" formControlName="credits" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label for="department">Khoa</label>
+      <input id="department" type="text" formControlName="department" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label for="isActive">Trạng thái</label>
+        <select id="isActive" formControlName="isActive" class="form-control">
+          <option [value]="true">Hoạt động</option>
+          <option [value]="false">Không hoạt động</option>
+        </select>
+    </div>
+
+    <div class="form-group full-width">
+      <label for="description">Mô tả</label>
+      <textarea id="description" formControlName="description" class="form-control" rows="4"></textarea>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="courseForm.invalid || isLoading">
+        {{ isEditMode ? 'Cập nhật' : 'Tạo mới' }}
+      </button>
+    </div>
+  </form>
+</div>

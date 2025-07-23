@@ -1,0 +1,87 @@
+.form-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .btn-secondary {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+}
+
+.loading-indicator,
+.error-message {
+  text-align: center;
+  margin-bottom: 16px;
+  font-weight: bold;
+}
+
+.form-body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  label {
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .form-control {
+    padding: 10px 12px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+}
+
+// Row layout cho học kỳ và giáo viên
+.row-two {
+  display: flex;
+  gap: 24px;
+
+  .form-group {
+    flex: 1;
+  }
+}
+
+// Row layout cho năm học và năm học (giữ lại cả hai để đáp ứng yêu cầu mô phỏng)
+.row-year {
+  display: flex;
+  gap: 24px;
+
+  .form-group {
+    flex: 1;
+  }
+}
+
+.form-actions {
+  text-align: right;
+  margin-top: 24px;
+
+  .btn-primary {
+    padding: 10px 20px;
+    font-size: 16px;
+  }
+}

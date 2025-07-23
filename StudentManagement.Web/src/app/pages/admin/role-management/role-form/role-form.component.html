@@ -1,0 +1,37 @@
+<div class="form-container">
+  <header class="form-header">
+    <h1>{{ isEditMode ? 'Chỉnh sửa Vai trò' : 'Tạo mới Vai trò' }}</h1>
+    <button class="btn btn-secondary" routerLink="/admin/roles">Quay lại Danh sách</button>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-indicator">Đang tải...</div>
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+  <form [formGroup]="roleForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading">
+    <div class="form-grid">
+      <!-- Role ID -->
+      <div class="form-group">
+        <label for="roleId">Mã Vai trò</label>
+        <input id="roleId" type="text" formControlName="roleId" class="form-control">
+      </div>
+
+      <!-- Role Name -->
+      <div class="form-group">
+        <label for="roleName">Tên Vai trò</label>
+        <input id="roleName" type="text" formControlName="roleName" class="form-control">
+      </div>
+
+      <!-- Description -->
+      <div class="form-group full-width">
+        <label for="description">Mô tả</label>
+        <textarea id="description" formControlName="description" class="form-control" rows="4"></textarea>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="roleForm.invalid || isLoading">
+        {{ isEditMode ? 'Cập nhật Vai trò' : 'Tạo Vai trò' }}
+      </button>
+    </div>
+  </form>
+</div>

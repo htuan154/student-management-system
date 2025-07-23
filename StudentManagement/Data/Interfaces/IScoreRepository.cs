@@ -7,5 +7,8 @@ namespace StudentManagementSystem.Data.Interfaces
         Task<Score?> GetByEnrollmentIdAsync(int enrollmentId);
         Task<IEnumerable<Score>> SearchScoresAsync(string searchTerm);
         Task<(IEnumerable<Score> Scores, int TotalCount)> GetPagedScoresAsync(int pageNumber, int pageSize, string? searchTerm = null);
+        Task<IEnumerable<Score>> GetByTeacherAndSubjectAsync(string teacherId, string courseId);
+
+
     }
 }
