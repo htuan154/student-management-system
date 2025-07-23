@@ -8,7 +8,6 @@ import { RouterModule } from '@angular/router';
   selector: 'app-student-list',
   standalone: true,
   imports: [CommonModule, RouterModule],
-
   templateUrl: './student-list.component.html',
   styleUrls: ['./student-list.component.scss']
 })

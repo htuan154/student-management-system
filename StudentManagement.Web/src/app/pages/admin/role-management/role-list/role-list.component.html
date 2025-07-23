@@ -1,0 +1,43 @@
+<div class="management-container">
+  <header class="management-header">
+    <h1>Quản lý Vai trò</h1>
+    <button class="btn btn-primary" routerLink="new">
+      Thêm vai trò
+    </button>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-indicator">
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage" class="table-container">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Mã Vai trò</th>
+          <th>Tên Vai trò</th>
+          <th>Mô tả</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let role of roles">
+          <td>{{ role.roleId }}</td>
+          <td>{{ role.roleName }}</td>
+          <td>{{ role.description || 'Không có mô tả' }}</td>
+          <td class="action-buttons">
+            <button [routerLink]="['edit', role.roleId]" class="btn btn-secondary">Sửa</button>
+            <button (click)="deleteRole(role.roleId)" class="btn btn-danger">Xóa</button>
+          </td>
+        </tr>
+        <tr *ngIf="roles.length === 0">
+          <td colspan="4" class="text-center">Không có dữ liệu vai trò để hiển thị.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

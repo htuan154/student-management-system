@@ -12,6 +12,6 @@ namespace StudentManagementSystem.Services.Interfaces
         Task<bool> UpdateAsync(ScoreUpdateDto dto);
         Task<bool> DeleteAsync(int scoreId);
         Task<IEnumerable<ScoreDto>> GetAllAsync();
-
+        Task<IEnumerable<ScoreDetailsDto>> GetByTeacherAndSubjectAsync(string teacherId, string subjectId);
     }
 }

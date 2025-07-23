@@ -136,6 +136,24 @@ namespace StudentManagementSystem.Services
 
             _logger.LogInformation("Caches invalidated for ScoreId {ScoreId} and EnrollmentId {EnrollmentId}", scoreId, enrollmentId);
         }
+        public async Task<IEnumerable<ScoreDetailsDto>> GetByTeacherAndSubjectAsync(string teacherId, string courseId)
+        {
+            var scores = await _scoreRepository.GetByTeacherAndSubjectAsync(teacherId, courseId);
+
+            return scores.Select(s => new ScoreDetailsDto
+            {
+                ScoreId = s.ScoreId,
+                ProcessScore = s.ProcessScore,
+                MidtermScore = s.MidtermScore,
+                FinalScore = s.FinalScore,
+                TotalScore = s.TotalScore,
+                IsPassed = s.IsPassed,
+                StudentId = s.Enrollment?.Student?.StudentId,
+                FullName = s.Enrollment?.Student?.FullName
+            });
+        }
+
+
 
         // Other Methods
         public async Task<IEnumerable<ScoreDto>> SearchScoresAsync(string searchTerm)

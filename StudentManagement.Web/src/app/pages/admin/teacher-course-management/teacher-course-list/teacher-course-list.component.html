@@ -1,0 +1,53 @@
+<div class="management-container">
+  <header class="management-header">
+    <h1>Quản lý Phân công</h1>
+    <button class="btn btn-primary" routerLink="new">
+      Thêm phân công
+    </button>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-indicator">
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage" class="table-container">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Giáo viên</th>
+          <th>Môn học</th>
+          <th>Học kỳ</th>
+          <th>Năm học</th>
+          <th>Trạng thái</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let assignment of assignments">
+          <td>{{ assignment.teacherCourseId }}</td>
+          <td>{{ assignment.teacherId|| 'N/A' }}</td>
+          <td>{{ assignment.courseId || 'N/A' }}</td>
+          <td>{{ assignment.semester || 'N/A' }}</td>
+          <td>{{ assignment.year || 'N/A' }}</td>
+          <td>
+            <span [ngClass]="assignment.isActive ? 'status-active' : 'status-inactive'">
+              {{ assignment.isActive ? 'Hoạt động' : 'Không hoạt động' }}
+            </span>
+          </td>
+          <td class="action-buttons">
+            <button [routerLink]="['edit', assignment.teacherCourseId]" class="btn btn-secondary">Sửa</button>
+            <button (click)="deleteAssignment(assignment.teacherCourseId)" class="btn btn-danger">Xóa</button>
+          </td>
+        </tr>
+        <tr *ngIf="assignments.length === 0">
+          <td colspan="7" class="text-center">Không có dữ liệu phân công để hiển thị.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

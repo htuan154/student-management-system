@@ -1,0 +1,141 @@
+.form-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 32px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2c3e50;
+  }
+
+  .btn {
+    font-size: 14px;
+  }
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+
+  label {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: #495057;
+  }
+
+  .form-control {
+    padding: 10px 12px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:focus {
+      border-color: #007bff;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+    }
+
+    &:disabled {
+      background-color: #e9ecef;
+    }
+  }
+
+  textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+  }
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-actions {
+  margin-top: 32px;
+  text-align: right;
+  border-top: 1px solid #e9ecef;
+  padding-top: 20px;
+}
+
+.btn {
+  padding: 10px 20px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &.btn-primary {
+    background-color: #007bff;
+    color: white;
+
+    &:hover {
+      background-color: #0056b3;
+    }
+  }
+
+  &.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+
+    &:hover {
+      background-color: #5a6268;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.loading-indicator {
+  text-align: center;
+  font-style: italic;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.error-message {
+  color: #dc3545;
+  text-align: center;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+@media (max-width: 576px) {
+  .form-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .form-actions {
+    text-align: center;
+
+    .btn {
+      width: 100%;
+      margin-bottom: 12px;
+    }
+  }
+}

@@ -1,0 +1,42 @@
+<div class="form-container">
+  <header class="form-header">
+    <h1>{{ isEditMode ? 'Chỉnh sửa Điểm' : 'Nhập điểm mới' }}</h1>
+    <button class="btn btn-secondary" routerLink="/admin/scores">Quay lại Danh sách</button>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-indicator">Đang tải...</div>
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+  <form [formGroup]="scoreForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading" class="form-body">
+    <div class="form-group full-width">
+      <label for="enrollmentId">Lượt đăng ký (Sinh viên - Môn học)</label>
+      <select id="enrollmentId" formControlName="enrollmentId" class="form-control">
+        <option [ngValue]="null" disabled>Chọn một lượt đăng ký</option>
+        <option *ngFor="let enrollment of enrollments" [value]="enrollment.enrollmentId">
+          {{ enrollment.student?.fullName }} - {{ enrollment.course?.courseName }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="processScore">Điểm quá trình</label>
+      <input id="processScore" type="number" formControlName="processScore" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label for="midtermScore">Điểm giữa kỳ</label>
+      <input id="midtermScore" type="number" formControlName="midtermScore" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label for="finalScore">Điểm cuối kỳ</label>
+      <input id="finalScore" type="number" formControlName="finalScore" class="form-control">
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="scoreForm.invalid || isLoading">
+        {{ isEditMode ? 'Cập nhật' : 'Lưu điểm' }}
+      </button>
+    </div>
+  </form>
+</div>
