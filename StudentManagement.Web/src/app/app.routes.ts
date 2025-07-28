@@ -11,38 +11,34 @@ const routes: Routes = [
     redirectTo: 'login',
     pathMatch: 'full'
   },
-
   {
     path: 'login',
-
     loadChildren: () => import('./pages/login/login.module').then(m => m.LoginModule)
   },
-
   {
     path: 'admin',
     loadChildren: () => import('./pages/admin/admin.module').then(m => m.AdminModule),
-
     canActivate: [AuthGuard, RoleGuard],
-
     data: {
       expectedRole: 'Admin'
     }
   },
 
-  // // 4. Route cho trang Sinh viên, được bảo vệ bởi guard
-  // {
-  //   path: 'student',
-  //   loadChildren: () => import('./pages/student/student.module').then(m => m.StudentModule),
-  //   canActivate: [AuthGuard, RoleGuard],
-  //   data: {
-  //     expectedRole: 'Student'
-  //   }
-  // },
+  // ✅ BỎ CHÚ THÍCH CHO ĐOẠN CODE NÀY
+  {
+    path: 'student',
+    loadChildren: () => import('./pages/student/student.module').then(m => m.StudentModule),
+    canActivate: [AuthGuard, RoleGuard],
+    data: {
+      expectedRole: 'Student'
+    }
+  },
 
-  // {
-  //   path: '**',
-  //   redirectTo: 'login'
-  // }
+  // Route bắt các đường dẫn không hợp lệ
+  {
+    path: '**',
+    redirectTo: 'login'
+  }
 ];
 
 @NgModule({

@@ -1,0 +1,68 @@
+<div class="dashboard-container">
+  <!-- Trạng thái đang tải -->
+  <div *ngIf="isLoading" class="loading-indicator">
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <!-- Thông báo lỗi -->
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Nội dung chính khi đã tải xong -->
+  <div *ngIf="!isLoading && !errorMessage">
+    <!-- Hàng chứa các thẻ thống kê -->
+    <div class="stats-cards">
+      <div class="stat-card">
+        <h3>Tổng số môn đã đăng ký</h3>
+        <p class="stat-number">{{ totalCourses }}</p>
+        <i class="fas fa-book-open card-icon"></i>
+      </div>
+      <div class="stat-card">
+        <h3>Số môn đã hoàn thành</h3>
+        <p class="stat-number">{{ completedCourses }}</p>
+        <i class="fas fa-graduation-cap card-icon"></i>
+      </div>
+      <div class="stat-card">
+        <h3>Điểm trung bình</h3>
+        <p class="stat-number">{{ averageScore }}</p>
+        <i class="fas fa-star-half-alt card-icon"></i>
+      </div>
+    </div>
+
+    <!-- Bảng hoạt động gần đây -->
+    <div class="recent-activity">
+      <h2>Hoạt động gần đây</h2>
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Môn học</th>
+              <th>Giảng viên</th>
+              <th>Học kỳ</th>
+              <th>Năm học</th>
+              <th>Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let enrollment of recentEnrollments">
+              <!-- Giả định model Enrollment có chứa các đối tượng lồng nhau -->
+              <td>{{ enrollment.course?.courseName || enrollment.courseId }}</td>
+              <td>{{ enrollment.teacher?.fullName || enrollment.teacherId || 'Chưa phân công' }}</td>
+              <td>{{ enrollment.semester || 'N/A' }}</td>
+              <td>{{ enrollment.year || 'N/A' }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="'status-' + (enrollment.status?.toLowerCase() || 'default')">
+                  {{ enrollment.status }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="recentEnrollments.length === 0">
+              <td colspan="5" class="text-center">Không có hoạt động nào gần đây.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

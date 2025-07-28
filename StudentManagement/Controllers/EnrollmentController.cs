@@ -71,6 +71,12 @@ namespace StudentManagementSystem.Controllers
             if (!result) return NotFound();
             return Ok();
         }
+        [HttpGet("unscored")]
+        public async Task<IActionResult> GetUnscored()
+        {
+            var enrollments = await _enrollmentService.GetUnscoredAsync();
+            return Ok(enrollments);
+        }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)

@@ -1,0 +1,51 @@
+<div class="management-container">
+  <header class="management-header">
+    <h1>Đăng ký học phần</h1>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-indicator">
+    <p>Đang tải danh sách môn học...</p>
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage" class="table-container">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Mã Môn học</th>
+          <th>Tên Môn học</th>
+          <th>Số tín chỉ</th>
+          <th>Khoa</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let course of availableCourses">
+          <td>{{ course.courseId }}</td>
+          <td>{{ course.courseName }}</td>
+          <td>{{ course.credits }}</td>
+          <td>{{ course.department || 'N/A' }}</td>
+          <td class="action-buttons">
+            <!-- Nếu đã đăng ký, hiển thị trạng thái -->
+            <span *ngIf="isAlreadyEnrolled(course.courseId)" class="status-enrolled">
+              <i class="fas fa-check-circle"></i> Đã đăng ký
+            </span>
+            <!-- Nếu chưa, hiển thị nút đăng ký -->
+            <button *ngIf="!isAlreadyEnrolled(course.courseId)" (click)="registerForCourse(course.courseId)" class="btn btn-primary">
+              Đăng ký
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="availableCourses.length === 0">
+          <td colspan="5" class="text-center">Hiện không có môn học nào để đăng ký.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

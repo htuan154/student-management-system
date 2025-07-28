@@ -43,6 +43,13 @@ export class AuthService {
   }
 
   /**
+   * Lấy thông tin từ access token đã giải mã.
+   * Dùng để lấy các thông tin như studentId, username...
+   */
+  getDecodedToken(): any | null {
+    return this.decodeToken();
+  }
+  /**
    * Lấy vai trò người dùng hiện tại từ access token.
    */
   getUserRole(): string | null {

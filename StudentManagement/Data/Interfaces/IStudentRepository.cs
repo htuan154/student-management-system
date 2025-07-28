@@ -10,5 +10,6 @@ namespace StudentManagementSystem.Data.Interfaces
         Task<bool> IsStudentIdExistsAsync(string studentId);
         Task<IEnumerable<Student>> SearchStudentsAsync(string searchTerm);
         Task<(IEnumerable<Student> Students, int TotalCount)> GetPagedStudentsAsync(int pageNumber, int pageSize, string? searchTerm = null);
+
     }
 }

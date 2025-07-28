@@ -9,6 +9,6 @@ namespace StudentManagementSystem.Data.Interfaces
         Task<(IEnumerable<Score> Scores, int TotalCount)> GetPagedScoresAsync(int pageNumber, int pageSize, string? searchTerm = null);
         Task<IEnumerable<Score>> GetByTeacherAndSubjectAsync(string teacherId, string courseId);
 
-
+        Task<IEnumerable<Score>> GetByStudentIdAsync(string studentId);
     }
 }

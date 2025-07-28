@@ -57,7 +57,13 @@ namespace StudentManagementSystem.Data.Repositories
                     s.Enrollment.CourseId == courseId)
                 .ToListAsync();
         }
-        
 
+        public async Task<IEnumerable<Score>> GetByStudentIdAsync(string studentId)
+        {
+            return await _context.Scores
+                .Include(s => s.Enrollment)
+                .Where(s => s.Enrollment.StudentId == studentId)
+                .ToListAsync();
+        }
     }
 }

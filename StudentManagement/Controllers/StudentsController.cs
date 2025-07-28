@@ -2,10 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using StudentManagementSystem.DTOs.Student;
 using StudentManagementSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace StudentManagementSystem.Controllers
 {
-    [Authorize(Roles = "Admin,SuperAdmin")]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class StudentsController : ControllerBase
@@ -18,6 +19,7 @@ namespace StudentManagementSystem.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<ActionResult<IEnumerable<StudentResponseDto>>> GetAllStudents()
         {
             var students = await _studentService.GetAllStudentsAsync();
@@ -25,8 +27,20 @@ namespace StudentManagementSystem.Controllers
         }
 
         [HttpGet("{id}")]
+
         public async Task<ActionResult<StudentResponseDto>> GetStudent(string id)
         {
+
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            var studentIdFromToken = User.FindFirst("studentId")?.Value;
+
+
+            if (userRole != "Admin" && userRole != "SuperAdmin" && studentIdFromToken != id)
+            {
+
+                return Forbid();
+            }
+
             var student = await _studentService.GetStudentByIdAsync(id);
             if (student == null)
                 return NotFound();
@@ -35,6 +49,7 @@ namespace StudentManagementSystem.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<ActionResult<StudentResponseDto>> CreateStudent(CreateStudentDto createStudentDto)
         {
             try
@@ -49,6 +64,7 @@ namespace StudentManagementSystem.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<ActionResult<StudentResponseDto>> UpdateStudent(string id, UpdateStudentDto updateStudentDto)
         {
             try
@@ -66,6 +82,7 @@ namespace StudentManagementSystem.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<IActionResult> DeleteStudent(string id)
         {
             var result = await _studentService.DeleteStudentAsync(id);
@@ -75,7 +92,10 @@ namespace StudentManagementSystem.Controllers
             return NoContent();
         }
 
+
+
         [HttpGet("class/{classId}")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<ActionResult<IEnumerable<StudentResponseDto>>> GetStudentsByClass(string classId)
         {
             var students = await _studentService.GetStudentsByClassIdAsync(classId);
@@ -83,6 +103,7 @@ namespace StudentManagementSystem.Controllers
         }
 
         [HttpGet("search")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<ActionResult<IEnumerable<StudentResponseDto>>> SearchStudents([FromQuery] string searchTerm)
         {
             if (string.IsNullOrEmpty(searchTerm))
@@ -93,6 +114,7 @@ namespace StudentManagementSystem.Controllers
         }
 
         [HttpGet("paged")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<ActionResult> GetPagedStudents(
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10,
@@ -116,6 +138,7 @@ namespace StudentManagementSystem.Controllers
         }
 
         [HttpGet("check-email")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<ActionResult<bool>> CheckEmailExists([FromQuery] string email, [FromQuery] string? excludeStudentId = null)
         {
             var exists = await _studentService.IsEmailExistsAsync(email, excludeStudentId);
@@ -123,6 +146,7 @@ namespace StudentManagementSystem.Controllers
         }
 
         [HttpGet("check-studentid")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<ActionResult<bool>> CheckStudentIdExists([FromQuery] string studentId)
         {
             var exists = await _studentService.IsStudentIdExistsAsync(studentId);

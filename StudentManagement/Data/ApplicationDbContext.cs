@@ -80,6 +80,12 @@ namespace StudentManagementSystem.Data
                 .HasIndex(s => s.EnrollmentId)
                 .IsUnique();
 
+            // ✅ BỔ SUNG CẤU HÌNH CHO TRIGGER
+            // Thông báo cho EF Core biết bảng "Scores" có trigger, để nó sử dụng
+            // một phương pháp lưu dữ liệu khác tương thích hơn.
+            modelBuilder.Entity<Score>()
+                .ToTable(tb => tb.HasTrigger("trg_Score_ComputeColumns")); // Bạn có thể đặt tên trigger bất kỳ
+
             // Configure computed columns for Score
             modelBuilder.Entity<Score>()
                 .Property(s => s.TotalScore)
@@ -148,14 +154,13 @@ namespace StudentManagementSystem.Data
                 .HasOne(e => e.Teacher)
                 .WithMany(t => t.Enrollments)
                 .HasForeignKey(e => e.TeacherId)
-                .OnDelete(DeleteBehavior.NoAction); 
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Score>()
                 .HasOne(s => s.Enrollment)
                 .WithOne(e => e.Score)
                 .HasForeignKey<Score>(s => s.EnrollmentId)
                 .OnDelete(DeleteBehavior.Cascade);
-
         }
     }
 }
