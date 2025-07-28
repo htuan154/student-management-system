@@ -1,0 +1,76 @@
+<div class="form-container">
+  <header class="form-header">
+    <h2>{{ isEditMode ? 'Chỉnh sửa Đăng ký học phần' : 'Thêm mới Đăng ký học phần' }}</h2>
+    <a routerLink="/admin/enrollments" class="btn-back">Quay lại Danh sách</a>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-indicator">Đang tải...</div>
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+  <form [formGroup]="enrollmentForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading">
+    <div class="form-grid">
+      <!-- Student Dropdown -->
+      <div class="form-field">
+        <label for="studentId">Sinh viên</label>
+        <select id="studentId" formControlName="studentId" class="form-control">
+          <option [ngValue]="null" disabled>Chọn sinh viên</option>
+          <option *ngFor="let student of students" [ngValue]="student.studentId">
+            {{ student.fullName }} ({{ student.studentId }})
+          </option>
+        </select>
+      </div>
+
+      <!-- Course Dropdown -->
+      <div class="form-field">
+        <label for="courseId">Môn học</label>
+        <select id="courseId" formControlName="courseId" class="form-control">
+          <option [ngValue]="null" disabled>Chọn môn học</option>
+          <option *ngFor="let course of courses" [ngValue]="course.courseId">
+            {{ course.courseName }} ({{ course.courseId }})
+          </option>
+        </select>
+      </div>
+
+      <!-- Teacher Dropdown -->
+      <div class="form-field">
+        <label for="teacherId">Giảng viên</label>
+        <select id="teacherId" formControlName="teacherId" class="form-control">
+          <option [ngValue]="null">Chưa phân công</option>
+          <option *ngFor="let teacher of teachers" [ngValue]="teacher.teacherId">
+            {{ teacher.fullName }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Semester -->
+      <div class="form-field">
+        <label for="semester">Học kỳ</label>
+        <input type="text" id="semester" formControlName="semester" class="form-control">
+      </div>
+
+      <!-- Year -->
+      <div class="form-field">
+        <label for="year">Năm học</label>
+        <input type="number" id="year" formControlName="year" class="form-control">
+      </div>
+
+      <!-- Status -->
+      <div class="form-field">
+        <label for="status">Trạng thái</label>
+        <!-- THAY ĐỔI: Chuyển từ input sang select -->
+        <select id="status" formControlName="status" class="form-control">
+            <option value="Enrolled">Đã đăng ký (Enrolled)</option>
+            <option value="Completed">Hoàn thành (Completed)</option>
+            <option value="Dropped">Đã hủy (Dropped)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Nút bấm -->
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="enrollmentForm.invalid || isLoading">
+        {{ isEditMode ? 'Cập nhật' : 'Tạo mới' }}
+      </button>
+    </div>
+  </form>
+</div>

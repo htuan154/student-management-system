@@ -9,6 +9,7 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 @Component({
   selector: 'app-score-form',
+  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -60,11 +61,22 @@ export class ScoreFormComponent implements OnInit {
   }
 
   loadEnrollments(): void {
-    // Lấy danh sách đăng ký để hiển thị trong dropdown
-    this.enrollmentService.getPagedEnrollments(1, 1000).subscribe(data => {
-      this.enrollments = data.enrollments;
+    this.isLoading = true;
+    this.enrollmentService.getUnscoredEnrollments().subscribe({
+      next: (data) => {
+        // ✅ THÊM DÒNG NÀY ĐỂ DEBUG
+        console.log('Dữ liệu Enrollment nhận được từ API:', data);
+
+        this.enrollments = data;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.errorMessage = "Không thể tải danh sách đăng ký học phần.";
+        this.isLoading = false;
+      }
     });
   }
+
 
   loadScoreData(id: number): void {
     this.isLoading = true;

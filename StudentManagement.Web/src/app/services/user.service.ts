@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { User } from '../models';
+import { UserUpdateDto } from '../models/dtos/user-update.dto';
+import { UserCreateDto } from '../models/dtos/user-create.dto';
 
 @Injectable({
   providedIn: 'root'
@@ -33,22 +35,23 @@ export class UserService {
 
   /**
    * Tạo một người dùng mới.
-   * @param user Đối tượng User chứa thông tin cần tạo.
+   * @param userDto Đối tượng UserCreateDto chứa thông tin cần tạo.
    * @returns Một Observable chứa đối tượng User đã được tạo.
    */
-  createUser(user: Omit<User, 'userId'>): Observable<User> {
-    return this.http.post<User>(this.apiUrl, user);
+  // SỬA LỖI: Bỏ dấu chấm, đúng phải là "UserCreateDto"
+  createUser(userDto: UserCreateDto): Observable<User> {
+    return this.http.post<User>(this.apiUrl, userDto);
   }
 
   /**
    * Cập nhật thông tin của một người dùng.
    * @param id ID của người dùng cần cập nhật.
-   * @param user Đối tượng User chứa thông tin mới.
+   * @param userDto Đối tượng UserUpdateDto chứa thông tin mới.
    * @returns Một Observable không chứa dữ liệu (hoặc chứa đối tượng đã cập nhật).
    */
-  updateUser(id: string, user: User): Observable<any> {
+  updateUser(id: string, userDto: UserUpdateDto): Observable<any> {
     const url = `${this.apiUrl}/${id}`;
-    return this.http.put(url, user);
+    return this.http.put(url, userDto);
   }
 
   /**

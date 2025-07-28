@@ -72,98 +72,99 @@
           </tr>
            <tr *ngIf="teachers.length === 0">
             <td colspan="4" class="text-center">Không có giảng viên nào được phân công dạy môn này.</td>
-          </tr>
+           </tr>
         </tbody>
       </table>
     </div>
 
     <!-- TẦNG 3: DANH SÁCH SINH VIÊN VÀ NHẬP ĐIỂM -->
-    <!-- TẦNG 3: DANH SÁCH SINH VIÊN VÀ NHẬP ĐIỂM -->
-<div *ngIf="level === 3" class="table-container">
-  <div class="score-actions">
-    <button class="btn btn-primary" (click)="saveAllScores()">
-      <i class="fas fa-save"></i> Lưu tất cả điểm
-    </button>
-  </div>
+    <div *ngIf="level === 3" class="table-container">
+      <div class="score-actions">
 
-  <table class="table score-table">
-    <thead>
-      <tr>
-        <th>STT</th>
-        <th>MSSV</th>
-        <th>Tên SV</th>
-        <th>Điểm quá trình</th>
-        <th>Điểm giữa kỳ</th>
-        <th>Điểm cuối kỳ</th>
-        <th>Tổng kết</th>
-        <th>Đậu / Rớt</th>
-        <th>Hành động</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let score of scores; let i = index">
-        <td>{{ i + 1 }}</td> scoreId: score.scoreId,
-        <td>{{ score.studentId || 'N/A' }}</td>
-        <td>{{ score.fullName || 'N/A' }}</td>
+        <button class="btn btn-success" routerLink="/admin/scores/new">
+          <i class="fas fa-plus"></i> Nhập điểm mới
+        </button>
+        <button class="btn btn-primary" (click)="saveAllScores()">
+          <i class="fas fa-save"></i> Lưu tất cả điểm
+        </button>
+      </div>
 
-        <!-- Input điểm quá trình -->
-        <td>
-          <input
-            type="number"
-            class="score-input"
-            [(ngModel)]="score.processScore"
-            (ngModelChange)="calculateTotalScore(score)"
-            min="0" max="10"
-          />
-        </td>
+      <table class="table score-table">
+        <thead>
+          <tr>
+            <th>STT</th>
+            <th>MSSV</th>
+            <th>Tên SV</th>
+            <th>Điểm quá trình</th>
+            <th>Điểm giữa kỳ</th>
+            <th>Điểm cuối kỳ</th>
+            <th>Tổng kết</th>
+            <th>Đậu / Rớt</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let score of scores; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ score.studentId || 'N/A' }}</td>
+            <td>{{ score.fullName || 'N/A' }}</td>
 
-        <!-- Input điểm giữa kỳ -->
-        <td>
-          <input
-            type="number"
-            class="score-input"
-            [(ngModel)]="score.midtermScore"
-            (ngModelChange)="calculateTotalScore(score)"
-            min="0" max="10"
-          />
-        </td>
+            <!-- Input điểm quá trình -->
+            <td>
+              <input
+                type="number"
+                class="score-input"
+                [(ngModel)]="score.processScore"
+                (ngModelChange)="calculateTotalScore(score)"
+                min="0" max="10"
+              />
+            </td>
 
-        <!-- Input điểm cuối kỳ -->
-        <td>
-          <input
-            type="number"
-            class="score-input"
-            [(ngModel)]="score.finalScore"
-            (ngModelChange)="calculateTotalScore(score)"
-            min="0" max="10"
-          />
-        </td>
+            <!-- Input điểm giữa kỳ -->
+            <td>
+              <input
+                type="number"
+                class="score-input"
+                [(ngModel)]="score.midtermScore"
+                (ngModelChange)="calculateTotalScore(score)"
+                min="0" max="10"
+              />
+            </td>
 
-        <!-- Tổng kết -->
-        <td>
-          <strong>{{ score.totalScore ?? 'N/A' }}</strong>
-        </td>
+            <!-- Input điểm cuối kỳ -->
+            <td>
+              <input
+                type="number"
+                class="score-input"
+                [(ngModel)]="score.finalScore"
+                (ngModelChange)="calculateTotalScore(score)"
+                min="0" max="10"
+              />
+            </td>
 
-        <!-- Passed: Hiển thị tự động -->
-        <td>
-          <span [ngClass]="{ 'text-success': score.isPassed, 'text-danger': score.isPassed === false }">
-            {{ score.isPassed === null ? 'Chưa xét' : (score.isPassed ? 'Đậu' : 'Rớt') }}
-          </span>
-        </td>
+            <!-- Tổng kết -->
+            <td>
+              <strong>{{ score.totalScore ?? 'N/A' }}</strong>
+            </td>
 
-        <!-- Hành động -->
-        <td class="action-buttons">
-          <button (click)="deleteScore(score.scoreId)" class="btn btn-danger">Xóa</button>
-        </td>
-      </tr>
+            <!-- Passed: Hiển thị tự động -->
+            <td>
+              <span [ngClass]="{ 'text-success': score.isPassed, 'text-danger': score.isPassed === false }">
+                {{ score.isPassed === null ? 'Chưa xét' : (score.isPassed ? 'Đậu' : 'Rớt') }}
+              </span>
+            </td>
 
-      <tr *ngIf="scores.length === 0">
-        <td colspan="9" class="text-center">Chưa có sinh viên nào đăng ký lớp học này.</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+            <!-- Hành động -->
+            <td class="action-buttons">
+              <button (click)="deleteScore(score.scoreId)" class="btn btn-danger">Xóa</button>
+            </td>
+          </tr>
 
-
+          <tr *ngIf="scores.length === 0">
+            <td colspan="9" class="text-center">Chưa có sinh viên nào đăng ký lớp học này.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

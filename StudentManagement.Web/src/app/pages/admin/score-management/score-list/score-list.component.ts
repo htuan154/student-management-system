@@ -97,22 +97,31 @@ export class ScoreListComponent implements OnInit {
 
   // --- Tầng 3 ---
   loadScores(courseId: string, teacherId: string): void {
-    this.isLoading = true;
-    this.scoreService.getByTeacherAndSubject(teacherId, courseId).subscribe({
-      next: (scores) => {
-        this.scores = scores.map(s => ({
-          ...s,
-          processScore: s.processScore ?? null,
-          midtermScore: s.midtermScore ?? null,
-          finalScore: s.finalScore ?? null,
-          totalScore: s.totalScore ?? this.calculateTotalScore(s),
-          isPassed: s.isPassed ?? null
-        }));
+  this.isLoading = true;
+  this.scoreService.getByTeacherAndSubject(teacherId, courseId).subscribe({
+    next: (scores) => {
+      this.scores = scores.map(s => ({
+        ...s,
+        processScore: s.processScore ?? null,
+        midtermScore: s.midtermScore ?? null,
+        finalScore: s.finalScore ?? null,
+        totalScore: s.totalScore ?? this.calculateTotalScore(s),
+        isPassed: s.isPassed ?? null
+      }));
+      this.isLoading = false;
+    },
+    error: (err: HttpErrorResponse) => {
+      if (err.status === 404) {
+        // ✅ Không có điểm -> coi như chưa có sinh viên => scores rỗng
+        this.scores = [];
         this.isLoading = false;
-      },
-      error: (err) => this.handleError(err, 'Không thể tải danh sách điểm.')
-    });
-  }
+      } else {
+        this.handleError(err, 'Không thể tải danh sách điểm.');
+      }
+    }
+  });
+}
+
 
   // Tính tổng điểm nếu cần
   calculateTotalScore(score: Score): number {

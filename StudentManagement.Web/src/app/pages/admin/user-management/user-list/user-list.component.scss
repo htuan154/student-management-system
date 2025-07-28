@@ -1,133 +1,134 @@
+
+$primary-color: #007bff;
+$secondary-color: #6c757d;
+$danger-color: #dc3545;
+$background-color: #f4f7fa;
+$white: #fff;
+$text-dark: #2c3e50;
+$border-color: #dee2e6;
+$active-status-color: #198754;
+$inactive-status-color: #6c757d;
+
+// Container chính cho trang
 .management-container {
-  padding: 24px;
-  background-color: #f9fafb;
-  border-radius: 8px;
+  padding: 2rem;
+  background-color: $background-color;
+  min-height: 100vh;
 }
 
+// Header của trang
 .management-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 2rem;
 
   h1 {
-    font-size: 24px;
-    font-weight: bold;
-  }
-
-  .btn-primary {
-    background-color: #007bff;
-    color: white;
-    padding: 8px 16px;
-    font-weight: 600;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-
-    i {
-      margin-right: 6px;
-    }
-
-    &:hover {
-      background-color: #0056b3;
-    }
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: $text-dark;
   }
 }
 
-.loading-indicator,
-.error-message {
-  text-align: center;
-  margin: 16px 0;
-  font-size: 16px;
-}
-
-.error-message {
-  color: #dc3545;
-  font-weight: bold;
-}
-
+// Khung trắng chứa bảng
 .table-container {
-  overflow-x: auto;
-  background-color: white;
-  border-radius: 6px;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+  background-color: $white;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
+// Bảng dữ liệu
 .table {
   width: 100%;
   border-collapse: collapse;
-  text-align: left;
 
-  thead {
-    background-color: #007bff;
-    color: white;
-
-    th {
-      font-weight: 600;
-      padding: 12px 16px;
-    }
+  thead tr {
+    background-color: $primary-color;
+    color: $white;
+    text-align: left;
   }
 
-  tbody {
-    tr {
-      &:hover {
-        background-color: #f1f5f9;
-      }
+  th, td {
+    padding: 1rem 1.25rem;
+    vertical-align: middle;
+  }
 
-      td {
-        padding: 12px 16px;
-        border-bottom: 1px solid #e2e8f0;
-        vertical-align: middle;
-      }
+  tbody tr {
+    border-bottom: 1px solid $border-color;
+    &:last-of-type {
+      border-bottom: none;
     }
-
-    .text-center {
-      text-align: center;
-      padding: 20px 0;
-      font-style: italic;
-      color: #6b7280;
+    &:hover {
+      background-color: #f8f9fa;
     }
   }
+}
+
+// Các nút hành động
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+// Style chung cho các nút
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background-color: $primary-color;
+  color: white;
+  &:hover { background-color: darken($primary-color, 10%); }
+}
+.btn-secondary {
+  background-color: $secondary-color;
+  color: white;
+  &:hover { background-color: darken($secondary-color, 10%); }
+}
+.btn-danger {
+  background-color: $danger-color;
+  color: white;
+  &:hover { background-color: darken($danger-color, 10%); }
+}
+
+// Trạng thái người dùng
+.status-active, .status-inactive {
+  padding: 0.25rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: $white;
 }
 
 .status-active {
-  color: green;
-  font-weight: 600;
+  background-color: $active-status-color;
 }
 
 .status-inactive {
-  color: #dc2626;
-  font-weight: 600;
+  background-color: $inactive-status-color;
 }
 
-.action-buttons {
-  display: flex;
-  gap: 8px;
 
-  .btn {
-    padding: 6px 12px;
-    font-size: 14px;
-    font-weight: 500;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
+// Các chỉ báo và thông báo
+.loading-indicator, .error-message, .text-center {
+  text-align: center;
+  padding: 1.5rem;
+}
 
-    &.btn-secondary {
-      background-color: #6c757d;
-      color: white;
-
-      &:hover {
-        background-color: #5a6268;
-      }
-    }
-
-    &.btn-danger {
-      background-color: #dc3545;
-      color: white;
-
-      &:hover {
-        background-color: #b02a37;
-      }
-    }
-  }
+.error-message {
+  color: $danger-color;
+  background-color: lighten($danger-color, 35%);
+  border: 1px solid lighten($danger-color, 30%);
+  border-radius: 5px;
 }

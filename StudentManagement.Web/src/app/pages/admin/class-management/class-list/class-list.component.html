@@ -1,51 +1,60 @@
-<div class="class-list-container">
-  <h2>Danh sách lớp học</h2>
+<div class="management-container">
+  <!-- Header của trang -->
+  <header class="management-header">
+    <h1>Quản lý Lớp học</h1>
+    <a routerLink="new" class="btn btn-primary">
+      Thêm lớp học
+    </a>
+  </header>
 
-  <div *ngIf="isLoading" class="loading">
-    Đang tải dữ liệu...
+  <!-- Chỉ báo tải dữ liệu -->
+  <div *ngIf="isLoading" class="loading-indicator">
+    <p>Đang tải dữ liệu...</p>
   </div>
 
-  <div *ngIf="errorMessage" class="alert alert-danger">
+  <!-- Thông báo lỗi -->
+  <div *ngIf="errorMessage" class="error-message">
     {{ errorMessage }}
   </div>
 
-  <div class="actions">
-    <a routerLink="/admin/classes/new" class="btn btn-primary">+ Thêm lớp học</a>
-  </div>
-
-  <table *ngIf="!isLoading && classes.length > 0" class="class-table">
-    <thead>
-      <tr>
-        <th>Mã lớp</th>
-        <th>Tên lớp</th>
-        <th>Chuyên ngành</th>
-        <th>Niên khóa</th>
-        <th>Học kỳ</th>
-        <th>Trạng thái</th>
-        <th>Hành động</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let c of classes">
-        <td>{{ c.classId }}</td>
-        <td>{{ c.className }}</td>
-        <td>{{ c.major }}</td>
-        <td>{{ c.academicYear }}</td>
-        <td>{{ c.semester }}</td>
-        <td>
-          <span [ngClass]="{ 'active': c.isActive, 'inactive': !c.isActive }">
-            {{ c.isActive ? 'Đang hoạt động' : 'Ngưng hoạt động' }}
-          </span>
-        </td>
-        <td>
-          <a [routerLink]="['/admin/classes', c.classId]" class="btn btn-sm btn-edit">Sửa</a>
-          <button (click)="deleteClass(c.classId)" class="btn btn-sm btn-delete">Xóa</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
-  <div *ngIf="!isLoading && classes.length === 0" class="no-data">
-    Không có lớp học nào.
+  <!-- Bảng dữ liệu -->
+  <div *ngIf="!isLoading && !errorMessage" class="table-container">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Mã lớp</th>
+          <th>Tên lớp</th>
+          <th>Chuyên ngành</th>
+          <th>Niên khóa</th>
+          <th>Học kỳ</th>
+          <th>Trạng thái</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Lặp qua danh sách lớp học -->
+        <tr *ngFor="let c of classes">
+          <td>{{ c.classId }}</td>
+          <td>{{ c.className }}</td>
+          <td>{{ c.major }}</td>
+          <td>{{ c.academicYear }}</td>
+          <td>{{ c.semester }}</td>
+          <td>
+            <!-- Hiển thị trạng thái với màu sắc tương ứng -->
+            <span [ngClass]="{ 'active-status': c.isActive, 'inactive-status': !c.isActive }">
+              {{ c.isActive ? 'Hoạt động' : 'Ngưng hoạt động' }}
+            </span>
+          </td>
+          <td class="action-buttons">
+            <a [routerLink]="['edit', c.classId]" class="btn btn-secondary">Sửa</a>
+            <button (click)="deleteClass(c.classId)" class="btn btn-danger">Xóa</button>
+          </td>
+        </tr>
+        <!-- Hiển thị khi không có dữ liệu -->
+        <tr *ngIf="classes.length === 0">
+          <td colspan="7" class="text-center">Không có dữ liệu lớp học để hiển thị.</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>
