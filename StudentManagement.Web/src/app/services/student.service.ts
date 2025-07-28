@@ -5,85 +5,110 @@ import { environment } from '../../environments/environment';
 import { Student } from '../models';
 
 /**
- * Interface cho dữ liệu trả về khi phân trang.
- */
+ * Interface cho dữ liệu trả về khi phân trang.
+ */
 export interface PagedStudentResponse {
-  students: Student[];
-  totalCount: number;
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
+  students: Student[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+// Định nghĩa DTO cho dữ liệu Dashboard
+export interface RecentActivityDto {
+  courseName: string;
+  teacherName: string;
+  semester?: string;
+  year?: number;
+  status?: string;
+}
+
+export interface StudentDashboardStatsDto {
+  totalRegisteredCourses: number;
+  completedCourses: number;
+  gpa: number | null;
+  recentActivities: RecentActivityDto[];
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root'
 })
 export class StudentService {
-  private apiUrl = `${environment.apiUrl}/Students`;
+  private apiUrl = `${environment.apiUrl}/Students`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) { }
 
-  /** Lấy tất cả sinh viên */
-  getAllStudents(): Observable<Student[]> {
-    return this.http.get<Student[]>(this.apiUrl);
+  /**
+   * Lấy dữ liệu thống kê cho trang Dashboard của sinh viên.
+   * @param studentId ID của sinh viên.
+   */
+  getDashboardStats(studentId: string): Observable<StudentDashboardStatsDto> {
+    const url = `${this.apiUrl}/${studentId}/dashboard`;
+    return this.http.get<StudentDashboardStatsDto>(url);
   }
 
-  /** Lấy sinh viên theo ID */
-  getStudentById(id: string): Observable<Student> {
-    return this.http.get<Student>(`${this.apiUrl}/${id}`);
-  }
+  /** Lấy tất cả sinh viên */
+  getAllStudents(): Observable<Student[]> {
+    return this.http.get<Student[]>(this.apiUrl);
+  }
 
-  /** Tạo sinh viên mới */
-  createStudent(student: Omit<Student, 'studentId' | 'class' | 'user' | 'enrollments'>): Observable<Student> {
-    return this.http.post<Student>(this.apiUrl, student);
-  }
+  /** Lấy sinh viên theo ID */
+  getStudentById(id: string): Observable<Student> {
+    return this.http.get<Student>(`${this.apiUrl}/${id}`);
+  }
 
-  /** Cập nhật thông tin sinh viên */
-  updateStudent(id: string, studentData: Partial<Student>): Observable<Student> {
-    return this.http.put<Student>(`${this.apiUrl}/${id}`, studentData);
-  }
+  /** Tạo sinh viên mới */
+  createStudent(student: Omit<Student, 'studentId' | 'class' | 'user' | 'enrollments'>): Observable<Student> {
+    return this.http.post<Student>(this.apiUrl, student);
+  }
 
-  /** Xóa sinh viên */
-  deleteStudent(id: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`);
-  }
+  /** Cập nhật thông tin sinh viên */
+  updateStudent(id: string, studentData: Partial<Student>): Observable<Student> {
+    return this.http.put<Student>(`${this.apiUrl}/${id}`, studentData);
+  }
 
-  /** Lấy danh sách sinh viên theo lớp */
-  getStudentsByClass(classId: string): Observable<Student[]> {
-    return this.http.get<Student[]>(`${this.apiUrl}/class/${classId}`);
-  }
+  /** Xóa sinh viên */
+  deleteStudent(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
 
-  /** Tìm kiếm sinh viên theo tên hoặc mã số */
-  searchStudents(searchTerm: string): Observable<Student[]> {
-    const params = new HttpParams().set('searchTerm', searchTerm);
-    return this.http.get<Student[]>(`${this.apiUrl}/search`, { params });
-  }
+  /** Lấy danh sách sinh viên theo lớp */
+  getStudentsByClass(classId: string): Observable<Student[]> {
+    return this.http.get<Student[]>(`${this.apiUrl}/class/${classId}`);
+  }
 
-  /** Lấy danh sách sinh viên được phân trang */
-  getPagedStudents(pageNumber: number, pageSize: number, searchTerm?: string): Observable<PagedStudentResponse> {
-    let params = new HttpParams()
-      .set('pageNumber', pageNumber.toString())
-      .set('pageSize', pageSize.toString());
+  /** Tìm kiếm sinh viên theo tên hoặc mã số */
+  searchStudents(searchTerm: string): Observable<Student[]> {
+    const params = new HttpParams().set('searchTerm', searchTerm);
+    return this.http.get<Student[]>(`${this.apiUrl}/search`, { params });
+  }
 
-    if (searchTerm) {
-      params = params.set('searchTerm', searchTerm);
-    }
+  /** Lấy danh sách sinh viên được phân trang */
+  getPagedStudents(pageNumber: number, pageSize: number, searchTerm?: string): Observable<PagedStudentResponse> {
+    let params = new HttpParams()
+      .set('pageNumber', pageNumber.toString())
+      .set('pageSize', pageSize.toString());
 
-    return this.http.get<PagedStudentResponse>(`${this.apiUrl}/paged`, { params });
-  }
+    if (searchTerm) {
+      params = params.set('searchTerm', searchTerm);
+    }
 
-  /** Kiểm tra email đã tồn tại hay chưa */
-  checkEmailExists(email: string, excludeStudentId?: string): Observable<boolean> {
-    let params = new HttpParams().set('email', email);
-    if (excludeStudentId) {
-      params = params.set('excludeStudentId', excludeStudentId);
-    }
-    return this.http.get<boolean>(`${this.apiUrl}/check-email`, { params });
-  }
+    return this.http.get<PagedStudentResponse>(`${this.apiUrl}/paged`, { params });
+  }
 
-  /** Kiểm tra mã sinh viên đã tồn tại hay chưa */
-  checkStudentIdExists(studentId: string): Observable<boolean> {
-    const params = new HttpParams().set('studentId', studentId);
-    return this.http.get<boolean>(`${this.apiUrl}/check-studentid`, { params });
-  }
+  /** Kiểm tra email đã tồn tại hay chưa */
+  checkEmailExists(email: string, excludeStudentId?: string): Observable<boolean> {
+    let params = new HttpParams().set('email', email);
+    if (excludeStudentId) {
+      params = params.set('excludeStudentId', excludeStudentId);
+    }
+    return this.http.get<boolean>(`${this.apiUrl}/check-email`, { params });
+  }
+
+  /** Kiểm tra mã sinh viên đã tồn tại hay chưa */
+  checkStudentIdExists(studentId: string): Observable<boolean> {
+    const params = new HttpParams().set('studentId', studentId);
+    return this.http.get<boolean>(`${this.apiUrl}/check-studentid`, { params });
+  }
 }

@@ -173,7 +173,11 @@ namespace StudentManagementSystem.Services
             var (enrollments, totalCount) = await _enrollmentRepository.GetPagedAsync(pageNumber, pageSize, searchTerm);
             return (enrollments.Select(MapToDto), totalCount);
         }
-
+        public async Task<IEnumerable<EnrollmentDto>> GetUnscoredAsync()
+        {
+            var enrollments = await _enrollmentRepository.GetUnscoredAsync();
+            return enrollments.Select(MapToDto); // Giả sử bạn đã có hàm MapToDto
+        }
         private static EnrollmentDto MapToDto(Enrollment e) => new EnrollmentDto
         {
             EnrollmentId = e.EnrollmentId,

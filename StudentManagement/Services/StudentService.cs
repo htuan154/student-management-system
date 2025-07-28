@@ -3,25 +3,81 @@ using StudentManagementSystem.Data.Interfaces;
 using StudentManagementSystem.DTOs.Student;
 using StudentManagementSystem.Models;
 using StudentManagementSystem.Services.Interfaces;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace StudentManagementSystem.Services
 {
     public class StudentService : IStudentService
     {
         private readonly IStudentRepository _studentRepository;
+        private readonly IEnrollmentRepository _enrollmentRepository;
+        private readonly IScoreRepository _scoreRepository;
         private readonly ICacheService _cacheService;
         private readonly ILogger<StudentService> _logger;
 
         public StudentService(
             IStudentRepository studentRepository,
+            IEnrollmentRepository enrollmentRepository,
+            IScoreRepository scoreRepository,
             ICacheService cacheService,
             ILogger<StudentService> logger)
         {
             _studentRepository = studentRepository;
+            _enrollmentRepository = enrollmentRepository;
+            _scoreRepository = scoreRepository;
             _cacheService = cacheService;
             _logger = logger;
         }
 
+        public async Task<StudentDashboardStatsDto> GetDashboardStatsAsync(string studentId)
+        {
+            var enrollments = await _enrollmentRepository.GetByStudentIdAsync(studentId);
+            if (enrollments == null || !enrollments.Any())
+            {
+                return new StudentDashboardStatsDto();
+            }
+
+            var totalRegisteredCourses = enrollments.Count();
+            var completedCourses = enrollments.Count(e => e.Status == "Completed");
+            var scores = await _scoreRepository.GetByStudentIdAsync(studentId);
+            double? gpa = null;
+
+            if (scores != null && scores.Any())
+            {
+                // ✅ SỬA LỖI: Sử dụng overload của Average() cho kiểu nullable để code an toàn hơn
+                // Hàm Average này sẽ tự động bỏ qua các giá trị null
+                var avgDecimal = scores.Average(s => s.TotalScore);
+                if (avgDecimal.HasValue)
+                {
+                    gpa = Math.Round((double)avgDecimal.Value, 2);
+                }
+            }
+
+            var recentActivities = enrollments
+                .OrderByDescending(e => e.Year)
+                .ThenByDescending(e => e.Semester)
+                .Take(5)
+                .Select(e => new RecentActivityDto
+                {
+                    CourseName = e.Course?.CourseName ?? "N/A",
+                    TeacherName = e.Teacher?.FullName ?? "Chưa phân công",
+                    Semester = e.Semester,
+                    Year = e.Year,
+                    Status = e.Status
+                })
+                .ToList();
+
+            return new StudentDashboardStatsDto
+            {
+                TotalRegisteredCourses = totalRegisteredCourses,
+                CompletedCourses = completedCourses,
+                Gpa = gpa,
+                RecentActivities = recentActivities
+            };
+        }
+
+        #region Các hàm đã có
         public async Task<IEnumerable<StudentResponseDto>> GetAllStudentsAsync()
         {
             _logger.LogInformation("Attempting to get all students.");
@@ -33,11 +89,7 @@ namespace StudentManagementSystem.Services
         public async Task<StudentResponseDto?> GetStudentByIdAsync(string studentId)
         {
             _logger.LogInformation("Attempting to get student with ID: {StudentId}", studentId);
-
-            // 1. Define a unique cache key
             var cacheKey = $"student:{studentId}";
-
-            // 2. Try to get data from cache
             var cachedStudent = await _cacheService.GetDataAsync<StudentResponseDto>(cacheKey);
             if (cachedStudent != null)
             {
@@ -46,14 +98,10 @@ namespace StudentManagementSystem.Services
             }
 
             _logger.LogInformation("Student with ID {StudentId} not found in cache. Fetching from database.", studentId);
-
-            // 3. If not in cache, get from database
             var student = await _studentRepository.GetStudentWithClassAsync(studentId);
             if (student == null) return null;
 
             var studentDto = MapToResponseDto(student);
-
-            // 4. Set data to cache for next time
             var expirationTime = DateTimeOffset.Now.AddMinutes(5);
             await _cacheService.SetDataAsync(cacheKey, studentDto, expirationTime);
 
@@ -79,8 +127,7 @@ namespace StudentManagementSystem.Services
             var student = MapToStudent(createStudentDto);
             var createdStudent = await _studentRepository.AddAsync(student);
 
-            // Invalidate any cached lists of students, as they are now outdated
-            await _cacheService.RemoveDataAsync("paged_students:*"); // Example for removing paged results
+            await _cacheService.RemoveDataAsync("paged_students:*");
 
             _logger.LogInformation("Student with ID {StudentId} created successfully.", createdStudent.StudentId);
 
@@ -114,7 +161,6 @@ namespace StudentManagementSystem.Services
 
             await _studentRepository.UpdateAsync(student);
 
-            // Remove the specific student's cache entry as it is now outdated
             var cacheKey = $"student:{studentId}";
             await _cacheService.RemoveDataAsync(cacheKey);
 
@@ -137,7 +183,6 @@ namespace StudentManagementSystem.Services
 
             await _studentRepository.DeleteAsync(student);
 
-            // Remove the specific student's cache entry
             var cacheKey = $"student:{studentId}";
             await _cacheService.RemoveDataAsync(cacheKey);
 
@@ -145,8 +190,6 @@ namespace StudentManagementSystem.Services
 
             return true;
         }
-
-        // Other methods remain largely the same, but can also have logging/caching added if needed
 
         public async Task<IEnumerable<StudentResponseDto>> GetStudentsByClassIdAsync(string classId)
         {
@@ -181,7 +224,6 @@ namespace StudentManagementSystem.Services
             return await _studentRepository.IsStudentIdExistsAsync(studentId);
         }
 
-
         private StudentResponseDto MapToResponseDto(Student student)
         {
             return new StudentResponseDto
@@ -210,5 +252,6 @@ namespace StudentManagementSystem.Services
                 ClassId = dto.ClassId
             };
         }
+        #endregion
     }
 }

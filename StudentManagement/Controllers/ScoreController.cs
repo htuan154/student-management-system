@@ -52,8 +52,8 @@ namespace StudentManagementSystem.Controllers
                 return BadRequest("teacherId và courseId không được để trống.");
 
             var scores = await _scoreService.GetByTeacherAndSubjectAsync(teacherId, courseId);
-            if (scores == null || !scores.Any())
-                return NotFound("Không tìm thấy điểm cho giáo viên và môn học đã chỉ định.");
+            // if (scores == null || !scores.Any())
+            //     return NotFound("Không tìm thấy điểm cho giáo viên và môn học đã chỉ định.");
 
             return Ok(scores);
         }

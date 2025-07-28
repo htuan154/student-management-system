@@ -5,13 +5,14 @@ import { EnrollmentService } from '../../../../services/enrollment.service';
 import { StudentService } from '../../../../services/student.service';
 import { CourseService } from '../../../../services/course.service';
 import { TeacherService } from '../../../../services/teacher.service';
-import { Student, Course, Teacher } from '../../../../models';
+import { Student, Course, Teacher, Enrollment } from '../../../../models';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-enrollment-form',
+  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -64,7 +65,7 @@ export class EnrollmentFormComponent implements OnInit {
       courseId: [{ value: '', disabled: this.isEditMode }, [Validators.required]],
       teacherId: [null],
       semester: ['', [Validators.maxLength(20)]],
-      year: [null],
+      year: [null, [Validators.required, Validators.min(1900), Validators.max(2100)]],
       status: ['Enrolled', [Validators.required]]
     });
   }
@@ -91,15 +92,15 @@ export class EnrollmentFormComponent implements OnInit {
 
   onSubmit(): void {
     if (this.enrollmentForm.invalid) {
+      this.enrollmentForm.markAllAsTouched();
       return;
     }
 
     this.isLoading = true;
-    const formData = this.enrollmentForm.getRawValue();
 
     const operation = this.isEditMode
-      ? this.enrollmentService.updateEnrollment(this.enrollmentId!, formData)
-      : this.enrollmentService.createEnrollment(formData);
+      ? this.handleUpdate()
+      : this.handleCreate();
 
     operation.subscribe({
       next: () => {
@@ -110,5 +111,20 @@ export class EnrollmentFormComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  private handleCreate() {
+    // Dữ liệu cho việc tạo mới được lấy trực tiếp từ form
+    const createData = this.enrollmentForm.getRawValue();
+    return this.enrollmentService.createEnrollment(createData);
+  }
+
+  private handleUpdate() {
+    // ✅ SỬA LỖI: Tạo một đối tượng DTO hoàn chỉnh cho việc cập nhật
+    const updateData = {
+      ...this.enrollmentForm.getRawValue(),
+      enrollmentId: this.enrollmentId! // Thêm enrollmentId vào đối tượng
+    };
+    return this.enrollmentService.updateEnrollment(this.enrollmentId!, updateData);
   }
 }

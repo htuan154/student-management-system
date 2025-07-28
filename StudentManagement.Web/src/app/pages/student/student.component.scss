@@ -1,0 +1,159 @@
+// Biến màu để dễ dàng tùy chỉnh
+$sidebar-bg: #2c3e50;
+$sidebar-text-color: #ecf0f1;
+$sidebar-active-bg: #3498db;
+$content-bg: #f4f7fa;
+$header-border: #e0e0e0;
+
+.student-panel-container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+// Sidebar - Thanh điều hướng
+.sidebar {
+  width: 260px;
+  background-color: $sidebar-bg;
+  color: $sidebar-text-color;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left 0.3s ease-in-out;
+  flex-shrink: 0;
+
+  .sidebar-header {
+    padding: 1.5rem;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .user-info {
+    padding: 1rem 1.5rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+    h4 {
+      margin: 0;
+      font-weight: 500;
+    }
+  }
+
+  .sidebar-nav {
+    flex-grow: 1;
+    margin-top: 1rem;
+
+    a {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.9rem 1.5rem;
+      color: $sidebar-text-color;
+      text-decoration: none;
+      transition: background-color 0.2s;
+      border-left: 4px solid transparent;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+      }
+
+      &.active {
+        background-color: $sidebar-active-bg;
+        border-left-color: #ffffff;
+        font-weight: 600;
+      }
+
+      i {
+        width: 20px;
+        text-align: center;
+      }
+    }
+  }
+
+  .sidebar-footer {
+    padding: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .logout-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid $sidebar-text-color;
+    color: $sidebar-text-color;
+    padding: 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    &:hover {
+      background-color: $sidebar-text-color;
+      color: $sidebar-bg;
+    }
+  }
+}
+
+// Khu vực nội dung chính
+.main-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: $content-bg;
+  overflow-y: auto;
+}
+
+.main-header {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background-color: #fff;
+  border-bottom: 1px solid $header-border;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  .menu-toggle {
+    display: none; // Ẩn trên màn hình lớn
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    margin-right: 1rem;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+  }
+}
+
+.content-area {
+  padding: 1.5rem;
+}
+
+// Responsive cho thiết bị di động
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: -260px;
+    top: 0;
+    height: 100%;
+    z-index: 1000;
+    transition: left 0.3s ease-in-out;
+  }
+
+  .student-panel-container.sidebar-open .sidebar {
+    left: 0;
+  }
+
+  .main-header .menu-toggle {
+    display: block; // Hiện trên màn hình nhỏ
+  }
+}

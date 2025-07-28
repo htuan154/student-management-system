@@ -67,10 +67,10 @@ export class LoginComponent implements OnInit {
     const role = this.authService.getUserRole();
     console.log('Role from token:', role);
     if (role === 'Admin' || role === 'SuperAdmin') {
-      this.router.navigate(['/admin/users']);
+      this.router.navigate(['/admin/dashboard']);
 
     } else if (role === 'Student') {
-      this.router.navigate(['/student']);
+      this.router.navigate(['/student/dashboard']);
     } else {
       this.router.navigate(['/']);
     }

@@ -48,5 +48,16 @@ namespace StudentManagementSystem.Data.Repositories
 
             return (enrollments, totalCount);
         }
+        public async Task<IEnumerable<Enrollment>> GetUnscoredAsync()
+        {
+            return await _context.Enrollments
+                .Include(e => e.Student)
+                .Include(e => e.Course)
+                .Where(e => !_context.Scores.Any(s =>
+                    s.EnrollmentId == e.EnrollmentId &&
+                    (s.ProcessScore != null || s.MidtermScore != null || s.FinalScore != null)
+                ))
+                .ToListAsync();
+        }
     }
 }

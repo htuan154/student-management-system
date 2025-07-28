@@ -1,0 +1,56 @@
+<div class="management-container">
+  <header class="management-header">
+    <h1>Kết quả học tập</h1>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-indicator">
+    <p>Đang tải dữ liệu điểm...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage" class="table-container">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Mã Môn học</th>
+          <th>Tên Môn học</th>
+          <th>Điểm quá trình</th>
+          <th>Điểm giữa kỳ</th>
+          <th>Điểm cuối kỳ</th>
+          <th>Tổng kết</th>
+          <th>Trạng thái</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let enrollment of enrollmentsWithScores">
+          <td>{{ enrollment.course?.courseId || 'N/A' }}</td>
+          <td>{{ enrollment.course?.courseName || 'N/A' }}</td>
+          <td>{{ enrollment.score?.processScore ?? 'Chưa có' }}</td>
+          <td>{{ enrollment.score?.midtermScore ?? 'Chưa có' }}</td>
+          <td>{{ enrollment.score?.finalScore ?? 'Chưa có' }}</td>
+          <td>
+            <strong>{{ enrollment.score?.totalScore ?? 'N/A' }}</strong>
+          </td>
+          <td>
+            <span *ngIf="enrollment.score?.isPassed !== null"
+                  [ngClass]="{
+                    'status-passed': enrollment.score?.isPassed,
+                    'status-failed': !enrollment.score?.isPassed
+                  }">
+              {{ enrollment.score?.isPassed ? 'Đậu' : 'Rớt' }}
+            </span>
+            <span *ngIf="enrollment.score?.isPassed === null">
+              Chưa xét
+            </span>
+          </td>
+        </tr>
+        <tr *ngIf="enrollmentsWithScores.length === 0">
+          <td colspan="7" class="text-center">Bạn chưa có điểm cho môn học nào.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

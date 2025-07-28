@@ -20,7 +20,6 @@ namespace StudentManagementSystem.Services
         private readonly IConfiguration _config;
         private readonly ILogger<AuthService> _logger;
 
-
         public AuthService(IUserService userService, IConfiguration config, ILogger<AuthService> logger)
         {
             _userService = userService;
@@ -52,7 +51,6 @@ namespace StudentManagementSystem.Services
                 throw new UnauthorizedAccessException("Invalid username or password.");
             }
 
-
             var accessToken = GenerateJwtToken(user);
             var refreshToken = GenerateRefreshToken();
 
@@ -62,8 +60,6 @@ namespace StudentManagementSystem.Services
             _logger.LogInformation("User {Username} logged in successfully.", dto.Username);
             return (accessToken, refreshToken);
         }
-
-
 
         public async Task<(string accessToken, string refreshToken)> RefreshTokenAsync(string refreshToken)
         {
@@ -77,10 +73,8 @@ namespace StudentManagementSystem.Services
                 throw new UnauthorizedAccessException("Invalid or expired refresh token.");
             }
 
-
             var newAccessToken = GenerateJwtToken(user);
             var newRefreshToken = GenerateRefreshToken();
-
 
             var refreshTokenExpiry = DateTime.UtcNow.AddDays(int.Parse(_config["Jwt:RefreshTokenExpiresInDays"]!));
             await _userService.UpdateRefreshTokenAsync(user.UserId, newRefreshToken, refreshTokenExpiry);
@@ -91,14 +85,18 @@ namespace StudentManagementSystem.Services
 
         private string GenerateJwtToken(UserDto user)
         {
-
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.UserId),
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Role, user.RoleName)
-
             };
+
+            
+            if (!string.IsNullOrEmpty(user.StudentId))
+            {
+                claims.Add(new Claim("studentId", user.StudentId));
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -116,7 +114,6 @@ namespace StudentManagementSystem.Services
 
         private string GenerateRefreshToken()
         {
-
             var randomBytes = new byte[64];
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomBytes);
