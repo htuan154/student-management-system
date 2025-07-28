@@ -2,58 +2,50 @@
   <h2>{{ isEditMode ? 'Cập nhật lớp học' : 'Thêm lớp học mới' }}</h2>
 
   <form [formGroup]="classForm" (ngSubmit)="onSubmit()">
-    <div class="form-group">
-      <label for="classId">Mã lớp</label>
-      <input id="classId" class="form-control" formControlName="classId" [readonly]="isEditMode" />
-      <div class="error" *ngIf="classForm.get('classId')?.invalid && classForm.get('classId')?.touched">
-        Mã lớp là bắt buộc và tối đa 10 ký tự.
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="classId">Mã lớp</label>
+        <input id="classId" formControlName="classId" [readonly]="isEditMode" />
+      </div>
+
+      <div class="form-group">
+        <label for="className">Tên lớp</label>
+        <input id="className" formControlName="className" />
+      </div>
+
+      <div class="form-group">
+        <label for="major">Chuyên ngành</label>
+        <input id="major" formControlName="major" />
+      </div>
+
+      <div class="form-group">
+        <label for="academicYear">Niên khóa</label>
+        <input id="academicYear" formControlName="academicYear" />
+      </div>
+
+      <div class="form-group">
+        <label for="semester">Học kỳ</label>
+        <input id="semester" type="number" formControlName="semester" />
+      </div>
+
+      <div class="form-group">
+        <label for="isActive">Trạng thái</label>
+        <select id="isActive" formControlName="isActive">
+          <option [value]="true">Hoạt động</option>
+          <option [value]="false">Không hoạt động</option>
+        </select>
       </div>
     </div>
 
-    <div class="form-group">
-      <label for="className">Tên lớp</label>
-      <input id="className" class="form-control" formControlName="className" />
-      <div class="error" *ngIf="classForm.get('className')?.invalid && classForm.get('className')?.touched">
-        Tên lớp là bắt buộc và tối đa 50 ký tự.
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="major">Chuyên ngành</label>
-      <input id="major" class="form-control" formControlName="major" />
-      <div class="error" *ngIf="classForm.get('major')?.invalid && classForm.get('major')?.touched">
-        Chuyên ngành là bắt buộc và tối đa 100 ký tự.
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="academicYear">Niên khóa</label>
-      <input id="academicYear" class="form-control" formControlName="academicYear" />
-      <div class="error" *ngIf="classForm.get('academicYear')?.invalid && classForm.get('academicYear')?.touched">
-        Niên khóa tối đa 20 ký tự.
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="semester">Học kỳ</label>
-      <input id="semester" type="number" class="form-control" formControlName="semester" />
-    </div>
-
-    <div class="form-group checkbox-group">
-      <input id="isActive" type="checkbox" formControlName="isActive" />
-      <label for="isActive">Đang hoạt động</label>
-    </div>
-
-    <div *ngIf="errorMessage" class="alert alert-danger">
+    <div *ngIf="errorMessage" class="alert">
       {{ errorMessage }}
     </div>
 
     <div class="form-actions">
-      <button class="btn btn-primary" type="submit" [disabled]="classForm.invalid || isLoading">
+      <button type="submit" [disabled]="classForm.invalid || isLoading">
         {{ isEditMode ? 'Cập nhật' : 'Thêm mới' }}
       </button>
-      <button class="btn btn-secondary" type="button" (click)="goBack()">Hủy</button>
-
+      <button type="button" (click)="goBack()">Hủy</button>
     </div>
   </form>
 </div>

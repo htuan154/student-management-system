@@ -91,4 +91,12 @@ export class EnrollmentService {
   deleteEnrollment(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
+  /**
+ * Lấy danh sách các lượt đăng ký chưa được chấm điểm.
+ * @returns Một Observable chứa mảng các EnrollmentDto.
+ */
+getUnscoredEnrollments(): Observable<Enrollment[]> {
+  const url = `${this.apiUrl}/unscored`;
+  return this.http.get<Enrollment[]>(url);
+}
 }

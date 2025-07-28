@@ -12,8 +12,9 @@
       <label for="enrollmentId">Lượt đăng ký (Sinh viên - Môn học)</label>
       <select id="enrollmentId" formControlName="enrollmentId" class="form-control">
         <option [ngValue]="null" disabled>Chọn một lượt đăng ký</option>
+
         <option *ngFor="let enrollment of enrollments" [value]="enrollment.enrollmentId">
-          {{ enrollment.student?.fullName }} - {{ enrollment.course?.courseName }}
+          {{ enrollment.studentId }} - {{ enrollment.courseId }}
         </option>
       </select>
     </div>

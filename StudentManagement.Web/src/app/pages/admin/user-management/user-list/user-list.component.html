@@ -1,10 +1,10 @@
 <div class="management-container">
+  <!-- Header của trang -->
   <header class="management-header">
     <h1>Quản lý Người dùng</h1>
-    <!-- Nút này sẽ điều hướng đến trang form để tạo mới -->
-    <button class="btn btn-primary" routerLink="new">
+    <a routerLink="new" class="btn btn-primary">
       <i class="fas fa-plus"></i> Thêm mới Người dùng
-    </button>
+    </a>
   </header>
 
   <!-- Trạng thái đang tải -->
@@ -19,7 +19,7 @@
 
   <!-- Bảng dữ liệu -->
   <div *ngIf="!isLoading && !errorMessage" class="table-container">
-    <table class="table table-hover">
+    <table class="table">
       <thead>
         <tr>
           <th>Mã Người dùng</th>
@@ -31,25 +31,25 @@
         </tr>
       </thead>
       <tbody>
+        <!-- Lặp qua danh sách người dùng -->
         <tr *ngFor="let user of users">
           <td>{{ user.userId }}</td>
           <td>{{ user.username }}</td>
           <td>{{ user.email }}</td>
-          <td>{{ user.role?.roleName || 'Chưa có' }}</td>
+          <td>{{ user.roleId|| 'Chưa có' }}</td>
           <td>
             <span [ngClass]="user.isActive ? 'status-active' : 'status-inactive'">
               {{ user.isActive ? 'Hoạt động' : 'Vô hiệu hóa' }}
             </span>
           </td>
           <td class="action-buttons">
-            <button [routerLink]="['edit', user.userId]" class="btn btn-secondary">
-              Edit
-            </button>
+            <a [routerLink]="['edit', user.userId]" class="btn btn-secondary">
+              <i class="fas fa-edit"></i> Sửa
+            </a>
             <button (click)="deleteUser(user.userId)" class="btn btn-danger">
-              Delete
+              <i class="fas fa-trash-alt"></i> Xóa
             </button>
           </td>
-
         </tr>
         <!-- Trường hợp không có dữ liệu -->
         <tr *ngIf="users.length === 0">

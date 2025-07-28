@@ -1,0 +1,59 @@
+<div class="management-container">
+  <!-- Header -->
+  <header class="management-header">
+    <h1>Quản lý Đăng ký học phần</h1>
+    <a routerLink="new" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Thêm mới Đăng ký
+    </a>
+  </header>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-indicator">
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Bảng dữ liệu -->
+  <div *ngIf="!isLoading && !errorMessage" class="table-container">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Mã Sinh viên</th>
+          <th>Mã Môn học</th>
+          <th>Giảng viên</th>
+          <th>Học kỳ</th>
+          <th>Năm học</th>
+          <th>Trạng thái</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let enrollment of enrollments">
+          <td>{{ enrollment.studentId || 'N/A' }}</td>
+          <td>{{ enrollment.courseId || 'N/A' }}</td>
+          <td>{{ enrollment.teacherId|| 'Chưa phân công' }}</td>
+          <td>{{ enrollment.semester }}</td>
+          <td>{{ enrollment.year }}</td>
+          <td>
+            <span class="status-enrolled">{{ enrollment.status }}</span>
+          </td>
+          <td class="action-buttons">
+            <a [routerLink]="['edit', enrollment.enrollmentId]" class="btn btn-secondary">
+              <i class="fas fa-edit"></i> Sửa
+            </a>
+            <button (click)="deleteEnrollment(enrollment.enrollmentId)" class="btn btn-danger">
+              <i class="fas fa-trash-alt"></i> Xóa
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="enrollments.length === 0">
+          <td colspan="7" class="text-center">Không có dữ liệu đăng ký học phần.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

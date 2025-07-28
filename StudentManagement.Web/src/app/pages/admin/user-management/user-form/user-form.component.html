@@ -9,10 +9,57 @@
 
   <form [formGroup]="userForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading">
     <div class="form-grid">
-      <!-- User ID -->
+      <!-- Link Type Selector -->
+      <div class="form-group">
+        <label for="linkType">Loại liên kết</label>
+        <select id="linkType" formControlName="linkType" class="form-control">
+          <option value="none">Tự nhập mã</option>
+          <option value="student">Liên kết tới Sinh viên</option>
+          <option value="employee">Liên kết tới Nhân viên</option>
+          <option value="teacher">Liên kết tới Giáo viên</option>
+        </select>
+      </div>
+
+      <!-- User ID (hiển thị hoặc là combobox) -->
       <div class="form-group">
         <label for="userId">Mã Người dùng</label>
-        <input id="userId" type="text" formControlName="userId" class="form-control">
+
+        <!-- Hiển thị input text khi không liên kết hoặc đang sửa -->
+        <input *ngIf="userForm.get('linkType')?.value === 'none' || isEditMode"
+               id="userId"
+               type="text"
+               formControlName="userId"
+               class="form-control">
+
+        <!-- Hiển thị combobox Sinh viên -->
+        <select *ngIf="userForm.get('linkType')?.value === 'student' && !isEditMode"
+                formControlName="studentId"
+                class="form-control">
+          <option [ngValue]="null">-- Chọn sinh viên chưa có tài khoản --</option>
+          <option *ngFor="let student of availableStudents" [value]="student.studentId">
+            {{ student.fullName }} ({{ student.studentId }})
+          </option>
+        </select>
+
+        <!-- Hiển thị combobox Nhân viên -->
+        <select *ngIf="userForm.get('linkType')?.value === 'employee' && !isEditMode"
+                formControlName="employeeId"
+                class="form-control">
+          <option [ngValue]="null">-- Chọn nhân viên chưa có tài khoản --</option>
+          <option *ngFor="let employee of availableEmployees" [value]="employee.employeeId">
+            {{ employee.fullName }} ({{ employee.employeeId }})
+          </option>
+        </select>
+
+        <!-- Hiển thị combobox Giáo viên -->
+        <select *ngIf="userForm.get('linkType')?.value === 'teacher' && !isEditMode"
+                formControlName="teacherId"
+                class="form-control">
+          <option [ngValue]="null">-- Chọn giáo viên chưa có tài khoản --</option>
+          <option *ngFor="let teacher of availableTeachers" [value]="teacher.teacherId">
+            {{ teacher.fullName }} ({{ teacher.teacherId }})
+          </option>
+        </select>
       </div>
 
       <!-- Username -->
@@ -29,8 +76,8 @@
 
       <!-- Password -->
       <div class="form-group">
-        <label for="passwordHash">Mật khẩu</label>
-        <input id="passwordHash" type="password" formControlName="passwordHash" class="form-control" [placeholder]="isEditMode ? 'Để trống để giữ mật khẩu cũ' : ''">
+        <label for="password">Mật khẩu</label>
+        <input id="password" type="password" formControlName="password" class="form-control" [placeholder]="isEditMode ? 'Để trống để giữ mật khẩu cũ' : ''">
       </div>
 
       <!-- Role -->
@@ -48,50 +95,6 @@
         <select id="isActive" formControlName="isActive" class="form-control">
           <option [value]="true">Hoạt động</option>
           <option [value]="false">Vô hiệu hóa</option>
-        </select>
-      </div>
-
-      <!-- Link Type Selector -->
-      <div class="form-group">
-        <label for="linkType">Loại liên kết</label>
-        <select id="linkType" formControlName="linkType" class="form-control">
-          <option value="none">Không có</option>
-          <option value="student">Liên kết tới Sinh viên</option>
-          <option value="employee">Liên kết tới Nhân viên</option>
-          <option value="teacher">Liên kết tới Giáo viên</option>
-        </select>
-      </div>
-
-      <!-- Student Selector (Conditional) -->
-      <div class="form-group" *ngIf="userForm.get('linkType')?.value === 'student'">
-        <label for="studentId">Chọn Sinh viên</label>
-        <select id="studentId" formControlName="studentId" class="form-control">
-          <option [ngValue]="null">-- Chọn một sinh viên --</option>
-          <option *ngFor="let student of students" [value]="student.studentId">
-            {{ student.fullName }} ({{ student.studentId }})
-          </option>
-        </select>
-      </div>
-
-      <!-- Employee Selector (Conditional) -->
-      <div class="form-group" *ngIf="userForm.get('linkType')?.value === 'employee'">
-        <label for="employeeId">Chọn Nhân viên</label>
-        <select id="employeeId" formControlName="employeeId" class="form-control">
-          <option [ngValue]="null">-- Chọn một nhân viên --</option>
-          <option *ngFor="let employee of employees" [value]="employee.employeeId">
-            {{ employee.fullName }} ({{ employee.employeeId }})
-          </option>
-        </select>
-      </div>
-
-      <!-- Teacher Selector (Conditional) -->
-      <div class="form-group" *ngIf="userForm.get('linkType')?.value === 'teacher'">
-        <label for="teacherId">Chọn Giáo viên</label>
-        <select id="teacherId" formControlName="teacherId" class="form-control">
-          <option [ngValue]="null">-- Chọn một giáo viên --</option>
-          <option *ngFor="let teacher of teachers" [value]="teacher.teacherId">
-            {{ teacher.fullName }} ({{ teacher.teacherId }})
-          </option>
         </select>
       </div>
     </div>
