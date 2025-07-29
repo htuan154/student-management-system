@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
+
 import { Enrollment } from '../../../models';
 import { EnrollmentService } from '../../../services/enrollment.service';
 import { AuthService } from '../../../services/auth.service';
@@ -18,7 +19,7 @@ export class StudentDashboardComponent implements OnInit {
   errorMessage: string | null = null;
   studentId: string | null = null;
 
-  // Dữ liệu thống kê
+  // Thống kê
   totalCourses = 0;
   completedCourses = 0;
   averageScore: number | string = 'Chưa có';
@@ -44,7 +45,7 @@ export class StudentDashboardComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = null;
 
-    this.enrollmentService.getEnrollmentsByStudentId(this.studentId!).subscribe({
+    this.enrollmentService.getStudentEnrollmentsWithScores(this.studentId!).subscribe({
       next: (enrollments) => {
         this.processEnrollmentData(enrollments);
         this.isLoading = false;
@@ -57,29 +58,52 @@ export class StudentDashboardComponent implements OnInit {
     });
   }
 
-  /**
-   * Xử lý dữ liệu đăng ký thô để tính toán các số liệu thống kê.
-   */
-  private processEnrollmentData(enrollments: Enrollment[]): void {
-    if (!enrollments) return;
+  private processEnrollmentData(enrollments: any[]): void {
+    console.log('📦 Dữ liệu enrollments:', enrollments);
 
     this.totalCourses = enrollments.length;
-
-    // ✅ SỬA LỖI: Đếm số môn dựa trên trạng thái "Completed"
     this.completedCourses = enrollments.filter(e => e.status === 'Completed').length;
 
-    // Tính điểm trung bình
-    const enrollmentsWithScores = enrollments.filter(e => e.score && e.score.totalScore !== null);
-    if (enrollmentsWithScores.length > 0) {
-      const totalScoreSum = enrollmentsWithScores.reduce((sum, e) => sum + (e.score?.totalScore ?? 0), 0);
-      this.averageScore = +(totalScoreSum / enrollmentsWithScores.length).toFixed(2);
-    } else {
-      this.averageScore = 'Chưa có';
+    let totalScoreTimesCredits = 0;
+    let totalCredits = 0;
+
+    for (const e of enrollments) {
+      const score = e.totalScore;
+      const credits = e.credits;
+
+      if (e.status === 'Completed') {
+        if (typeof score !== 'number') {
+          console.warn(`⚠️ Môn ${e.courseId} không có điểm hợp lệ:`, score);
+        }
+
+        if (typeof credits !== 'number') {
+          console.warn(`⚠️ Môn ${e.courseId} không có số tín chỉ hợp lệ:`, credits);
+        }
+
+        if (typeof score === 'number' && typeof credits === 'number') {
+          totalScoreTimesCredits += score * credits;
+          totalCredits += credits;
+          console.log(`✅ Tính điểm: ${score} * ${credits} = ${score * credits}`);
+        }
+      }
     }
 
-    // Lấy 5 hoạt động gần nhất để hiển thị
+    if (totalCredits > 0) {
+      this.averageScore = +(totalScoreTimesCredits / totalCredits).toFixed(2);
+      console.log('✅ Tổng điểm * tín chỉ:', totalScoreTimesCredits);
+      console.log('✅ Tổng tín chỉ:', totalCredits);
+      console.log('✅ Điểm trung bình:', this.averageScore);
+    } else {
+      this.averageScore = 'Chưa có';
+      console.warn('⚠️ Không có môn nào đủ điều kiện tính điểm trung bình.');
+    }
+
     this.recentEnrollments = enrollments
       .sort((a, b) => (b.year ?? 0) - (a.year ?? 0))
       .slice(0, 5);
   }
+
+
+
+
 }

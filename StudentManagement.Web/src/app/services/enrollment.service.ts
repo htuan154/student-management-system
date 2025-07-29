@@ -91,12 +91,22 @@ export class EnrollmentService {
   deleteEnrollment(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
+
   /**
- * Lấy danh sách các lượt đăng ký chưa được chấm điểm.
- * @returns Một Observable chứa mảng các EnrollmentDto.
- */
-getUnscoredEnrollments(): Observable<Enrollment[]> {
-  const url = `${this.apiUrl}/unscored`;
-  return this.http.get<Enrollment[]>(url);
-}
+   * Lấy danh sách các lượt đăng ký chưa được chấm điểm.
+   * @returns Một Observable chứa mảng các Enrollment.
+   */
+  getUnscoredEnrollments(): Observable<Enrollment[]> {
+    const url = `${this.apiUrl}/unscored`;
+    return this.http.get<Enrollment[]>(url);
+  }
+
+  /**
+   * Lấy danh sách đăng ký của sinh viên kèm điểm số.
+   * @param studentId ID của sinh viên.
+   * @returns Một Observable chứa mảng các Enrollment kèm điểm số.
+   */
+  getStudentEnrollmentsWithScores(studentId: string): Observable<Enrollment[]> {
+    return this.http.get<Enrollment[]>(`${this.apiUrl}/student/${studentId}/with-scores`);
+  }
 }
