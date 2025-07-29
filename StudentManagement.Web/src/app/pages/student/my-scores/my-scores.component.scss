@@ -1,10 +1,10 @@
-.management-container {
+.scores-container {
   padding: 2rem;
   background-color: #f4f7fa;
   height: 100%;
 }
 
-.management-header {
+.scores-header {
   margin-bottom: 2rem;
   h1 {
     font-size: 1.75rem;
@@ -43,20 +43,33 @@
   }
 }
 
-.status-passed, .status-failed {
-  padding: 0.3rem 0.6rem;
-  border-radius: 15px;
-  color: #fff;
-  font-weight: 600;
-  font-size: 0.85rem;
-}
-
 .status-passed {
-  background-color: #28a745; // Màu xanh lá
+  color: #28a745;
+  font-weight: bold;
 }
 
 .status-failed {
-  background-color: #dc3545; // Màu đỏ
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.summary-box {
+  margin-top: 1.5rem;
+  background-color: #e9f2ff;
+  padding: 1.25rem;
+  border: 1px solid #bcdfff;
+  border-radius: 8px;
+  p {
+    margin: 0.3rem 0;
+    font-weight: 500;
+  }
+}
+
+.loading-indicator,
+.no-data {
+  text-align: center;
+  font-style: italic;
+  margin-top: 1rem;
 }
 
 .error-message {
@@ -66,8 +79,4 @@
   border: 1px solid #f5c6cb;
   border-radius: 4px;
   margin-bottom: 1rem;
-}
-
-.text-center {
-  text-align: center;
 }
