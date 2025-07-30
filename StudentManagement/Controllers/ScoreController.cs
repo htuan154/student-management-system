@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using StudentManagementSystem.Dtos.Score;
+using StudentManagementSystem.DTOs.Score;
 using StudentManagementSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 

@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using StudentManagementSystem.Dtos.Role;
+using StudentManagementSystem.DTOs.Role;
 using StudentManagementSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 

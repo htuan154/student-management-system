@@ -1,4 +1,4 @@
-namespace StudentManagementSystem.Dtos.Score
+namespace StudentManagementSystem.DTOs.Score
 {
     public class ScoreDetailsDto
     {

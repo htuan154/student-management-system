@@ -1,4 +1,4 @@
-namespace StudentManagementSystem.Dtos.Score
+namespace StudentManagementSystem.DTOs.Score
 {
     public class ScoreDto
     {
@@ -9,6 +9,6 @@ namespace StudentManagementSystem.Dtos.Score
         public decimal? FinalScore { get; set; }
         public decimal? TotalScore { get; set; }
         public bool? IsPassed { get; set; }
-        
+
     }
 }

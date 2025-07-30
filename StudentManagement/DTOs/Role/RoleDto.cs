@@ -1,4 +1,4 @@
-namespace StudentManagementSystem.Dtos.Role
+namespace StudentManagementSystem.DTOs.Role
 {
     public class RoleDto
     {

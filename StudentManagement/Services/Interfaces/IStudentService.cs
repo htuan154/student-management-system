@@ -16,6 +16,6 @@ namespace StudentManagementSystem.Services.Interfaces
             int pageNumber, int pageSize, string? searchTerm = null);
         Task<bool> IsEmailExistsAsync(string email, string? excludeStudentId = null);
         Task<bool> IsStudentIdExistsAsync(string studentId);
-        
+
     }
 }

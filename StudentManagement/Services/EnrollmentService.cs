@@ -1,11 +1,12 @@
 using Microsoft.Extensions.Logging;
 using StudentManagementSystem.Data.Interfaces;
-using StudentManagementSystem.Dtos.Enrollment;
+using StudentManagementSystem.DTOs.Enrollment;
 using StudentManagementSystem.Models;
 using StudentManagementSystem.Services.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 
 namespace StudentManagementSystem.Services
 {
@@ -178,6 +179,90 @@ namespace StudentManagementSystem.Services
             var enrollments = await _enrollmentRepository.GetUnscoredAsync();
             return enrollments.Select(MapToDto); // Giả sử bạn đã có hàm MapToDto
         }
+        public async Task<IEnumerable<EnrollmentWithScoreDto>> GetStudentEnrollmentsWithScoresAsync(string studentId)
+        {
+            _logger.LogInformation("Getting enrollments with scores for Student ID: {StudentId}", studentId);
+            var cacheKey = $"{CachePrefix}:student:{studentId}:with-scores";
+
+            var cachedData = await _cacheService.GetDataAsync<IEnumerable<EnrollmentWithScoreDto>>(cacheKey);
+            if (cachedData != null)
+            {
+                _logger.LogInformation("Enrollments with scores for Student ID {StudentId} found in cache.", studentId);
+                return cachedData;
+            }
+
+            var enrollments = await _enrollmentRepository.GetStudentEnrollmentsWithScoresAsync(studentId);
+            var dtos = enrollments.Select(MapToEnrollmentWithScoreDto).ToList();
+
+            await _cacheService.SetDataAsync(cacheKey, dtos, System.DateTimeOffset.Now.AddMinutes(5));
+            return dtos;
+        }
+
+
+        public async Task<IEnumerable<EnrollmentDto>> GetUnscoredEnrollmentsForClassAsync(string courseId, string teacherId)
+        {
+            _logger.LogInformation("Getting unscored enrollments for Course ID: {CourseId} and Teacher ID: {TeacherId}", courseId, teacherId);
+            var cacheKey = $"{CachePrefix}:unscored:{courseId}:{teacherId}";
+
+            var cachedData = await _cacheService.GetDataAsync<IEnumerable<EnrollmentDto>>(cacheKey);
+            if (cachedData != null)
+            {
+                _logger.LogInformation("Unscored enrollments for class {CourseId}/{TeacherId} found in cache.", courseId, teacherId);
+                return cachedData;
+            }
+
+            var enrollments = await _enrollmentRepository.GetUnscoredEnrollmentsForClassAsync(courseId, teacherId);
+            var dtos = enrollments.Select(MapToDto).ToList();
+
+            await _cacheService.SetDataAsync(cacheKey, dtos, System.DateTimeOffset.Now.AddMinutes(1)); // Cache ngắn hơn vì dữ liệu này thay đổi thường xuyên
+            _logger.LogInformation("Returning {Count} unscored enrollments for class {CourseId}/{TeacherId} from database.", dtos.Count, courseId, teacherId);
+
+            return dtos;
+        }
+
+        // Helper method để map sang DTO mới - VERSION SIMPLE
+        private static EnrollmentWithScoreDto MapToEnrollmentWithScoreDto(Enrollment e) => new EnrollmentWithScoreDto
+        {
+            EnrollmentId = e.EnrollmentId,
+            StudentId = e.StudentId ?? string.Empty,
+            CourseId = e.CourseId ?? string.Empty,
+            CourseName = e.Course?.CourseName ?? string.Empty,
+            Credits = e.Course?.Credits ?? 0,
+            TeacherId = e.TeacherId ?? string.Empty,
+
+            // Tạm thời để trống TeacherName, sẽ cập nhật sau khi biết cấu trúc Teacher model
+            TeacherName = string.Empty,
+
+            Semester = e.Semester ?? string.Empty,
+            Year = e.Year ?? 0,
+            Status = e.Status,
+
+            // Mapping điểm từ Score navigation property
+            ProcessScore = e.Score?.ProcessScore,
+            MidtermScore = e.Score?.MidtermScore,
+            FinalScore = e.Score?.FinalScore,
+            TotalScore = e.Score?.TotalScore,
+            IsPassed = e.Score?.IsPassed ?? false,
+            Grade = CalculateGrade(e.Score?.TotalScore)
+        };
+
+// Helper method tính grade
+        private static string CalculateGrade(decimal? totalScore)
+        {
+            if (totalScore == null) return "N/A";
+
+            return totalScore switch
+            {
+                >= 9.0m => "A+",
+                >= 8.5m => "A",
+                >= 8.0m => "B+",
+                >= 7.0m => "B",
+                >= 6.5m => "C+",
+                >= 5.5m => "C",
+                >= 4.0m => "D",
+                _ => "F"
+            };
+        }
         private static EnrollmentDto MapToDto(Enrollment e) => new EnrollmentDto
         {
             EnrollmentId = e.EnrollmentId,
@@ -186,7 +271,8 @@ namespace StudentManagementSystem.Services
             TeacherId = e.TeacherId,
             Semester = e.Semester,
             Year = e.Year,
-            Status = e.Status
+            Status = e.Status,
+
         };
     }
 }

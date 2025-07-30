@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace StudentManagementSystem.Dtos.TeacherCourse
+namespace StudentManagementSystem.DTOs.TeacherCourse
 {
     public class TeacherCourseUpdateDto
     {

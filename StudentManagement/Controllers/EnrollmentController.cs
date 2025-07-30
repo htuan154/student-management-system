@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using StudentManagementSystem.Dtos.Enrollment;
+using StudentManagementSystem.DTOs.Enrollment;
 using StudentManagementSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 
@@ -77,6 +77,17 @@ namespace StudentManagementSystem.Controllers
             var enrollments = await _enrollmentService.GetUnscoredAsync();
             return Ok(enrollments);
         }
+        [HttpGet("unscored-by-class")]
+        public async Task<IActionResult> GetUnscoredByClass([FromQuery] string courseId, [FromQuery] string teacherId)
+        {
+            if (string.IsNullOrEmpty(courseId) || string.IsNullOrEmpty(teacherId))
+            {
+                return BadRequest("Course ID và Teacher ID là bắt buộc.");
+            }
+
+            var enrollments = await _enrollmentService.GetUnscoredEnrollmentsForClassAsync(courseId, teacherId);
+            return Ok(enrollments);
+        }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
@@ -84,6 +95,12 @@ namespace StudentManagementSystem.Controllers
             var result = await _enrollmentService.DeleteAsync(id);
             if (!result) return NotFound();
             return Ok();
+        }
+        [HttpGet("student/{studentId}/with-scores")]
+        public async Task<IActionResult> GetStudentEnrollmentsWithScores(string studentId)
+        {
+            var enrollmentsWithScores = await _enrollmentService.GetStudentEnrollmentsWithScoresAsync(studentId);
+            return Ok(enrollmentsWithScores);
         }
     }
 }

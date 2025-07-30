@@ -7,6 +7,7 @@ import { Enrollment } from '../../../../models';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+
 @Component({
   selector: 'app-score-form',
   standalone: true,
@@ -28,6 +29,10 @@ export class ScoreFormComponent implements OnInit {
 
   enrollments: Enrollment[] = []; // Dữ liệu cho dropdown
 
+  // Thêm các thuộc tính này để lưu tham số từ URL
+  private courseId: string | null = null;
+  private teacherId: string | null = null;
+
   constructor(
     private fb: FormBuilder,
     private scoreService: ScoreService,
@@ -39,15 +44,20 @@ export class ScoreFormComponent implements OnInit {
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      this.scoreId = +id;
+      // Chế độ Sửa
       this.isEditMode = true;
-    }
-
-    this.initForm();
-    this.loadEnrollments();
-
-    if (this.isEditMode && this.scoreId) {
+      this.scoreId = +id;
+      this.initForm();
       this.loadScoreData(this.scoreId);
+    } else {
+      // Chế độ Tạo mới
+      this.isEditMode = false;
+      // Lấy courseId và teacherId từ URL
+      this.courseId = this.route.snapshot.paramMap.get('courseId');
+      this.teacherId = this.route.snapshot.paramMap.get('teacherId');
+      this.initForm();
+      // Gọi phương thức đúng để tải danh sách đã lọc
+      this.loadEnrollmentsForClass();
     }
   }
 
@@ -60,33 +70,44 @@ export class ScoreFormComponent implements OnInit {
     });
   }
 
-  loadEnrollments(): void {
-    this.isLoading = true;
-    this.enrollmentService.getUnscoredEnrollments().subscribe({
-      next: (data) => {
-        // ✅ THÊM DÒNG NÀY ĐỂ DEBUG
-        console.log('Dữ liệu Enrollment nhận được từ API:', data);
+  // Phương thức mới để tải các lượt đăng ký cho một lớp học cụ thể
+  loadEnrollmentsForClass(): void {
+    if (!this.courseId || !this.teacherId) {
+      this.errorMessage = "URL không hợp lệ, thiếu mã môn học hoặc mã giảng viên.";
+      return;
+    }
 
+    this.isLoading = true;
+    this.enrollmentService.getUnscoredEnrollmentsForClass(this.courseId, this.teacherId).subscribe({
+      next: (data) => {
         this.enrollments = data;
         this.isLoading = false;
+        if (data.length === 0) {
+            this.errorMessage = "Tất cả sinh viên trong lớp này đã được nhập điểm hoặc không có sinh viên nào.";
+        }
       },
       error: () => {
-        this.errorMessage = "Không thể tải danh sách đăng ký học phần.";
+        this.errorMessage = "Không thể tải danh sách đăng ký cho lớp học này.";
         this.isLoading = false;
       }
     });
   }
-
 
   loadScoreData(id: number): void {
     this.isLoading = true;
     this.scoreService.getScoreById(id).subscribe({
       next: (scoreData) => {
         this.scoreForm.patchValue(scoreData);
+        // Ở chế độ sửa, bạn có thể cần tải chi tiết của lượt đăng ký
+        // để hiển thị thông tin trong dropdown (dù bị vô hiệu hóa).
+        // Ví dụ:
+        // this.enrollmentService.getEnrollmentById(scoreData.enrollmentId).subscribe(enrollment => {
+        //   this.enrollments = [enrollment];
+        // });
         this.isLoading = false;
       },
       error: () => {
-        this.errorMessage = "Could not load score data.";
+        this.errorMessage = "Không thể tải dữ liệu điểm.";
         this.isLoading = false;
       }
     });
@@ -94,6 +115,7 @@ export class ScoreFormComponent implements OnInit {
 
   onSubmit(): void {
     if (this.scoreForm.invalid) {
+      this.scoreForm.markAllAsTouched();
       return;
     }
 
@@ -109,7 +131,7 @@ export class ScoreFormComponent implements OnInit {
         this.router.navigate(['/admin/scores']);
       },
       error: (err) => {
-        this.errorMessage = `An error occurred. ${err.error?.message || ''}`;
+        this.errorMessage = `Đã có lỗi xảy ra. ${err.error?.message || ''}`;
         this.isLoading = false;
       }
     });

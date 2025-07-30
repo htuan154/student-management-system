@@ -155,6 +155,13 @@ namespace StudentManagementSystem.Controllers
             var departments = await _teacherService.GetDistinctDepartmentsAsync();
             return Ok(departments);
         }
+        [HttpGet("course/{courseId}")]
+        public async Task<ActionResult<IEnumerable<TeacherResponseDto>>> GetTeachersByCourse(string courseId)
+        {
+            var teachers = await _teacherService.GetTeachersByCourseIdAsync(courseId);
+            // Luôn trả về OK với danh sách (có thể rỗng), không cần trả về NotFound
+            return Ok(teachers);
+        }
 
         [HttpGet("degrees")]
         public async Task<ActionResult<IEnumerable<string>>> GetDistinctDegrees()

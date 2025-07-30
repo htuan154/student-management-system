@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace StudentManagementSystem.Dtos.Score
+namespace StudentManagementSystem.DTOs.Score
 {
     public class ScoreUpdateDto
     {

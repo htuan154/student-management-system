@@ -1,4 +1,4 @@
-using StudentManagementSystem.Dtos.Enrollment;
+using StudentManagementSystem.DTOs.Enrollment;
 
 namespace StudentManagementSystem.Services.Interfaces
 {
@@ -13,5 +13,7 @@ namespace StudentManagementSystem.Services.Interfaces
         Task<bool> CreateAsync(EnrollmentCreateDto dto);
         Task<bool> UpdateAsync(EnrollmentUpdateDto dto);
         Task<bool> DeleteAsync(int enrollmentId);
+        Task<IEnumerable<EnrollmentWithScoreDto>> GetStudentEnrollmentsWithScoresAsync(string studentId);
+        Task<IEnumerable<EnrollmentDto>> GetUnscoredEnrollmentsForClassAsync(string courseId, string teacherId);
     }
 }

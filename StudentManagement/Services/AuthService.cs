@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using StudentManagementSystem.Dtos.Auth;
-using StudentManagementSystem.Dtos.User;
+using StudentManagementSystem.DTOs.Auth;
+using StudentManagementSystem.DTOs.User;
 using StudentManagementSystem.Services.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -92,7 +92,7 @@ namespace StudentManagementSystem.Services
                 new Claim(ClaimTypes.Role, user.RoleName)
             };
 
-            
+
             if (!string.IsNullOrEmpty(user.StudentId))
             {
                 claims.Add(new Claim("studentId", user.StudentId));

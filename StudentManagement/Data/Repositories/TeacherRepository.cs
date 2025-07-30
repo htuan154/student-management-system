@@ -172,5 +172,11 @@ namespace StudentManagementSystem.Data.Repositories
                 .SelectMany(t => t.Enrollments)
                 .CountAsync();
         }
+        public async Task<IEnumerable<Teacher>> GetTeachersByCourseIdAsync(string courseId)
+        {
+            return await _dbSet
+                .Where(t => t.TeacherCourses.Any(tc => tc.CourseId == courseId))
+                .ToListAsync();
+        }
     }
 }
