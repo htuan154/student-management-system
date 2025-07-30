@@ -9,6 +9,7 @@
   </header>
 
   <!-- Breadcrumb (Thanh điều hướng) -->
+
   <div class="breadcrumb">
     <span [class.active]="level >= 1" (click)="level > 1 && goBack(1)">Chọn Môn học</span>
     <i *ngIf="level > 1" class="fas fa-chevron-right"></i>
@@ -31,6 +32,7 @@
 
   <div *ngIf="!isLoading && !errorMessage">
     <!-- TẦNG 1: DANH SÁCH MÔN HỌC -->
+
     <div *ngIf="level === 1" class="table-container">
       <table class="table">
         <thead>
@@ -72,7 +74,7 @@
           </tr>
            <tr *ngIf="teachers.length === 0">
             <td colspan="4" class="text-center">Không có giảng viên nào được phân công dạy môn này.</td>
-           </tr>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -81,8 +83,10 @@
     <div *ngIf="level === 3" class="table-container">
       <div class="score-actions">
 
-        <button class="btn btn-success" routerLink="/admin/scores/new">
-          <i class="fas fa-plus"></i> Nhập điểm mới
+        <button
+            class="btn btn-success"
+            [routerLink]="['/admin/scores/new', selectedCourse!.courseId, selectedTeacher!.teacherId]">
+            <i class="fas fa-plus"></i> Nhập điểm mới
         </button>
         <button class="btn btn-primary" (click)="saveAllScores()">
           <i class="fas fa-save"></i> Lưu tất cả điểm

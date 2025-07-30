@@ -175,7 +175,7 @@ namespace StudentManagementSystem.Services
         {
             const string cacheKey = $"{CachePrefix}es:distinct_departments";
             var cachedData = await _cacheService.GetDataAsync<IEnumerable<string>>(cacheKey);
-            if(cachedData != null) return cachedData;
+            if (cachedData != null) return cachedData;
 
             var data = await _teacherRepository.GetDistinctDepartmentsAsync();
             await _cacheService.SetDataAsync(cacheKey, data, System.DateTimeOffset.Now.AddHours(1));
@@ -186,7 +186,7 @@ namespace StudentManagementSystem.Services
         {
             const string cacheKey = $"{CachePrefix}es:distinct_degrees";
             var cachedData = await _cacheService.GetDataAsync<IEnumerable<string>>(cacheKey);
-            if(cachedData != null) return cachedData;
+            if (cachedData != null) return cachedData;
 
             var data = await _teacherRepository.GetDistinctDegreesAsync();
             await _cacheService.SetDataAsync(cacheKey, data, System.DateTimeOffset.Now.AddHours(1));
@@ -327,5 +327,31 @@ namespace StudentManagementSystem.Services
             };
         }
         #endregion
+        // Thêm phương thức này vào trong class TeacherService
+
+        public async Task<IEnumerable<TeacherResponseDto>> GetTeachersByCourseIdAsync(string courseId)
+        {
+            _logger.LogInformation("Getting teachers by Course ID: {CourseId}", courseId);
+            var cacheKey = $"{CachePrefix}s:course:{courseId}";
+
+            var cachedData = await _cacheService.GetDataAsync<IEnumerable<TeacherResponseDto>>(cacheKey);
+            if (cachedData != null)
+            {
+                _logger.LogInformation("Teachers for Course ID {CourseId} found in cache.", courseId);
+                return cachedData;
+            }
+
+            var teachers = await _teacherRepository.GetTeachersByCourseIdAsync(courseId);
+            var teacherDtos = new List<TeacherResponseDto>();
+            foreach (var teacher in teachers)
+            {
+                teacherDtos.Add(await MapToResponseDtoAsync(teacher));
+            }
+
+            await _cacheService.SetDataAsync(cacheKey, teacherDtos, System.DateTimeOffset.Now.AddMinutes(5));
+            _logger.LogInformation("Returning {Count} teachers for Course ID {CourseId} from database.", teacherDtos.Count, courseId);
+
+            return teacherDtos;
+        }
     }
 }

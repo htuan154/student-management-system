@@ -10,7 +10,7 @@ const routes: Routes = [
     component: ScoreListComponent,
   },
   {
-    path: 'new', // /admin/scores/new
+    path: 'new/:courseId/:teacherId',
     component: ScoreFormComponent,
   },
   {

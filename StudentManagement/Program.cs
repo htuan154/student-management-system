@@ -14,6 +14,7 @@ using StudentManagementSystem.Middleware;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Caching.Distributed;
 using Prometheus;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,11 @@ builder.Host.UseSerilog();
 
 // --- 2. Thêm các dịch vụ vào container ---
 builder.Services.AddControllers();
+// builder.Services.AddControllers().AddJsonOptions(options =>
+// {
+//     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+// });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -42,10 +48,6 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod();
     });
 });
-
-// Entity Framework - sử dụng In-Memory Database cho test
-// builder.Services.AddDbContext<ApplicationDbContext>(options =>
-//     options.UseInMemoryDatabase("StudentManagementSystem"));
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

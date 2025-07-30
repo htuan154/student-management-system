@@ -1,4 +1,4 @@
-using StudentManagementSystem.Dtos.User;
+using StudentManagementSystem.DTOs.User;
 
 namespace StudentManagementSystem.Services.Interfaces
 {

@@ -20,5 +20,6 @@ namespace StudentManagementSystem.Data.Interfaces
         Task<IEnumerable<Teacher>> GetTeachersWithActiveCourses();
         Task<int> GetTeacherCourseCountAsync(string teacherId);
         Task<int> GetTeacherEnrollmentCountAsync(string teacherId);
+        Task<IEnumerable<Teacher>> GetTeachersByCourseIdAsync(string courseId);
     }
 }

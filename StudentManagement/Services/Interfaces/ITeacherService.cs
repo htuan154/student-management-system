@@ -21,5 +21,6 @@ namespace StudentManagementSystem.Services.Interfaces
         Task<bool> IsTeacherIdExistsAsync(string teacherId);
         Task<IEnumerable<string>> GetDistinctDepartmentsAsync();
         Task<IEnumerable<string>> GetDistinctDegreesAsync();
+        Task<IEnumerable<TeacherResponseDto>> GetTeachersByCourseIdAsync(string courseId);
     }
 }

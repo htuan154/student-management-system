@@ -12,10 +12,10 @@ import { CourseService } from '../../../services/course.service';
 
 @Component({
   selector: 'app-dashboard',
-  standalone: true, // <-- SỬA LỖI: Thêm thuộc tính này
+  standalone: true,
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
-  imports: [CommonModule] // Mảng imports chỉ hợp lệ với component standalone
+  imports: [CommonModule]
 })
 export class DashboardComponent implements OnInit {
   // Biến để lưu trữ các số liệu thống kê

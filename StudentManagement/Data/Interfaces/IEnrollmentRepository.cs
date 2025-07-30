@@ -9,5 +9,7 @@ namespace StudentManagementSystem.Data.Interfaces
         Task<IEnumerable<Enrollment>> SearchAsync(string searchTerm);
         Task<(IEnumerable<Enrollment> Enrollments, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize, string? searchTerm = null);
         Task<IEnumerable<Enrollment>> GetUnscoredAsync();
+        Task<IEnumerable<Enrollment>> GetStudentEnrollmentsWithScoresAsync(string studentId);
+        Task<IEnumerable<Enrollment>> GetUnscoredEnrollmentsForClassAsync(string courseId, string teacherId);
     }
 }

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace StudentManagementSystem.Dtos.Enrollment
+namespace StudentManagementSystem.DTOs.Enrollment
 {
     public class EnrollmentCreateDto
     {

@@ -1,11 +1,91 @@
-// Container chính cho form, nền xám nhạt
+// Biến màu sắc và kích thước
+$primary-color: #007bff;
+$secondary-color: #6c757d;
+$success-color: #28a745;
+$danger-color: #dc3545;
+$warning-color: #ffc107;
+$info-color: #17a2b8;
+
+$text-color: #2c3e50;
+$text-muted: #495057;
+$border-color: #ced4da;
+$border-light: #e9ecef;
+$bg-white: #ffffff;
+$bg-disabled: #e9ecef;
+$bg-page: #f8f9fa;
+
+$border-radius: 8px;
+$border-radius-sm: 6px;
+$shadow-default: 0 4px 15px rgba(0, 0, 0, 0.05);
+$shadow-focus: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+
+// Mixins
+@mixin button-variant($bg-color, $hover-darken: 10%) {
+  background-color: $bg-color;
+  color: white;
+
+  &:hover:not(:disabled) {
+    background-color: darken($bg-color, $hover-darken);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba($bg-color, 0.3);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba($bg-color, 0.3);
+  }
+
+  &:disabled {
+    background-color: lighten($bg-color, 20%);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+@mixin form-control-focus($color: $primary-color) {
+  &:focus {
+    outline: none;
+    border-color: lighten($color, 20%);
+    box-shadow: $shadow-focus;
+  }
+}
+
+@mixin loading-spinner {
+  &::after {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+}
+
+// Container chính cho form
 .form-container {
-  max-width: 900px;
+  max-width: 1000px;
   margin: 2rem auto;
   padding: 2.5rem;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  background-color: $bg-white;
+  border-radius: $border-radius;
+  box-shadow: $shadow-default;
+  position: relative;
+
+  // Responsive design
+  @media (max-width: 768px) {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
+    margin: 0.5rem;
+    padding: 1rem;
+  }
 }
 
 // Header của form
@@ -15,83 +95,463 @@
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 2px solid $border-light;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 60px;
+    height: 2px;
+    background-color: $primary-color;
+    border-radius: 1px;
+  }
 
   h1 {
-    font-size: 1.75rem;
+    font-size: 1.875rem;
     font-weight: 700;
-    color: #2c3e50;
+    color: $text-color;
+    margin: 0;
+    position: relative;
+
+    @media (max-width: 768px) {
+      font-size: 1.5rem;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 1.25rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
   }
 }
 
-// Body của form, sử dụng grid layout
-.form-body {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem 2rem;
+// Loading indicator
+.loading-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem 1rem;
+  font-size: 1.1rem;
+  color: $text-muted;
+  @include loading-spinner;
 }
 
-// Một nhóm form (label + input)
+// Error message
+.error-message {
+  background-color: lighten($danger-color, 45%);
+  color: darken($danger-color, 10%);
+  padding: 1rem 1.25rem;
+  border-radius: $border-radius-sm;
+  border: 1px solid lighten($danger-color, 30%);
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  position: relative;
+
+  &::before {
+    content: '⚠';
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+  }
+}
+
+// Body của form - Grid layout
+.form-body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+
+  // Grid layout cho desktop - tách riêng các điểm số
+  @media (min-width: 768px) {
+    &.score-grid {
+      grid-template-columns: 1fr repeat(3, minmax(200px, 0.6fr));
+      align-items: end;
+
+      .form-group:first-child {
+        grid-column: 1;
+      }
+
+      .form-group:nth-child(2),
+      .form-group:nth-child(3),
+      .form-group:nth-child(4) {
+        grid-column: auto;
+      }
+    }
+  }
+
+  @media (min-width: 1024px) {
+    &.score-grid {
+      grid-template-columns: 2fr repeat(3, 1fr);
+      gap: 1.5rem 2rem;
+    }
+  }
+}
+
+// Form group styling
 .form-group {
   display: flex;
   flex-direction: column;
 
   label {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.6rem;
     font-weight: 600;
-    color: #495057;
+    color: $text-muted;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+
+    // Required indicator
+    &[required]::after,
+    &.required::after {
+      content: ' *';
+      color: $danger-color;
+      font-weight: bold;
+    }
   }
 
+  // Form controls
   .form-control {
     width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid #ced4da;
-    border-radius: 6px;
+    padding: 0.875rem 1rem;
+    border: 2px solid $border-color;
+    border-radius: $border-radius-sm;
     font-size: 1rem;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    line-height: 1.5;
+    transition: all 0.3s ease;
+    background-color: $bg-white;
+
+    @include form-control-focus;
+
+    &:hover:not(:focus):not(:disabled) {
+      border-color: darken($border-color, 10%);
+    }
+
+    &:disabled {
+      background-color: $bg-disabled;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    &.is-invalid {
+      border-color: $danger-color;
+
+      &:focus {
+        border-color: $danger-color;
+        box-shadow: 0 0 0 0.2rem rgba($danger-color, 0.25);
+      }
+    }
+
+    &.is-valid {
+      border-color: $success-color;
+
+      &:focus {
+        border-color: $success-color;
+        box-shadow: 0 0 0 0.2rem rgba($success-color, 0.25);
+      }
+    }
+
+    // Placeholder styling
+    &::placeholder {
+      color: lighten($text-muted, 20%);
+      opacity: 1;
+    }
+
+    // Number input styling với kích thước tối ưu
+    &[type="number"] {
+      appearance: textfield;
+      -moz-appearance: textfield;
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 600;
+      min-width: 120px;
+
+      &::-webkit-outer-spin-button,
+      &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      // Focus state cho number input
+      &:focus {
+        background-color: lighten($primary-color, 48%);
+      }
+    }
+  }
+
+  // Select styling với kích thước phù hợp
+  select.form-control {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+    cursor: pointer;
+    min-height: 48px;
 
     &:focus {
-      outline: none;
-      border-color: #80bdff;
-      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23007bff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
     }
-    &:disabled {
-      background-color: #e9ecef;
+
+    // Kích thước cho enrollment select
+    &.enrollment-select {
+      @media (min-width: 768px) {
+        min-width: 350px;
+      }
+    }
+  }
+
+  // Error message for form group
+  .error-text {
+    color: $danger-color;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+  }
+
+  // Success message for form group
+  .success-text {
+    color: $success-color;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+  }
+}
+
+// Full width class
+.full-width {
+  grid-column: 1 / -1;
+
+  // Cho layout điểm số đặc biệt
+  .form-body.score-grid & {
+    @media (min-width: 768px) {
+      grid-column: 1;
     }
   }
 }
 
-// Class để làm cho một trường chiếm toàn bộ chiều rộng
-.full-width {
-  grid-column: 1 / -1;
+// Layout đặc biệt cho form điểm số
+.scores-row {
+  display: contents;
+
+  @media (min-width: 768px) {
+    .form-group {
+      margin-bottom: 0;
+    }
+  }
 }
 
-// Khu vực chứa các nút hành động (submit, cancel)
+// Form actions area
 .form-actions {
   grid-column: 1 / -1;
   display: flex;
   justify-content: flex-end;
+  gap: 1rem;
   margin-top: 2rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #e9ecef;
+  border-top: 2px solid $border-light;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+
+    .btn {
+      width: 100%;
+    }
+  }
 }
 
-// Style chung cho các nút bấm
+// Button styles
 .btn {
   border: none;
-  padding: 0.6rem 1.5rem;
-  border-radius: 6px;
+  padding: 0.75rem 1.75rem;
+  border-radius: $border-radius-sm;
   cursor: pointer;
   font-size: 1rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.3s ease;
+  min-width: 120px;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba($primary-color, 0.2);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  // Button variants
+  &.btn-primary {
+    @include button-variant($primary-color);
+  }
+
+  &.btn-secondary {
+    @include button-variant($secondary-color);
+  }
+
+  &.btn-success {
+    @include button-variant($success-color);
+  }
+
+  &.btn-danger {
+    @include button-variant($danger-color);
+  }
+
+  &.btn-warning {
+    @include button-variant($warning-color);
+    color: $text-color;
+  }
+
+  &.btn-info {
+    @include button-variant($info-color);
+  }
+
+  // Outline variants
+  &.btn-outline-primary {
+    background-color: transparent;
+    color: $primary-color;
+    border: 2px solid $primary-color;
+
+    &:hover:not(:disabled) {
+      background-color: $primary-color;
+      color: white;
+    }
+  }
+
+  // Loading state
+  &.loading {
+    @include loading-spinner;
+    pointer-events: none;
+  }
+
+  // Size variants
+  &.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    min-width: 80px;
+  }
+
+  &.btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+    min-width: 140px;
+  }
 }
 
-.btn-primary {
-  background-color: #007bff;
-  color: white;
+// Animations
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Apply animations
+.form-container {
+  animation: slideInUp 0.6s ease-out;
+}
+
+.form-group {
+  animation: fadeIn 0.8s ease-out;
+
+  &:nth-child(1) { animation-delay: 0.1s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.3s; }
+  &:nth-child(4) { animation-delay: 0.4s; }
+}
+
+// Utility classes
+.text-center {
+  text-align: center;
+}
+
+.text-muted {
+  color: $text-muted;
+}
+
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+.mb-5 { margin-bottom: 3rem; }
+
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
+.mt-4 { margin-top: 1.5rem; }
+.mt-5 { margin-top: 3rem; }
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .form-container {
+    background-color: #2d3748;
+    color: #e2e8f0;
+  }
+
+  .form-group {
+    label {
+      color: #a0aec0;
+    }
+
+    .form-control {
+      background-color: #4a5568;
+      border-color: #4a5568;
+      color: #e2e8f0;
+
+      &::placeholder {
+        color: #a0aec0;
+      }
+
+      &:focus {
+        background-color: #4a5568;
+        border-color: lighten($primary-color, 20%);
+      }
+    }
+  }
+
+  .form-header h1 {
+    color: #e2e8f0;
+  }
+
+  .error-message {
+    background-color: rgba($danger-color, 0.1);
+    color: lighten($danger-color, 20%);
+    border-color: rgba($danger-color, 0.3);
+  }
 }

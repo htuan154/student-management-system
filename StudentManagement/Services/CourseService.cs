@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 using StudentManagementSystem.Data.Interfaces;
-using StudentManagementSystem.Dtos.Course;
+using StudentManagementSystem.DTOs.Course;
 using StudentManagementSystem.Models;
 using StudentManagementSystem.Services.Interfaces;
 using System.Collections.Generic;

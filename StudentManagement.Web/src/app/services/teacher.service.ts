@@ -130,4 +130,8 @@ export class TeacherService {
     const params = new HttpParams().set('teacherId', teacherId);
     return this.http.get<boolean>(`${this.apiUrl}/check-teacherid`, { params });
   }
+  /** Lấy danh sách giáo viên theo môn học */
+  getTeachersByCourseId(courseId: string): Observable<Teacher[]> {
+    return this.http.get<Teacher[]>(`${this.apiUrl}/course/${courseId}`);
+  }
 }

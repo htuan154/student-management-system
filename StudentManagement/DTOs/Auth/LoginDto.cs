@@ -1,4 +1,4 @@
-namespace StudentManagementSystem.Dtos.Auth
+namespace StudentManagementSystem.DTOs.Auth
 {
     public class LoginDto
     {

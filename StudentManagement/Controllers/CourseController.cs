@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
-using StudentManagementSystem.Dtos.Course;
+using StudentManagementSystem.DTOs.Course;
 using StudentManagementSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 
 namespace StudentManagementSystem.Controllers
 {
-    [Authorize(Roles = "Admin,SuperAdmin")]
+    [Authorize()]
     [ApiController]
     [Route("api/[controller]")]
     public class CourseController : ControllerBase

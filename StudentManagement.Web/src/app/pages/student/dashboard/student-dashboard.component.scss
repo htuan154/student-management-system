@@ -2,16 +2,64 @@
 $primary-color: #007bff;
 $success-color: #28a745;
 $warning-color: #ffc107;
+$danger-color: #dc3545;
+$secondary-color: #6c757d;
 $bg-color: #f4f7fa;
 $card-bg: #ffffff;
 $text-color: #343a40;
 $light-text-color: #6c757d;
+$border-color: #dee2e6;
+$table-header-bg: #e9ecef;
+
+// Mixins
+@mixin card-shadow {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+@mixin hover-effect {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  }
+}
 
 // Container chính
 .dashboard-container {
   padding: 2rem;
   background-color: $bg-color;
-  height: 100%;
+  min-height: 100vh;
+
+  // Responsive
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+}
+
+// Trạng thái loading
+.loading-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+
+  p {
+    font-size: 1.1rem;
+    color: $light-text-color;
+    margin: 0;
+  }
+}
+
+// Thông báo lỗi
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #f5c6cb;
+  margin-bottom: 1rem;
+  text-align: center;
 }
 
 // Các thẻ thống kê
@@ -20,34 +68,55 @@ $light-text-color: #6c757d;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2.5rem;
+
+  // Responsive
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
 }
 
 .stat-card {
   background-color: $card-bg;
   padding: 1.5rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  @include card-shadow;
+  @include hover-effect;
   position: relative;
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid rgba($primary-color, 0.05);
 
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  // Gradient overlay cho visual appeal
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, $primary-color, lighten($primary-color, 10%));
   }
 
   h3 {
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: $light-text-color;
     margin: 0 0 0.5rem 0;
     font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   .stat-number {
-    font-size: 2.25rem;
+    font-size: 2.5rem;
     font-weight: 700;
     color: $text-color;
     margin: 0;
+    line-height: 1.2;
+
+    @media (max-width: 480px) {
+      font-size: 2rem;
+    }
   }
 
   .card-icon {
@@ -56,7 +125,32 @@ $light-text-color: #6c757d;
     top: 50%;
     transform: translateY(-50%);
     font-size: 3rem;
-    color: rgba($primary-color, 0.1);
+    color: rgba($primary-color, 0.08);
+    z-index: 1;
+
+    @media (max-width: 480px) {
+      font-size: 2.5rem;
+      right: 1rem;
+    }
+  }
+
+  // Biến thể màu sắc cho từng loại card
+  &.courses-card {
+    .card-icon {
+      color: rgba($primary-color, 0.1);
+    }
+  }
+
+  &.completed-card {
+    .card-icon {
+      color: rgba($success-color, 0.1);
+    }
+  }
+
+  &.average-card {
+    .card-icon {
+      color: rgba($warning-color, 0.1);
+    }
   }
 }
 
@@ -64,63 +158,215 @@ $light-text-color: #6c757d;
 .recent-activity {
   h2 {
     font-size: 1.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     color: $text-color;
+    font-weight: 600;
+    position: relative;
+    padding-bottom: 0.5rem;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 50px;
+      height: 3px;
+      background-color: $primary-color;
+      border-radius: 2px;
+    }
   }
 
   .table-container {
     background-color: $card-bg;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    @include card-shadow;
     overflow: hidden;
+    border: 1px solid rgba($border-color, 0.5);
+
+    // Responsive scroll
+    @media (max-width: 768px) {
+      overflow-x: auto;
+    }
   }
 
   .table {
     width: 100%;
     border-collapse: collapse;
+    font-size: 0.9rem;
 
     th, td {
       padding: 1rem 1.25rem;
       text-align: left;
-      border-bottom: 1px solid #dee2e6;
+      border-bottom: 1px solid $border-color;
+
+      @media (max-width: 768px) {
+        padding: 0.75rem 1rem;
+      }
     }
 
-    thead th {
-      background-color: #e9ecef;
-      font-weight: 600;
-      color: $light-text-color;
+    thead {
+      th {
+        background-color: $table-header-bg;
+        font-weight: 600;
+        color: $light-text-color;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.8rem;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
     }
 
-    tbody tr:last-child td {
-      border-bottom: none;
-    }
+    tbody {
+      tr {
+        transition: background-color 0.2s ease;
 
-    .text-center {
-      text-align: center;
-      color: $light-text-color;
-      padding: 2rem;
+        &:hover {
+          background-color: rgba($primary-color, 0.02);
+        }
+
+        &:last-child td {
+          border-bottom: none;
+        }
+      }
+
+      td {
+        vertical-align: middle;
+
+        &.text-center {
+          text-align: center;
+          color: $light-text-color;
+          padding: 3rem 1rem;
+          font-style: italic;
+        }
+      }
     }
   }
 }
 
 // Huy hiệu trạng thái
 .status-badge {
-  padding: 0.3rem 0.6rem;
-  border-radius: 15px;
-  font-size: 0.8rem;
+  display: inline-block;
+  padding: 0.35rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: scale(1.05);
+  }
 
   &.status-completed {
-    background-color: $success-color;
+    background: linear-gradient(135deg, $success-color, lighten($success-color, 5%));
+    box-shadow: 0 2px 8px rgba($success-color, 0.3);
   }
+
   &.status-enrolled {
-    background-color: $primary-color;
+    background: linear-gradient(135deg, $primary-color, lighten($primary-color, 5%));
+    box-shadow: 0 2px 8px rgba($primary-color, 0.3);
   }
+
   &.status-dropped {
-    background-color: #dc3545; // Danger color
+    background: linear-gradient(135deg, $danger-color, lighten($danger-color, 5%));
+    box-shadow: 0 2px 8px rgba($danger-color, 0.3);
   }
+
+  &.status-pending {
+    background: linear-gradient(135deg, $warning-color, lighten($warning-color, 5%));
+    box-shadow: 0 2px 8px rgba($warning-color, 0.3);
+    color: #212529;
+  }
+
   &.status-default {
-    background-color: #6c757d; // Secondary color
+    background: linear-gradient(135deg, $secondary-color, lighten($secondary-color, 5%));
+    box-shadow: 0 2px 8px rgba($secondary-color, 0.3);
+  }
+}
+
+// Animation keyframes
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Apply animations
+.stat-card {
+  animation: fadeIn 0.6s ease-out;
+
+  &:nth-child(1) { animation-delay: 0.1s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.3s; }
+}
+
+.recent-activity {
+  animation: slideInUp 0.8s ease-out 0.4s both;
+}
+
+// Loading spinner
+.loading-indicator {
+  p {
+    position: relative;
+
+    &::after {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid $light-text-color;
+      border-radius: 50%;
+      border-top-color: $primary-color;
+      animation: spin 1s ease-in-out infinite;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Utilities
+.text-center {
+  text-align: center;
+}
+
+.text-muted {
+  color: $light-text-color;
+}
+
+// Dark mode support (optional)
+@media (prefers-color-scheme: dark) {
+  .dashboard-container {
+    --bg-color: #1a1a1a;
+    --card-bg: #2d2d2d;
+    --text-color: #e0e0e0;
+    --light-text-color: #a0a0a0;
+    --border-color: #404040;
+    --table-header-bg: #3a3a3a;
   }
 }

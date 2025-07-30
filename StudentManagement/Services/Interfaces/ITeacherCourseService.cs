@@ -1,4 +1,4 @@
-using StudentManagementSystem.Dtos.TeacherCourse;
+using StudentManagementSystem.DTOs.TeacherCourse;
 
 namespace StudentManagementSystem.Services.Interfaces
 {

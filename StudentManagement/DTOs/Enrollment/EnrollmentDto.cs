@@ -1,4 +1,5 @@
-namespace StudentManagementSystem.Dtos.Enrollment
+using StudentManagementSystem.Models;
+namespace StudentManagementSystem.DTOs.Enrollment
 {
     public class EnrollmentDto
     {

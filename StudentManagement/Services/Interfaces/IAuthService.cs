@@ -1,4 +1,4 @@
-using StudentManagementSystem.Dtos.Auth;
+using StudentManagementSystem.DTOs.Auth;
 
 public interface IAuthService
 {

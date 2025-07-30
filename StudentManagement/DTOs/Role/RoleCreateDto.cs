@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace StudentManagementSystem.Dtos.Role
+namespace StudentManagementSystem.DTOs.Role
 {
     public class RoleCreateDto
     {

@@ -109,4 +109,20 @@ export class EnrollmentService {
   getStudentEnrollmentsWithScores(studentId: string): Observable<Enrollment[]> {
     return this.http.get<Enrollment[]>(`${this.apiUrl}/student/${studentId}/with-scores`);
   }
+  /**
+ * Lấy danh sách đăng ký chưa có điểm cho một lớp học cụ thể.
+ * @param courseId ID của môn học.
+ * @param teacherId ID của giảng viên.
+ */
+  getUnscoredEnrollmentsForClass(courseId: string, teacherId: string): Observable<Enrollment[]> {
+    const params = new HttpParams()
+      .set('courseId', courseId)
+      .set('teacherId', teacherId);
+
+    // URL của API endpoint này cần được tạo ở backend
+    // Ví dụ: /api/Enrollment/unscored-by-class
+    const url = `${this.apiUrl}/unscored-by-class`;
+
+    return this.http.get<Enrollment[]>(url, { params });
+  }
 }

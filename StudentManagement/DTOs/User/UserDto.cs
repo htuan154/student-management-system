@@ -1,4 +1,4 @@
-namespace StudentManagementSystem.Dtos.User
+namespace StudentManagementSystem.DTOs.User
 {
     public class UserDto
     {

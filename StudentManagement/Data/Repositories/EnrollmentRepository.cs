@@ -12,11 +12,23 @@ namespace StudentManagementSystem.Data.Repositories
         {
             _context = context;
         }
-
+        public async Task<IEnumerable<Enrollment>> GetStudentEnrollmentsWithScoresAsync(string studentId)
+        {
+            return await _context.Enrollments
+                .Include(e => e.Student)
+                .Include(e => e.Course)
+                .Include(e => e.Teacher)
+                .Include(e => e.Score)
+                .Where(e => e.StudentId == studentId)
+                .OrderByDescending(e => e.Year)
+                .ThenByDescending(e => e.Semester)
+                .ToListAsync();
+        }
         public async Task<IEnumerable<Enrollment>> GetByStudentIdAsync(string studentId)
         {
             return await _context.Enrollments.Where(e => e.StudentId == studentId).ToListAsync();
         }
+
 
         public async Task<IEnumerable<Enrollment>> GetByCourseIdAsync(string courseId)
         {
@@ -57,6 +69,18 @@ namespace StudentManagementSystem.Data.Repositories
                     s.EnrollmentId == e.EnrollmentId &&
                     (s.ProcessScore != null || s.MidtermScore != null || s.FinalScore != null)
                 ))
+                .ToListAsync();
+        }
+        public async Task<IEnumerable<Enrollment>> GetUnscoredEnrollmentsForClassAsync(string courseId, string teacherId)
+        {
+            return await _context.Enrollments
+                .Include(e => e.Student)
+                .Include(e => e.Course)
+                .Where(e =>
+                    e.CourseId == courseId &&
+                    e.TeacherId == teacherId &&
+                    !_context.Scores.Any(s => s.EnrollmentId == e.EnrollmentId)
+                )
                 .ToListAsync();
         }
     }

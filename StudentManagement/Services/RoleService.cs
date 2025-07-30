@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 using StudentManagementSystem.Data.Interfaces;
-using StudentManagementSystem.Dtos.Role;
+using StudentManagementSystem.DTOs.Role;
 using StudentManagementSystem.Models;
 using StudentManagementSystem.Services.Interfaces;
 using System.Collections.Generic;

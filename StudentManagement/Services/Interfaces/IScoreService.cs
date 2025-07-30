@@ -1,4 +1,4 @@
-using StudentManagementSystem.Dtos.Score;
+using StudentManagementSystem.DTOs.Score;
 
 namespace StudentManagementSystem.Services.Interfaces
 {

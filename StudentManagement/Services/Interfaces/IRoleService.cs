@@ -1,4 +1,4 @@
-using StudentManagementSystem.Dtos.Role;
+using StudentManagementSystem.DTOs.Role;
 
 namespace StudentManagementSystem.Services.Interfaces
 {
