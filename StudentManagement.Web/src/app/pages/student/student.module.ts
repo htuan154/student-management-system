@@ -9,6 +9,7 @@ import { StudentComponent } from './student.component';
 import { StudentDashboardComponent } from './dashboard/student-dashboard.component';
 import { MyScoresComponent } from './my-scores/my-scores.component';
 import { CourseRegistrationComponent } from './course-registration/course-registration.component';
+import { ProfileStudentComponent } from './profile/profilestudent.component'; // Thêm dòng này
 
 @NgModule({
 
@@ -21,7 +22,8 @@ import { CourseRegistrationComponent } from './course-registration/course-regist
     StudentComponent,
     StudentDashboardComponent,
     MyScoresComponent,
-    CourseRegistrationComponent
+    CourseRegistrationComponent,
+    ProfileStudentComponent
   ]
 })
 export class StudentModule { }

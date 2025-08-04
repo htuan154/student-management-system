@@ -1,0 +1,123 @@
+// Biến màu sắc
+$primary-color: #007bff;
+$success-color: #28a745;
+$danger-color: #dc3545;
+$background-color: #f8f9fa; // Nền xám nhạt hơn
+$card-bg: #ffffff;
+$text-dark: #343a40;
+$light-text-color: #6c757d;
+
+
+
+// Các thẻ thống kê
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.stat-card {
+  background-color: $card-bg;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  h3 {
+    font-size: 1rem;
+    color: $light-text-color;
+    margin: 0 0 0.5rem 0;
+    font-weight: 500;
+  }
+
+  p {
+    font-size: 2rem;
+    font-weight: 700;
+    color: $text-dark;
+    margin: 0;
+
+    &.text-success {
+      color: $success-color;
+    }
+    &.text-danger {
+      color: $danger-color;
+    }
+  }
+
+  .card-icon {
+    position: absolute;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 3rem;
+    color: rgba($primary-color, 0.1);
+  }
+}
+
+// Bảng hoạt động gần đây
+.recent-activity {
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: $text-dark;
+  }
+
+  .table-container {
+    background-color: $card-bg;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+  }
+
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th, td {
+      padding: 1rem 1.25rem;
+      text-align: left;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    thead th {
+      background-color: #007bff; // Header màu xanh
+      color: #fff;
+      font-weight: 600;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+        background-color: #f1f1f1; // Hiệu ứng hover
+    }
+
+    .text-center {
+      text-align: center;
+      color: $light-text-color;
+      padding: 2rem;
+    }
+  }
+}
+
+// Huy hiệu trạng thái
+.status-badge {
+  padding: 0.3rem 0.6rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+
+  &.status-active {
+    background-color: $success-color;
+  }
+}

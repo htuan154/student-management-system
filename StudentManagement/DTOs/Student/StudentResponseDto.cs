@@ -1,3 +1,5 @@
+using StudentManagementSystem.DTOs.User;
+
 namespace StudentManagementSystem.DTOs.Student
 {
     public class StudentResponseDto
@@ -10,5 +12,6 @@ namespace StudentManagementSystem.DTOs.Student
         public string? Address { get; set; }
         public string ClassId { get; set; } = string.Empty;
         public string ClassName { get; set; } = string.Empty;
+        public UserDto? User { get; set; }
     }
 }

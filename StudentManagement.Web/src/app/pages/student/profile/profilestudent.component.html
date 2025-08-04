@@ -1,0 +1,308 @@
+<div class="profile-container">
+  <!-- Header -->
+  <div class="profile-header">
+    <button class="back-btn" (click)="goBack()">
+      <i class="fas fa-arrow-left"></i>
+      Quay lại
+    </button>
+    <h1>Thông tin cá nhân</h1>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Đang tải thông tin...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading && studentInfo" class="profile-content">
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'profile'"
+        (click)="switchTab('profile')">
+        <i class="fas fa-user"></i>
+        Thông tin cá nhân
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'security'"
+        (click)="switchTab('security')">
+        <i class="fas fa-lock"></i>
+        Bảo mật
+      </button>
+    </div>
+
+    <!-- Profile Tab -->
+    <div *ngIf="activeTab === 'profile'" class="tab-content">
+      <!-- Success Message -->
+      <div *ngIf="successMessage" class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        {{ successMessage }}
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="alert alert-error">
+        <i class="fas fa-exclamation-circle"></i>
+        {{ errorMessage }}
+      </div>
+
+      <!-- Student Info Card -->
+      <div class="info-card">
+        <div class="card-header">
+          <h2>
+            <i class="fas fa-id-card"></i>
+            Thông tin sinh viên
+          </h2>
+          <button
+            class="edit-btn"
+            [class.cancel]="isEditing"
+            (click)="toggleEdit()">
+            <i [class]="isEditing ? 'fas fa-times' : 'fas fa-edit'"></i>
+            {{ isEditing ? 'Hủy' : 'Chỉnh sửa' }}
+          </button>
+        </div>
+
+        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+          <div class="form-grid">
+            <!-- Mã sinh viên (readonly) -->
+            <div class="form-group full-width">
+              <label>Mã sinh viên</label>
+              <input
+                type="text"
+                [value]="studentInfo.studentId"
+                readonly
+                class="form-control readonly">
+            </div>
+
+            <!-- Lớp (readonly) -->
+            <div class="form-group full-width">
+              <label>Lớp</label>
+              <input
+                type="text"
+                [value]="studentInfo.classId || 'N/A'"
+                readonly
+                class="form-control readonly">
+            </div>
+
+            <!-- Họ và tên -->
+            <div class="form-group">
+              <label for="fullName">
+                Họ và tên <span class="required">*</span>
+              </label>
+              <input
+                type="text"
+                id="fullName"
+                formControlName="fullName"
+                [readonly]="!isEditing"
+                [class.readonly]="!isEditing"
+                [class.error]="hasError(profileForm, 'fullName')"
+                class="form-control">
+              <div *ngIf="hasError(profileForm, 'fullName')" class="error-message">
+                {{ getErrorMessage(profileForm, 'fullName') }}
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+              <label for="email">
+                Email <span class="required">*</span>
+              </label>
+              <input
+                type="email"
+                id="email"
+                formControlName="email"
+                [readonly]="!isEditing"
+                [class.readonly]="!isEditing"
+                [class.error]="hasError(profileForm, 'email')"
+                class="form-control">
+              <div *ngIf="hasError(profileForm, 'email')" class="error-message">
+                {{ getErrorMessage(profileForm, 'email') }}
+              </div>
+            </div>
+
+            <!-- Số điện thoại -->
+            <div class="form-group">
+              <label for="phoneNumber">Số điện thoại</label>
+              <input
+                type="tel"
+                id="phoneNumber"
+                formControlName="phoneNumber"
+                [readonly]="!isEditing"
+                [class.readonly]="!isEditing"
+                [class.error]="hasError(profileForm, 'phoneNumber')"
+                class="form-control"
+                placeholder="Nhập số điện thoại">
+              <div *ngIf="hasError(profileForm, 'phoneNumber')" class="error-message">
+                {{ getErrorMessage(profileForm, 'phoneNumber') }}
+              </div>
+            </div>
+
+            <!-- Ngày sinh -->
+            <div class="form-group">
+              <label for="dateOfBirth">Ngày sinh</label>
+              <input
+                type="date"
+                id="dateOfBirth"
+                formControlName="dateOfBirth"
+                [readonly]="!isEditing"
+                [class.readonly]="!isEditing"
+                class="form-control">
+            </div>
+
+            <!-- Địa chỉ -->
+            <div class="form-group full-width">
+              <label for="address">Địa chỉ</label>
+              <textarea
+                id="address"
+                formControlName="address"
+                [readonly]="!isEditing"
+                [class.readonly]="!isEditing"
+                class="form-control textarea"
+                rows="3"
+                placeholder="Nhập địa chỉ"></textarea>
+            </div>
+          </div>
+
+          <!-- Save Button -->
+          <div *ngIf="isEditing" class="form-actions">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="profileForm.invalid || isLoading">
+              <i class="fas fa-save"></i>
+              {{ isLoading ? 'Đang lưu...' : 'Lưu thay đổi' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Security Tab -->
+    <div *ngIf="activeTab === 'security'" class="tab-content">
+      <!-- Password Messages -->
+      <div *ngIf="passwordMessage" class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        {{ passwordMessage }}
+      </div>
+
+      <div *ngIf="passwordError" class="alert alert-error">
+        <i class="fas fa-exclamation-circle"></i>
+        {{ passwordError }}
+      </div>
+
+      <!-- Security Info Card -->
+      <div class="info-card">
+        <div class="card-header">
+          <h2>
+            <i class="fas fa-shield-alt"></i>
+            Bảo mật tài khoản
+          </h2>
+        </div>
+
+        <div class="security-info">
+          <div class="security-item">
+            <div class="security-icon">
+              <i class="fas fa-user-circle"></i>
+            </div>
+            <div class="security-details">
+              <h3>Tên đăng nhập</h3>
+              <p>{{ userInfo?.username || 'N/A' }}</p>
+            </div>
+          </div>
+
+          <div class="security-item">
+            <div class="security-icon">
+              <i class="fas fa-key"></i>
+            </div>
+            <div class="security-details">
+              <h3>Mật khẩu</h3>
+              <p>Được bảo mật bằng mã hóa</p>
+              <button
+                class="btn btn-outline"
+                (click)="togglePasswordChange()">
+                <i class="fas fa-edit"></i>
+                {{ isChangingPassword ? 'Hủy đổi mật khẩu' : 'Đổi mật khẩu' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Change Password Form -->
+        <form *ngIf="isChangingPassword" [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="password-form">
+          <h3>Đổi mật khẩu</h3>
+
+          <div class="form-group">
+            <label for="currentPassword">
+              Mật khẩu hiện tại <span class="required">*</span>
+            </label>
+            <input
+              type="password"
+              id="currentPassword"
+              formControlName="currentPassword"
+              [class.error]="hasError(passwordForm, 'currentPassword')"
+              class="form-control"
+              placeholder="Nhập mật khẩu hiện tại">
+            <div *ngIf="hasError(passwordForm, 'currentPassword')" class="error-message">
+              {{ getErrorMessage(passwordForm, 'currentPassword') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="newPassword">
+              Mật khẩu mới <span class="required">*</span>
+            </label>
+            <input
+              type="password"
+              id="newPassword"
+              formControlName="newPassword"
+              [class.error]="hasError(passwordForm, 'newPassword')"
+              class="form-control"
+              placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)">
+            <div *ngIf="hasError(passwordForm, 'newPassword')" class="error-message">
+              {{ getErrorMessage(passwordForm, 'newPassword') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">
+              Xác nhận mật khẩu mới <span class="required">*</span>
+            </label>
+            <input
+              type="password"
+              id="confirmPassword"
+              formControlName="confirmPassword"
+              [class.error]="hasError(passwordForm, 'confirmPassword')"
+              class="form-control"
+              placeholder="Nhập lại mật khẩu mới">
+            <div *ngIf="hasError(passwordForm, 'confirmPassword')" class="error-message">
+              {{ getErrorMessage(passwordForm, 'confirmPassword') }}
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="passwordForm.invalid || isLoading">
+              <i class="fas fa-save"></i>
+              {{ isLoading ? 'Đang đổi...' : 'Đổi mật khẩu' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && !studentInfo" class="error-state">
+    <i class="fas fa-exclamation-triangle"></i>
+    <h2>Không thể tải thông tin</h2>
+    <p>{{ errorMessage || 'Đã có lỗi xảy ra khi tải thông tin profile.' }}</p>
+    <button class="btn btn-primary" (click)="loadStudentProfile()">
+      <i class="fas fa-redo"></i>
+      Thử lại
+    </button>
+  </div>
+</div>

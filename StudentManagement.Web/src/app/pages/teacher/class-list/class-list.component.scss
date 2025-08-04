@@ -1,0 +1,461 @@
+// Biến màu sắc
+$primary-color: #1976d2;
+$primary-dark: #1565c0;
+$background-color: #f8f9fa;
+$white: #fff;
+$border-color: #dee2e6;
+$text-dark: #343a40;
+$light-text-color: #6c757d;
+$success-color: #28a745;
+$danger-color: #dc3545;
+
+// Container chính
+.management-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: $background-color;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+// Header của trang
+.management-header {
+  background: linear-gradient(135deg, $primary-color 0%, $primary-dark 100%);
+  color: $white;
+  padding: 2rem 2.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+
+  h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+}
+
+// Khu vực chọn lớp học
+.selection-container {
+  background-color: $white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin-bottom: 2rem;
+  border: 1px solid #e0e0e0;
+
+  label {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: $primary-color;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+
+    &::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      background: $primary-color;
+      margin-right: 0.75rem;
+      border-radius: 2px;
+    }
+  }
+
+  .course-select {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: $white;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+
+    &:focus {
+      outline: none;
+      border-color: $primary-color;
+      box-shadow: 0 0 0 4px rgba($primary-color, 0.15);
+    }
+
+    &:hover {
+      border-color: #42a5f5;
+      box-shadow: 0 2px 8px rgba($primary-color, 0.1);
+    }
+  }
+}
+
+// Khung chứa bảng
+.table-container {
+  background-color: $white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e0e0e0;
+  overflow: hidden;
+}
+
+// Nút bấm phía trên bảng
+.table-actions {
+  padding: 1.5rem 2rem;
+  background: linear-gradient(to right, #fafafa, #f5f5f5);
+  border-bottom: 2px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+// Bảng điểm với khoảng cách cân bằng
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  font-size: 0.9rem;
+  table-layout: fixed; // Quan trọng: Fixed layout để control column widths
+
+  // Định nghĩa độ rộng các cột
+  colgroup {
+    col:nth-child(1) { width: 8%; }   // STT
+    col:nth-child(2) { width: 15%; }  // Mã sinh viên
+    col:nth-child(3) { width: 18%; }  // Điểm quá trình
+    col:nth-child(4) { width: 18%; }  // Điểm giữa kỳ
+    col:nth-child(5) { width: 18%; }  // Điểm cuối kỳ
+    col:nth-child(6) { width: 12%; }  // Tổng kết
+    col:nth-child(7) { width: 11%; }  // Kết quả
+  }
+
+  thead {
+    background: linear-gradient(135deg, $primary-color 0%, $primary-dark 100%);
+
+    th {
+      padding: 1.25rem 0.75rem;
+      text-align: center;
+      font-weight: 700;
+      color: $white;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border-right: 1px solid rgba($white, 0.2);
+      vertical-align: middle;
+      white-space: nowrap;
+      position: relative;
+
+      &:last-child {
+        border-right: none;
+      }
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: rgba($white, 0.3);
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      transition: all 0.3s ease;
+      position: relative;
+
+      &:nth-child(even) {
+        background: rgba(#f5f5f5, 0.5);
+      }
+
+      &:hover {
+        background: rgba($primary-color, 0.08);
+        transform: scale(1.001);
+        box-shadow: 0 2px 8px rgba($primary-color, 0.15);
+      }
+
+      &:last-child td {
+        border-bottom: none;
+      }
+    }
+
+    td {
+      padding: 1.25rem 0.75rem;
+      text-align: center;
+      border-bottom: 1px solid #e0e0e0;
+      border-right: 1px solid #e0e0e0;
+      vertical-align: middle;
+      transition: all 0.2s ease;
+
+      &:last-child {
+        border-right: none;
+      }
+
+      // STT column
+      &:nth-child(1) {
+        font-weight: 600;
+        color: #757575;
+        background: rgba(#fafafa, 0.8);
+        font-size: 0.9rem;
+      }
+
+      // Mã sinh viên column
+      &:nth-child(2) {
+        font-weight: 600;
+        color: $primary-dark;
+        font-family: 'Courier New', monospace;
+      }
+
+      // Score input columns (3, 4, 5)
+      &:nth-child(3),
+      &:nth-child(4),
+      &:nth-child(5) {
+        padding: 0.75rem 0.5rem;
+      }
+
+      // Tổng kết column
+      &:nth-child(6) {
+        font-weight: 700;
+        color: #424242;
+        font-size: 1rem;
+        background: rgba(#ff9800, 0.1);
+      }
+
+      // Kết quả column
+      &:nth-child(7) {
+        padding: 0.75rem;
+      }
+    }
+
+    // Empty row
+    .text-center {
+      padding: 3rem;
+      color: #9e9e9e;
+      font-style: italic;
+      background: rgba(#f5f5f5, 0.5);
+    }
+  }
+}
+
+// Ô nhập điểm
+.score-input {
+  width: 100%;
+  max-width: 85px;
+  padding: 0.75rem 0.5rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: $white;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  &:focus {
+    outline: none;
+    border-color: $primary-color;
+    background: rgba($primary-color, 0.02);
+    box-shadow: 0 0 0 3px rgba($primary-color, 0.15);
+    transform: scale(1.05);
+  }
+
+  &:hover {
+    border-color: #42a5f5;
+    box-shadow: 0 2px 8px rgba($primary-color, 0.1);
+  }
+
+  // Remove number input arrows
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  &[type=number] {
+    appearance: none;
+    -moz-appearance: textfield;
+  }
+}
+
+// Trạng thái đậu/rớt
+.text-success {
+  color: $success-color;
+  font-weight: 700;
+  font-size: 0.8rem;
+  background: rgba($success-color, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  display: inline-block;
+  border: 1px solid rgba($success-color, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 60px;
+}
+
+.text-danger {
+  color: $danger-color;
+  font-weight: 700;
+  font-size: 0.8rem;
+  background: rgba($danger-color, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  display: inline-block;
+  border: 1px solid rgba($danger-color, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 60px;
+}
+
+// Nút bấm
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  padding: 0.875rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+
+  i {
+    font-size: 1rem;
+  }
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, $primary-color 0%, $primary-dark 100%);
+  color: $white;
+
+  &:hover {
+    background: linear-gradient(135deg, $primary-dark 0%, $primary-color 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba($primary-color, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+// Các thông báo
+.loading-indicator {
+  padding: 4rem 2rem;
+  text-align: center;
+  color: #757575;
+  background: rgba($primary-color, 0.02);
+  border-radius: 8px;
+
+  p {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+
+  &::before {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e0e0e0;
+    border-top-color: $primary-color;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+  }
+}
+
+.error-message {
+  background: linear-gradient(135deg, rgba($danger-color, 0.1) 0%, rgba($danger-color, 0.05) 100%);
+  color: $danger-color;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border-left: 5px solid $danger-color;
+  margin: 1rem 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  font-weight: 500;
+
+  &::before {
+    content: '⚠️';
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+  }
+}
+
+// Animation
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Responsive design
+@media (max-width: 1200px) {
+  .management-container {
+    padding: 1.5rem;
+  }
+
+  .table {
+    font-size: 0.85rem;
+
+    th, td {
+      padding: 1rem 0.5rem;
+    }
+
+    .score-input {
+      max-width: 75px;
+      font-size: 0.85rem;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .management-container {
+    padding: 1rem;
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+
+  .table {
+    min-width: 900px;
+    font-size: 0.8rem;
+
+    .score-input {
+      max-width: 65px;
+      padding: 0.5rem 0.25rem;
+    }
+
+    .text-success,
+    .text-danger {
+      font-size: 0.7rem;
+      padding: 0.4rem 0.8rem;
+      min-width: 50px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .management-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .selection-container {
+    padding: 1.5rem;
+  }
+
+  .table-actions {
+    padding: 1rem;
+  }
+}

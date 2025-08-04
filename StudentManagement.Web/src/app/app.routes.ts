@@ -23,8 +23,6 @@ const routes: Routes = [
       expectedRole: 'Admin'
     }
   },
-
-  // ✅ BỎ CHÚ THÍCH CHO ĐOẠN CODE NÀY
   {
     path: 'student',
     loadChildren: () => import('./pages/student/student.module').then(m => m.StudentModule),
@@ -33,13 +31,19 @@ const routes: Routes = [
       expectedRole: 'Student'
     }
   },
-
+  {
+    path: 'teacher',
+    loadChildren: () => import('./pages/teacher/teacher.module').then(m => m.TeacherModule),
+    canActivate: [AuthGuard, RoleGuard],
+    data: {
+      expectedRole: 'Teacher'
+    }
+  },
   // Route bắt các đường dẫn không hợp lệ
   {
     path: '**',
     redirectTo: 'login'
   },
-  
 ];
 
 @NgModule({

@@ -9,11 +9,12 @@ namespace StudentManagementSystem.Data.Repositories
         public StudentRepository(ApplicationDbContext context) : base(context)
         {
         }
-        
+
         public async Task<Student?> GetStudentWithClassAsync(string studentId)
         {
             return await _dbSet
                 .Include(s => s.Class)
+                .Include(s => s.Users)
                 .FirstOrDefaultAsync(s => s.StudentId == studentId);
         }
 

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace StudentManagementSystem.Controllers
 {
-    [Authorize(Roles = "Admin,SuperAdmin")]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class UserController : ControllerBase

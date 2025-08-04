@@ -15,7 +15,11 @@ namespace StudentManagementSystem.Data.Repositories
 
         public async Task<IEnumerable<TeacherCourse>> GetByTeacherIdAsync(string teacherId)
         {
-            return await _context.TeacherCourses.Where(tc => tc.TeacherId == teacherId).ToListAsync();
+            return await _dbSet
+            .Include(tc => tc.Course)
+            .Include(tc => tc.Teacher)
+            .Where(tc => tc.TeacherId == teacherId)
+            .ToListAsync();
         }
 
         public async Task<IEnumerable<TeacherCourse>> GetByCourseIdAsync(string courseId)

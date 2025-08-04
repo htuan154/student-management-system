@@ -97,6 +97,15 @@ namespace StudentManagementSystem.Services
             {
                 claims.Add(new Claim("studentId", user.StudentId));
             }
+            if (!string.IsNullOrEmpty(user.TeacherId))
+            {
+                claims.Add(new Claim("teacherId", user.TeacherId));
+            }
+
+            if (!string.IsNullOrEmpty(user.EmployeeId))
+            {
+                claims.Add(new Claim("employeeId", user.EmployeeId));
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

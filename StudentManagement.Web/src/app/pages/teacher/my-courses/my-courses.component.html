@@ -1,0 +1,40 @@
+<div class="management-container">
+  <header class="management-header">
+    <h1>Các lớp được phân công</h1>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-indicator">
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage" class="table-container">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Mã Môn học</th>
+          <th>Học kỳ</th>
+          <th>Năm học</th>
+          <th>Trạng thái</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Mỗi dòng là một môn học, có thể nhấp vào -->
+        <tr *ngFor="let assignment of assignedCourses" (click)="viewClassList(assignment.courseId)" class="clickable-row" title="Nhấp để xem danh sách lớp">
+          <td>{{ assignment.course?.courseId || assignment.courseId }}</td>
+          <td>{{ assignment.semester }}</td>
+          <td>{{ assignment.year }}</td>
+          <td>
+            <span class="status-active">Hoạt động</span>
+          </td>
+        </tr>
+        <tr *ngIf="assignedCourses.length === 0">
+          <td colspan="5" class="text-center">Bạn chưa được phân công dạy môn học nào.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

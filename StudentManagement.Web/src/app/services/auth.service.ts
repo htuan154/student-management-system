@@ -49,6 +49,7 @@ export class AuthService {
   getDecodedToken(): any | null {
     return this.decodeToken();
   }
+
   /**
    * Lấy vai trò người dùng hiện tại từ access token.
    */
@@ -57,6 +58,46 @@ export class AuthService {
     return decoded?.['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ?? null;
   }
 
+  /**
+   * Lấy ID người dùng hiện tại từ access token.
+   */
+  getCurrentUserId(): string | null {
+    const decoded = this.decodeToken();
+    if (!decoded) return null;
+
+    // Thử các trường phổ biến cho user ID trong JWT token
+    return decoded.sub ||
+           decoded.userId ||
+           decoded.id ||
+           decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] ||
+           decoded.nameid ||
+           null;
+  }
+
+  /**
+   * Lấy username từ access token.
+   */
+  getCurrentUsername(): string | null {
+    const decoded = this.decodeToken();
+    if (!decoded) return null;
+
+    return decoded.username ||
+           decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] ||
+           decoded.name ||
+           null;
+  }
+
+  /**
+   * Lấy email từ access token.
+   */
+  getCurrentUserEmail(): string | null {
+    const decoded = this.decodeToken();
+    if (!decoded) return null;
+
+    return decoded.email ||
+           decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] ||
+           null;
+  }
 
   /**
    * Kiểm tra người dùng đã đăng nhập hay chưa (token còn hạn hay không).
@@ -72,6 +113,42 @@ export class AuthService {
    */
   getAccessToken(): string | null {
     return localStorage.getItem('access_token');
+  }
+
+  /**
+   * Lấy refresh token hiện tại từ localStorage.
+   */
+  getRefreshToken(): string | null {
+    return localStorage.getItem('refresh_token');
+  }
+
+  /**
+   * Kiểm tra người dùng có vai trò cụ thể hay không.
+   */
+  hasRole(role: string): boolean {
+    const userRole = this.getUserRole();
+    return userRole === role;
+  }
+
+  /**
+   * Kiểm tra người dùng có phải là Admin hay không.
+   */
+  isAdmin(): boolean {
+    return this.hasRole('Admin') || this.hasRole('SuperAdmin');
+  }
+
+  /**
+   * Kiểm tra người dùng có phải là Teacher hay không.
+   */
+  isTeacher(): boolean {
+    return this.hasRole('Teacher');
+  }
+
+  /**
+   * Kiểm tra người dùng có phải là Student hay không.
+   */
+  isStudent(): boolean {
+    return this.hasRole('Student');
   }
 
   /**
