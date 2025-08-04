@@ -49,7 +49,6 @@ export class LoginComponent implements OnInit {
     this.authService.login(this.loginForm.value).subscribe({
       next: () => {
         this.navigateToDashboard();
-
       },
       error: (err: HttpErrorResponse) => {
         this.isLoading = false;
@@ -66,11 +65,13 @@ export class LoginComponent implements OnInit {
   private navigateToDashboard(): void {
     const role = this.authService.getUserRole();
     console.log('Role from token:', role);
+
     if (role === 'Admin' || role === 'SuperAdmin') {
       this.router.navigate(['/admin/dashboard']);
-
     } else if (role === 'Student') {
       this.router.navigate(['/student/dashboard']);
+    } else if (role === 'Teacher') {
+      this.router.navigate(['/teacher/dashboard']);
     } else {
       this.router.navigate(['/']);
     }

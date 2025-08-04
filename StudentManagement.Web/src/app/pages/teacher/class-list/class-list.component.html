@@ -1,0 +1,78 @@
+<div class="management-container">
+  <header class="management-header">
+    <h1>Danh sách lớp và Nhập điểm</h1>
+  </header>
+
+  <div *ngIf="isLoading && !assignedCourses.length" class="loading-indicator">
+    <p>Đang tải danh sách lớp học...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && assignedCourses.length > 0" class="selection-container">
+    <label for="course-select">Chọn lớp học:</label>
+    <select id="course-select" [(ngModel)]="selectedCourseId" (change)="onCourseSelect()" class="course-select">
+      <option [ngValue]="null">-- Vui lòng chọn một lớp --</option>
+      <option *ngFor="let assignment of assignedCourses" [value]="assignment.courseId">
+        {{ assignment.course?.courseName || assignment.courseId }} - HK{{ assignment.semester }} ({{ assignment.year }})
+      </option>
+    </select>
+  </div>
+
+  <!-- Bảng điểm chỉ hiển thị khi đã chọn một lớp -->
+  <div *ngIf="selectedCourseId" class="table-container">
+    <div *ngIf="isLoading" class="loading-indicator">
+      <p>Đang tải danh sách sinh viên...</p>
+    </div>
+
+    <div *ngIf="!isLoading">
+      <div class="table-actions">
+        <button class="btn btn-primary" (click)="saveAllScores()">
+          <i class="fas fa-save"></i> Lưu tất cả
+        </button>
+      </div>
+
+      <table class="table score-table">
+        <thead>
+          <tr>
+            <th>STT</th>
+            <th>Mã Sinh viên</th>
+            <th>Điểm quá trình</th>
+            <th>Điểm giữa kỳ</th>
+            <th>Điểm cuối kỳ</th>
+            <th>Tổng kết</th>
+            <th>Kết quả</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let score of scores; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ score.studentId }}</td>
+            <td>
+              <input type="number" class="score-input" [(ngModel)]="score.processScore" (ngModelChange)="calculateTotalScore(score)" min="0" max="10">
+            </td>
+            <td>
+              <input type="number" class="score-input" [(ngModel)]="score.midtermScore" (ngModelChange)="calculateTotalScore(score)" min="0" max="10">
+            </td>
+            <td>
+              <input type="number" class="score-input" [(ngModel)]="score.finalScore" (ngModelChange)="calculateTotalScore(score)" min="0" max="10">
+            </td>
+            <td>
+              <strong>{{ score.totalScore ?? 'N/A' }}</strong>
+            </td>
+            <td>
+              <span [ngClass]="{ 'text-success': score.isPassed, 'text-danger': !score.isPassed }">
+                {{ score.isPassed === null ? 'N/A' : (score.isPassed ? 'Đậu' : 'Rớt') }}
+              </span>
+            </td>
+          </tr>
+          <tr *ngIf="scores.length === 0">
+            <td colspan="8" class="text-center">Chưa có sinh viên nào trong lớp học này.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

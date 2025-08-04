@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using StudentManagementSystem.Data.Interfaces;
 using StudentManagementSystem.DTOs.Student;
+using StudentManagementSystem.DTOs.User;
 using StudentManagementSystem.Models;
 using StudentManagementSystem.Services.Interfaces;
 using System.Linq;
@@ -235,7 +236,15 @@ namespace StudentManagementSystem.Services
                 DateOfBirth = student.DateOfBirth,
                 Address = student.Address,
                 ClassId = student.ClassId,
-                ClassName = student.Class?.ClassName ?? string.Empty
+                ClassName = student.Class?.ClassName ?? string.Empty,
+                User = student.Users?.FirstOrDefault() != null
+                    ? new UserDto
+                    {
+                        Username = student.Users.First().Username,
+                        Email = student.Users.First().Email,
+                        // Thêm các trường khác nếu cần
+                    }
+                    : null
             };
         }
 

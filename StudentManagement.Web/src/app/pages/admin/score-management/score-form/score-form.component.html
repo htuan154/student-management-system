@@ -5,7 +5,7 @@
   </header>
 
   <div *ngIf="isLoading" class="loading-indicator">Đang tải...</div>
-  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+  <div *ngIf="errorMessage" class="warn-message">{{ errorMessage }}</div>
 
   <form [formGroup]="scoreForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading" class="form-body">
 

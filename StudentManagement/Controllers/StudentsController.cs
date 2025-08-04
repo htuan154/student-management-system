@@ -64,7 +64,7 @@ namespace StudentManagementSystem.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,SuperAdmin")]
+        [Authorize]
         public async Task<ActionResult<StudentResponseDto>> UpdateStudent(string id, UpdateStudentDto updateStudentDto)
         {
             try

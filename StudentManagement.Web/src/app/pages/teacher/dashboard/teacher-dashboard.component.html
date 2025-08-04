@@ -1,0 +1,67 @@
+<div class="dashboard-container">
+  <div *ngIf="isLoading" class="loading-indicator">
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage">
+    <!-- Hàng chứa các thẻ thống kê tổng quan -->
+    <div class="stats-cards">
+      <div class="stat-card">
+        <h3>Tổng số lớp được phân công</h3>
+        <p>{{ totalAssignedCourses }}</p>
+        <i class="fas fa-chalkboard card-icon"></i>
+      </div>
+      <div class="stat-card">
+        <h3>Tổng số sinh viên</h3>
+        <p>{{ totalStudents }}</p>
+        <i class="fas fa-users card-icon"></i>
+      </div>
+      <div class="stat-card">
+        <h3>Tổng số sinh viên đậu</h3>
+        <p class="text-success">{{ totalPassed }}</p>
+        <i class="fas fa-user-check card-icon"></i>
+      </div>
+      <div class="stat-card">
+        <h3>Tổng số sinh viên rớt</h3>
+        <p class="text-danger">{{ totalFailed }}</p>
+        <i class="fas fa-user-times card-icon"></i>
+      </div>
+    </div>
+
+    <!-- Bảng thống kê chi tiết theo từng lớp -->
+    <div class="recent-activity">
+      <h2>Thống kê chi tiết theo lớp</h2>
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Môn học</th>
+              <th>Học kỳ</th>
+              <th>Năm học</th>
+              <th>Sĩ số</th>
+              <th>Số lượng đậu</th>
+              <th>Số lượng rớt</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let stat of courseStatistics">
+              <td>{{ stat.courseId }}</td>
+              <td>{{ stat.semester }}</td>
+              <td>{{ stat.year }}</td>
+              <td>{{ stat.totalStudents }}</td>
+              <td class="text-success">{{ stat.passedStudents }}</td>
+              <td class="text-danger">{{ stat.failedStudents }}</td>
+            </tr>
+            <tr *ngIf="courseStatistics.length === 0">
+              <td colspan="6" class="text-center">Không có dữ liệu thống kê để hiển thị.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
