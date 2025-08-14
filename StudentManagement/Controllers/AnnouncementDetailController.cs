@@ -73,7 +73,7 @@ namespace StudentManagementSystem.Controllers
         public async Task<IActionResult> Create([FromBody] CreateAnnouncementDetailDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-
+            
             var result = await _announcementDetailService.CreateAsync(dto);
             if (result == null) return BadRequest("Không thể tạo announcement detail.");
 

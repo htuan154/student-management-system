@@ -38,7 +38,7 @@
           <td>{{ c.className }}</td>
           <td>{{ c.major }}</td>
           <td>{{ c.academicYear }}</td>
-          <td>{{ c.semester }}</td>
+          <td>{{ c.semester?.semesterName }}</td>
           <td>
             <!-- Hiển thị trạng thái với màu sắc tương ứng -->
             <span [ngClass]="{ 'active-status': c.isActive, 'inactive-status': !c.isActive }">

@@ -3,15 +3,13 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin, of } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
-// Import models and services
 import { TeacherCourse } from '../../../models';
 import { TeacherCourseService } from '../../../services/teacher-course.service';
 import { AuthService } from '../../../services/auth.service';
-import { EnrollmentService } from '../../../services/enrollment.service';
 import { SemesterService } from '../../../services/semester.service';
-import { Enrollment } from '../../../models/enrollment.model';
+import { CourseService } from '../../../services/course.service';
 import { Semester } from '../../../models/Semester.model';
 
 @Component({
@@ -24,7 +22,7 @@ import { Semester } from '../../../models/Semester.model';
 export class MyCoursesComponent implements OnInit {
   assignedCourses: TeacherCourse[] = [];
 
-  // Maps: key = teacherCourseId
+  // key = teacherCourseId
   tcSemesterName: Record<number, string> = {};
   tcAcademicYear: Record<number, string> = {};
 
@@ -36,132 +34,92 @@ export class MyCoursesComponent implements OnInit {
     private teacherCourseService: TeacherCourseService,
     private authService: AuthService,
     private router: Router,
-    private enrollmentService: EnrollmentService,
-    private semesterService: SemesterService
-  ) { }
+    private semesterService: SemesterService,
+    private courseService: CourseService
+  ) {}
 
   ngOnInit(): void {
-    // Thử lấy teacherId từ nhiều nguồn
     const tokenPayload = this.authService.getDecodedToken();
-    console.log('Full token payload:', tokenPayload);
+    this.teacherId = tokenPayload?.teacherId
+      || tokenPayload?.sub
+      || tokenPayload?.userId
+      || tokenPayload?.id
+      || tokenPayload?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
 
-    // Thử các claim khác nhau cho teacherId
-    this.teacherId = tokenPayload?.teacherId ||
-                    tokenPayload?.sub ||
-                    tokenPayload?.userId ||
-                    tokenPayload?.id ||
-                    tokenPayload?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
-
-    console.log('Extracted teacherId:', this.teacherId);
-
-    if (this.teacherId) {
-      this.loadAssignedCourses();
-    } else {
+    if (!this.teacherId) {
       this.errorMessage = 'Không thể xác định thông tin giảng viên.';
-      console.error('Available claims in token:', Object.keys(tokenPayload || {}));
+      return;
     }
+    this.loadAssignedCourses();
   }
 
-  loadAssignedCourses(): void {
+  private loadAssignedCourses(): void {
     this.isLoading = true;
     this.errorMessage = null;
 
-    console.log('Loading courses for teacherId:', this.teacherId);
-
     this.teacherCourseService.getTeacherCoursesByTeacherId(this.teacherId!).subscribe({
-      next: (data) => {
-        console.log('Raw API response:', data);
-
-        // Debug từng course - KHÔNG dùng tc.semester vì không có trong model
-        data.forEach((tc, index) => {
-          console.log(`Course ${index}:`, {
-            teacherCourseId: tc.teacherCourseId,
-            courseId: tc.courseId,
-            courseName: tc.course?.courseName,
-            courseCode: tc.course?.courseId,
-            fullCourseObject: tc.course
-          });
-        });
-
-        this.afterLoadAssignedCourses(data);
-        this.isLoading = false;
+      next: (tcs) => {
+        this.assignedCourses = tcs || [];
+        this.hydrateCoursesAndSemesters(this.assignedCourses);
       },
       error: (err: HttpErrorResponse) => {
         this.errorMessage = 'Đã có lỗi xảy ra khi tải danh sách môn học.';
+        console.error(err);
         this.isLoading = false;
-        console.error('API Error:', err);
-        console.error('Error details:', {
-          status: err.status,
-          message: err.message,
-          url: err.url
-        });
       }
     });
   }
 
-  private afterLoadAssignedCourses(courses: TeacherCourse[]) {
-    this.assignedCourses = courses || [];
-    this.hydrateSemesters(this.assignedCourses);
-  }
+  /** Bổ sung dữ liệu Course (theo courseId) và Semester (theo semesterId) */
+  private hydrateCoursesAndSemesters(tcs: TeacherCourse[]): void {
+    if (!tcs?.length) { this.isLoading = false; return; }
 
-  private hydrateSemesters(tcs: TeacherCourse[]) {
-    if (!tcs?.length) return;
+    const courseIds = Array.from(new Set(tcs.map(tc => tc.courseId).filter((x): x is string => !!x)));
+    const semesterIds = Array.from(new Set(tcs.map(tc => tc.semesterId).filter((x): x is number => x != null)));
 
-    const jobs = tcs.map(tc =>
-      // Lấy enrollments theo courseId rồi lọc đúng teacherCourseId
-      this.enrollmentService.getEnrollmentsByCourseId(tc.courseId).pipe(
-        map((enrs: Enrollment[] = []) => enrs.find(e => e.teacherCourseId === tc.teacherCourseId)?.semesterId || null),
-        switchMap((semId: number | null) =>
-          semId ? this.semesterService.getSemesterById(semId) : of<Semester | null>(null)
-        ),
-        map((sem: Semester | null) => ({
-          tcId: tc.teacherCourseId,
-          name: sem?.semesterName ?? 'N/A',
-          year: sem?.academicYear ?? 'N/A'
-        })),
-        catchError(() => of({ tcId: tc.teacherCourseId, name: 'N/A', year: 'N/A' }))
-      )
-    );
+    forkJoin({
+      // Lấy toàn bộ course 1 lần rồi map theo id cho nhanh/gọn
+      courses: this.courseService.getAllCourses().pipe(
+        map(all => (all || []).filter(c => courseIds.includes(c.courseId))),
+        catchError(() => of([] as any[]))
+      ),
+      semesters: semesterIds.length
+        ? forkJoin(semesterIds.map(id =>
+            this.semesterService.getSemesterById(id).pipe(catchError(() => of(null as unknown as Semester)))
+          ))
+        : of([] as (Semester | null)[])
+    }).subscribe({
+      next: ({ courses, semesters }) => {
+        const courseMap = new Map<string, any>((courses || []).map(c => [c.courseId, c]));
+        const semMap = new Map<number, Semester>();
+        (semesters || []).forEach(s => { if (s?.semesterId != null) semMap.set(s.semesterId, s); });
 
-    forkJoin(jobs).subscribe(results => {
-      for (const r of results) {
-        this.tcSemesterName[r.tcId] = r.name;
-        this.tcAcademicYear[r.tcId] = r.year;
+        // gắn course object để HTML không bị N/A
+        this.assignedCourses = tcs.map(tc => ({
+          ...tc,
+          course: tc.course || courseMap.get(tc.courseId) || null
+        }));
+
+        // điền tên kỳ & năm học vào 2 map để render
+        this.tcSemesterName = {};
+        this.tcAcademicYear = {};
+        for (const tc of this.assignedCourses) {
+          const s = tc.semesterId != null ? semMap.get(tc.semesterId) : undefined;
+          this.tcSemesterName[tc.teacherCourseId!] = s?.semesterName ?? 'N/A';
+          this.tcAcademicYear[tc.teacherCourseId!] = s?.academicYear ?? 'N/A';
+        }
+
+        this.isLoading = false;
+      },
+      error: () => {
+        this.errorMessage = 'Không thể bổ sung dữ liệu môn học/học kỳ.';
+        this.isLoading = false;
       }
     });
   }
 
-  /**
-   * Lấy tên môn học với fallback
-   */
-  getCourseName(course: TeacherCourse): string {
-    const courseName = course.course?.courseName;
-    console.log('Getting course name for:', course, 'Result:', courseName);
-    return courseName || 'Tên môn học không có';
-  }
-
-  /**
-   * Lấy mã môn học với fallback
-   */
-  getCourseCode(course: TeacherCourse): string {
-    const courseCode = course.course?.courseId;
-    return courseCode || 'N/A';
-  }
-
-  /**
-   * Lấy số lượng sinh viên
-   */
-  getStudentCount(course: TeacherCourse): number {
-    return 0; 
-  }
-
-  /**
-   * Điều hướng đến trang danh sách sinh viên của một lớp học cụ thể.
-   * @param courseId ID của môn học
-   */
+  /** Điều hướng danh sách SV của 1 môn (nếu bạn dùng) */
   viewClassList(courseId: string): void {
-    console.log('Navigating to class list with courseId:', courseId, 'teacherId:', this.teacherId);
-    // Điều hướng đến một route mới, truyền courseId và teacherId
     this.router.navigate(['/teacher/class-list', courseId, this.teacherId]);
   }
 }

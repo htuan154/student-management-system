@@ -6,7 +6,7 @@ import { TeacherComponent } from './teacher.component';
 import { TeacherDashboardComponent } from './dashboard/teacher-dashboard.component';
 import { MyCoursesComponent } from './my-courses/my-courses.component';
 import { ClassListComponent } from './class-list/class-list.component';
-
+import { TeacherAnnouncementsComponent } from './announcements/teacher-announcements.component';
 const routes: Routes = [
   {
     path: '',
@@ -16,7 +16,7 @@ const routes: Routes = [
       { path: 'my-courses', component: MyCoursesComponent },
 
       { path: 'class-list', component: ClassListComponent },
-
+      { path: 'announcements', component: TeacherAnnouncementsComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   }

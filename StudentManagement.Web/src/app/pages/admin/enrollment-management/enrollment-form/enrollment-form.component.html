@@ -6,55 +6,57 @@
 
   <form [formGroup]="enrollmentForm" (ngSubmit)="onSubmit()">
     <div class="grid">
+      <!-- Student -->
       <div class="col">
         <label>Sinh viên <span class="req">*</span></label>
-        <select formControlName="studentId" [disabled]="isEditMode">
-          <option value="">-- Chọn sinh viên --</option>
-          <option *ngFor="let s of students" [value]="s.studentId">
+        <select formControlName="studentId" [disabled]="isEditMode || isLoading">
+          <option [ngValue]="''">-- Chọn sinh viên --</option>
+          <option *ngFor="let s of students; trackBy: trackStudent" [ngValue]="s.studentId">
             {{ s.studentId }} - {{ s.fullName || s.studentId }}
           </option>
         </select>
       </div>
 
+      <!-- Course -->
       <div class="col">
         <label>Môn học <span class="req">*</span></label>
-        <select formControlName="courseId" [disabled]="isEditMode">
-          <option value="">-- Chọn môn học --</option>
-          <option *ngFor="let c of courses" [value]="c.courseId">
+        <select formControlName="courseId" [disabled]="isLoading">
+          <option [ngValue]="''">-- Chọn môn học --</option>
+          <option *ngFor="let c of courses; trackBy: trackCourse" [ngValue]="c.courseId">
             {{ c.courseId }} - {{ c.courseName }}
           </option>
         </select>
       </div>
 
+      <!-- TeacherCourse -->
       <div class="col">
         <label>Lớp giảng dạy (Teacher Course)</label>
-        <select formControlName="teacherCourseId">
+        <select formControlName="teacherCourseId"
+                [disabled]="!enrollmentForm.get('courseId')?.value || isLoading || isLoadingTeacherCourses">
           <option [ngValue]="null">-- Chưa phân công --</option>
-          <option *ngFor="let tc of teacherCourses" [ngValue]="tc.teacherCourseId">
-            {{
-              tc.teacher?.fullName
-              || tc.teacher?.teacherId
-              || tc.teacherId
-              || ('TC#' + tc.teacherCourseId)
-            }}
+          <option *ngFor="let tc of teacherCourses; trackBy: trackTeacherCourse" [ngValue]="tc.teacherCourseId">
+            {{ tc.teacher?.fullName || tc.teacherId || ('GV#' + tc.teacherCourseId) }}
+            — {{ tc.semester?.semesterName || ('HK ' + tc.semesterId) }}
           </option>
         </select>
         <div class="hint">Chọn lớp giảng dạy tương ứng (nếu có)</div>
       </div>
 
+      <!-- Semester -->
       <div class="col">
         <label>Học kỳ <span class="req">*</span></label>
-        <select formControlName="semesterId">
+        <select formControlName="semesterId" [disabled]="isLoading">
           <option [ngValue]="null">-- Chọn học kỳ --</option>
-          <option *ngFor="let sem of semesters" [ngValue]="sem.semesterId">
-            {{ sem.semesterName }} ({{ sem.academicYear }})
+          <option *ngFor="let s of semesters; trackBy: trackSemester" [ngValue]="s.semesterId">
+            {{ s.semesterName }} ({{ s.academicYear }})
           </option>
         </select>
       </div>
 
+      <!-- Status -->
       <div class="col">
-        <label>Trạng thái <span class="req">*</span></label>
-        <select formControlName="status">
+        <label>Trạng thái</label>
+        <select formControlName="status" [disabled]="isLoading">
           <option value="Enrolled">Enrolled</option>
           <option value="Dropped">Dropped</option>
           <option value="Completed">Completed</option>
@@ -63,10 +65,12 @@
     </div>
 
     <div class="actions">
-      <button type="button" class="btn" routerLink="/admin/enrollments">Hủy</button>
+      <a class="btn" routerLink="/admin/enrollments">Hủy</a>
       <button type="submit" class="btn primary" [disabled]="enrollmentForm.invalid || isLoading">
         {{ isLoading ? 'Đang lưu...' : (isEditMode ? 'Cập nhật' : 'Tạo mới') }}
       </button>
     </div>
+
+    <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
   </form>
 </div>

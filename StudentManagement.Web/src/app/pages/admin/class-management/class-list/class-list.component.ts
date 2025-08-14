@@ -1,9 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
-import { Class } from '../../../../models';
-import { ClassService } from '../../../../services/class.service';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+
+import { ClassService } from '../../../../services/class.service';
+import { SemesterService } from '../../../../services/semester.service';
+
+import { of, forkJoin } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
 @Component({
   selector: 'app-class-list',
   standalone: true,
@@ -12,43 +16,83 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./class-list.component.scss']
 })
 export class ClassListComponent implements OnInit {
-  classes: Class[] = [];
+  classes: any[] = [];
   isLoading = false;
   errorMessage: string | null = null;
 
-  constructor(private classService: ClassService) { }
+  constructor(
+    private classService: ClassService,
+    private semesterService: SemesterService
+  ) {}
 
   ngOnInit(): void {
     this.loadClasses();
   }
 
+  /** Tải danh sách lớp và join thông tin Học kỳ theo semesterId (FE-only) */
   loadClasses(): void {
     this.isLoading = true;
     this.errorMessage = null;
+
     this.classService.getAllClasses().subscribe({
       next: (data) => {
-        this.classes = data;
-        this.isLoading = false;
+        const list = (data || []) as any[];
+        this.classes = list;
+
+        // Lấy các semesterId duy nhất (bỏ null/undefined)
+        const ids = Array.from(
+          new Set(
+            list.map(c => c?.semesterId ?? c?.semester?.semesterId)
+                .filter((x: any) => x != null)
+          )
+        );
+
+        if (ids.length === 0) {
+          this.isLoading = false;
+          return;
+        }
+
+        // Nạp học kỳ theo từng ID rồi map vào từng class
+        forkJoin(
+          ids.map(id =>
+            this.semesterService.getSemesterById(id)
+              .pipe(catchError(() => of(null)))
+          )
+        ).subscribe({
+          next: (semList) => {
+            const semMap = new Map<number, any>();
+            (semList || []).forEach(s => { if (s?.semesterId != null) semMap.set(s.semesterId, s); });
+
+            this.classes = list.map(c => {
+              const sid = c?.semesterId ?? c?.semester?.semesterId;
+              const semester = sid != null ? (semMap.get(sid) || c.semester || null) : c.semester || null;
+              return { ...c, semester };
+            });
+
+            this.isLoading = false;
+          },
+          error: () => {
+            this.errorMessage = 'Không thể tải dữ liệu học kỳ.';
+            this.isLoading = false;
+          }
+        });
       },
-      error: (err: HttpErrorResponse) => {
-        this.errorMessage = 'Could not load the list of classes.';
+      error: () => {
+        this.errorMessage = 'Không thể tải danh sách lớp học.';
         this.isLoading = false;
-        console.error(err);
       }
     });
   }
 
-  deleteClass(id: string): void {
-    if (confirm('Are you sure you want to delete this class?')) {
-      this.classService.deleteClass(id).subscribe({
-        next: () => {
-          this.loadClasses(); // Reload the list after deletion
-        },
-        error: (err: HttpErrorResponse) => {
-          this.errorMessage = 'An error occurred while deleting the class.';
-          console.error(err);
-        }
-      });
-    }
+  /** Xoá lớp (giữ nguyên API hiện có) */
+  deleteClass(id: number): void {
+    if (!confirm('Bạn có chắc muốn xóa lớp này?')) return;
+    this.classService.deleteClass(id.toString()).subscribe({
+      next: () => this.loadClasses(),
+      error: () => alert('Xóa không thành công. Vui lòng thử lại.')
+    });
   }
+
+  /** trackBy cho *ngFor để render mượt */
+  trackById = (_: number, c: any) => c.classId ?? c.id;
 }

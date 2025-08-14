@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+
 import { EnrollmentService } from '../../../../services/enrollment.service';
 import { StudentService } from '../../../../services/student.service';
 import { CourseService } from '../../../../services/course.service';
@@ -8,11 +11,8 @@ import { TeacherCourseService } from '../../../../services/teacher-course.servic
 import { SemesterService } from '../../../../services/semester.service';
 
 import { Student, Course, TeacherCourse, Semester, Enrollment } from '../../../../models';
-import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
-import { forkJoin, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { of, forkJoin } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-enrollment-form',
@@ -23,154 +23,189 @@ import { catchError, map } from 'rxjs/operators';
 })
 export class EnrollmentFormComponent implements OnInit {
   enrollmentForm!: FormGroup;
+
   isEditMode = false;
-  enrollmentId: number | null = null;
   isLoading = false;
   errorMessage: string | null = null;
 
-  // Dropdown data
+  // data sources
   students: Student[] = [];
   courses: Course[] = [];
-  teacherCourses: TeacherCourse[] = [];
-  semesters: Semester[] = [];
+  semesters: Semester[] = [];          // CHỈ các kỳ đang hoạt động (getActiveSemesters)
+  teacherCourses: TeacherCourse[] = []; // CHỈ các phân công thuộc kỳ đang hoạt động
+
+  isLoadingTeacherCourses = false;
+  private enrollmentId: number | null = null;
 
   constructor(
     private fb: FormBuilder,
+    private route: ActivatedRoute,
+    private router: Router,
     private enrollmentService: EnrollmentService,
     private studentService: StudentService,
     private courseService: CourseService,
     private teacherCourseService: TeacherCourseService,
-    private semesterService: SemesterService,
-    private router: Router,
-    private route: ActivatedRoute
+    private semesterService: SemesterService
   ) {}
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.enrollmentId = +id;
-      this.isEditMode = true;
-    }
-
     this.initForm();
-    this.loadRelatedData();
 
-    // Tải dữ liệu chi tiết khi sửa
+    this.enrollmentId = Number(this.route.snapshot.paramMap.get('id')) || null;
+    this.isEditMode = !!this.enrollmentId;
+
+    // load dropdown data in parallel
+    this.loadInitialData();
+
+    // when course changes -> reload teacher courses & reset selections
+    this.enrollmentForm.get('courseId')!.valueChanges.subscribe((courseId: string) => {
+      this.enrollmentForm.get('teacherCourseId')!.setValue(null);
+      this.enrollmentForm.get('semesterId')!.setValue(null);
+      if (courseId) this.loadTeacherCourses(courseId);
+      else this.teacherCourses = [];
+    });
+
+    // when teacher course changes -> auto-set semester
+    this.enrollmentForm.get('teacherCourseId')!.valueChanges.subscribe(() => {
+      this.applySemesterFromSelectedTeacherCourse();
+    });
+
+    // edit mode: load record
     if (this.isEditMode && this.enrollmentId) {
       this.loadEnrollmentData(this.enrollmentId);
     }
-
-    // Tự động nạp danh sách lớp (teacher courses) khi chọn course
-    this.enrollmentForm.get('courseId')?.valueChanges.subscribe((courseId: string) => {
-      if (courseId) this.loadTeacherCourses(courseId);
-      // Reset selection teacherCourseId khi đổi course
-      this.enrollmentForm.get('teacherCourseId')?.setValue(null);
-    });
   }
 
   private initForm(): void {
     this.enrollmentForm = this.fb.group({
-      studentId: [{ value: '', disabled: this.isEditMode }, [Validators.required]],
-      courseId: [{ value: '', disabled: this.isEditMode }, [Validators.required]],
-      teacherCourseId: [null], // optional
-      semesterId: [null, [Validators.required]],
-      status: ['Enrolled', [Validators.required]]
+      studentId: ['', Validators.required],
+      courseId: ['', Validators.required],
+      teacherCourseId: [null],              // optional
+      semesterId: [null, Validators.required],
+      status: ['Enrolled', Validators.required]
     });
   }
 
-  private loadRelatedData(): void {
-    this.studentService.getAllStudents().subscribe(data => (this.students = data || []));
-    this.courseService.getAllCourses().subscribe(data => (this.courses = data || []));
-    this.semesterService.getAllSemesters().subscribe(data => (this.semesters = data || []));
+  private loadInitialData(): void {
+    forkJoin({
+      students: this.studentService.getAllStudents().pipe(catchError(() => of([] as Student[]))),
+      courses: this.courseService.getAllCourses().pipe(catchError(() => of([] as Course[]))),
+      // CHỈ lấy kỳ đang hoạt động
+      semesters: this.semesterService.getActiveSemesters().pipe(catchError(() => of([] as Semester[])))
+    }).subscribe(({ students, courses, semesters }) => {
+      this.students = students || [];
+      this.courses = courses || [];
+      this.semesters = semesters || [];
+      // Sau khi đã có danh sách kỳ hoạt động -> lọc lại teacherCourses (nếu có)
+      this.applySemesterFilterToTeacherCourses();
+    });
   }
 
   private loadTeacherCourses(courseId: string): void {
-    this.teacherCourses = [];
+    this.isLoadingTeacherCourses = true;
     this.teacherCourseService.getByCourseId(courseId)
-      .pipe(catchError(() => of<TeacherCourse[]>([])))
-      .subscribe((data) => {
-        if (data && data.length) {
-          this.teacherCourses = data.map(tc => ({
-            ...tc,
-            teacherId: tc.teacherId || tc.teacher?.teacherId || ''
-          }));
-        } else {
-          // Fallback khi không có endpoint by-course hoặc trả rỗng
-          this.loadTeacherCoursesViaEnrollments(courseId);
-        }
+      .pipe(catchError(() => of([] as TeacherCourse[])))
+      .subscribe(list => {
+        // CHỈ giữ các TC thuộc kỳ đang hoạt động
+        const activeIds = new Set(this.semesters.map(s => (s as any).semesterId));
+        this.teacherCourses = (list || []).filter(tc => activeIds.has(tc.semesterId!));
+        this.isLoadingTeacherCourses = false;
+        this.applySemesterFromSelectedTeacherCourse();
       });
   }
 
-  private loadTeacherCoursesViaEnrollments(courseId: string): void {
-    this.teacherCourses = [];
-    this.enrollmentService.getEnrollmentsByCourseId(courseId)
-      .pipe(catchError(() => of([] as Enrollment[])))
-      .subscribe(enrs => {
-        const ids = Array.from(new Set(
-          (enrs || [])
-            .map(e => e.teacherCourseId)
-            .filter((x): x is number => x != null)
-        ));
-        if (!ids.length) {
-          this.teacherCourses = [];
-          return;
-        }
-        forkJoin(
-          ids.map(id =>
-            this.teacherCourseService.getTeacherCourseById(id)
-              .pipe(catchError(() => of(null as unknown as TeacherCourse)))
-          )
-        ).subscribe(list => {
-          this.teacherCourses = (list || [])
-            .filter((tc): tc is TeacherCourse => !!tc)
-            .map(tc => ({
-              ...tc,
-              teacherId: tc.teacherId || tc.teacher?.teacherId || ''
-            }));
-        });
-      });
+  private applySemesterFromSelectedTeacherCourse(): void {
+    const selId = this.enrollmentForm.get('teacherCourseId')!.value as number | null;
+    if (!selId) return;
+    const found = this.teacherCourses.find(tc => tc.teacherCourseId === selId);
+    if (found?.semesterId) {
+      this.enrollmentForm.get('semesterId')!.setValue(found.semesterId);
+    }
+  }
+
+  // lọc lại teacherCourses theo các kỳ hoạt động (khi danh sách kỳ vừa được nạp)
+  private applySemesterFilterToTeacherCourses(): void {
+    if (!this.teacherCourses?.length) return;
+    const activeIds = new Set(this.semesters.map(s => (s as any).semesterId));
+    this.teacherCourses = this.teacherCourses.filter(tc => activeIds.has(tc.semesterId!));
+    this.applySemesterFromSelectedTeacherCourse();
   }
 
   private loadEnrollmentData(id: number): void {
     this.isLoading = true;
-    this.enrollmentService.getEnrollmentById(id).subscribe({
-      next: (data: Enrollment) => {
-        // Khi edit, cần nạp teacherCourses của course hiện có để hiển thị đúng dropdown
-        if (data.courseId) this.loadTeacherCourses(data.courseId);
+    this.enrollmentService.getEnrollmentById(id)
+      .pipe(catchError(() => { this.errorMessage = 'Không tải được đăng ký.'; return of(null as unknown as Enrollment); }))
+      .subscribe((en) => {
+        if (!en) { this.isLoading = false; return; }
+
         this.enrollmentForm.patchValue({
-          studentId: data.studentId,
-          courseId: data.courseId,
-          teacherCourseId: data.teacherCourseId ?? null,
-          semesterId: data.semesterId,
-          status: data.status
+          studentId: en.studentId,
+          courseId: en.courseId,
+          teacherCourseId: en.teacherCourseId ?? null,
+          semesterId: en.semesterId,
+          status: en.status || 'Enrolled'
         });
+
+        // nạp danh sách teacher course theo môn để select có item
+        if (en.courseId) {
+          this.loadTeacherCourses(en.courseId);
+        }
         this.isLoading = false;
-      },
-      error: () => {
-        this.errorMessage = 'Could not load enrollment data.';
-        this.isLoading = false;
-      }
-    });
+      });
   }
 
+  // trackBy helpers
+  trackStudent = (_: number, s: Student) => s.studentId;
+  trackCourse = (_: number, c: Course) => c.courseId;
+  trackTeacherCourse = (_: number, t: TeacherCourse) => t.teacherCourseId!;
+  trackSemester = (_: number, s: Semester) => (s as any).semesterId;
+
   onSubmit(): void {
-    if (this.enrollmentForm.invalid) {
-      this.enrollmentForm.markAllAsTouched();
-      return;
-    }
+    if (this.enrollmentForm.invalid) return;
 
     this.isLoading = true;
+    this.errorMessage = null;
 
-    const payload = this.enrollmentForm.getRawValue(); // lấy cả các control disabled khi edit
+    const raw = this.enrollmentForm.getRawValue();
+    const payload = {
+      studentId: String(raw.studentId).trim(),
+      courseId: String(raw.courseId).trim(),
+      teacherCourseId: raw.teacherCourseId ? Number(raw.teacherCourseId) : null,
+      semesterId: Number(raw.semesterId),
+      status: String(raw.status).trim()
+    };
 
-    const op$ = this.isEditMode && this.enrollmentId
-      ? this.enrollmentService.updateEnrollment(this.enrollmentId, { ...payload, enrollmentId: this.enrollmentId })
-      : this.enrollmentService.createEnrollment(payload);
+    // ❗ Chặn đăng ký nếu học kỳ không hoạt động hoặc TC thuộc kỳ ngưng
+    const activeIds = new Set(this.semesters.map(s => (s as any).semesterId));
+    if (!activeIds.has(payload.semesterId)) {
+      this.errorMessage = 'Học kỳ đã ngưng hoạt động. Vui lòng chọn học kỳ đang hoạt động.';
+      this.isLoading = false;
+      return;
+    }
+    if (payload.teacherCourseId) {
+      const tc = this.teacherCourses.find(t => t.teacherCourseId === payload.teacherCourseId);
+      if (tc && !activeIds.has(tc.semesterId!)) {
+        this.errorMessage = 'Lớp giảng dạy thuộc học kỳ ngưng hoạt động. Vui lòng chọn lớp ở kỳ đang hoạt động.';
+        this.isLoading = false;
+        return;
+      }
+    }
 
-    op$.subscribe({
+    const req$ = this.isEditMode && this.enrollmentId
+      ? this.enrollmentService.updateEnrollment(this.enrollmentId!, payload as any)
+      : this.enrollmentService.createEnrollment(payload as any);
+
+    req$.subscribe({
       next: () => this.router.navigate(['/admin/enrollments']),
       error: (err) => {
-        this.errorMessage = `An error occurred. ${err?.error?.message || ''}`;
+        if (err?.status === 400 && err?.error?.errors) {
+          const all = Object.values(err.error.errors).flat() as string[];
+          this.errorMessage = all.join(' ');
+        } else if (typeof err?.error === 'string') {
+          this.errorMessage = err.error;
+        } else {
+          this.errorMessage = err?.error?.message || 'Đã có lỗi xảy ra. Vui lòng thử lại.';
+        }
         this.isLoading = false;
       }
     });

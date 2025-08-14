@@ -10,16 +10,11 @@
 
     <div class="header-actions">
       <div class="search-box">
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Tìm kiếm lịch học..."
-          #searchInput>
+        <input type="text" class="search-input" placeholder="Tìm kiếm lịch học..." #searchInput />
         <i class="fas fa-search search-icon"></i>
       </div>
       <a routerLink="new" class="btn btn-primary">
-        <i class="fas fa-plus"></i>
-        <span>Thêm lịch học</span>
+        <i class="fas fa-plus"></i><span>Thêm lịch học</span>
       </a>
     </div>
   </header>
@@ -36,7 +31,7 @@
     <p>{{ errorMessage }}</p>
   </div>
 
-  <!-- Table Container -->
+  <!-- Table -->
   <div *ngIf="!isLoading && !errorMessage" class="table-container">
     <div class="desktop-table">
       <table class="table">
@@ -52,60 +47,74 @@
             <th class="col-actions">Hành động</th>
           </tr>
         </thead>
+
         <tbody>
           <tr *ngFor="let schedule of schedules; trackBy: trackById">
+            <!-- ID -->
+            <td><span class="badge badge-id">{{ schedule.scheduleId }}</span></td>
+
+            <!-- Course -->
             <td>
-              <span class="badge badge-id">{{ schedule.scheduleId }}</span>
+              <ng-container *ngIf="schedule.teacherCourse as tc; else noCourse">
+                <div class="course-info" [title]="tc.course?.courseId">
+                  <span class="course-name">{{ tc.course?.courseName }}</span>
+                  <span class="course-code">{{ tc.course?.courseId }}</span>
+                </div>
+              </ng-container>
+              <ng-template #noCourse>
+                <span class="muted">N/A</span>
+              </ng-template>
             </td>
+
+            <!-- Teacher -->
             <td>
-              <div class="course-info">
-                <span class="course-name">{{ schedule.teacherCourse?.course?.courseName || 'N/A' }}</span>
-                <span class="course-code">{{ schedule.teacherCourse?.course?.courseId || '' }}</span>
-              </div>
+              <ng-container *ngIf="schedule.teacherCourse as tc2; else noTeacher">
+                <div class="teacher-info">
+                  <span class="teacher-name">{{ tc2.teacher?.fullName }}</span>
+                </div>
+              </ng-container>
+              <ng-template #noTeacher>
+                <span class="muted">N/A</span>
+              </ng-template>
             </td>
-            <td>
-              <div class="teacher-info">
-                <span class="teacher-name">{{ schedule.teacherCourse?.teacher?.fullName || 'N/A' }}</span>
-              </div>
-            </td>
-            <td>
-              <span class="day-badge">{{ dayOfWeekMap[schedule.dayOfWeek] || schedule.dayOfWeek }}</span>
-            </td>
+
+            <!-- Day -->
+            <td><span class="day-badge">{{ dayOfWeekMap[schedule.dayOfWeek] || ('Thứ ' + schedule.dayOfWeek) }}</span></td>
+
+            <!-- Time -->
             <td>
               <div class="time-info">
-                <span class="time-range">{{ schedule.startTime }} - {{ schedule.endTime }}</span>
+                <span class="time-range">{{ fmt(schedule.startTime) }} - {{ fmt(schedule.endTime) }}</span>
               </div>
             </td>
-            <td>
-              <span class="room-badge">{{ schedule.roomNumber || 'Chưa xác định' }}</span>
-            </td>
-            <td>
-              <span class="location">{{ schedule.location || 'Chưa xác định' }}</span>
-            </td>
+
+            <!-- Room -->
+            <td><span class="room-badge">{{ schedule.roomNumber || 'Chưa xác định' }}</span></td>
+
+            <!-- Location -->
+            <td><span class="location">{{ schedule.location || 'Chưa xác định' }}</span></td>
+
+            <!-- Actions -->
             <td class="col-actions">
               <div class="action-buttons">
                 <a [routerLink]="['edit', schedule.scheduleId]" class="btn btn-info">
-                  <i class="fas fa-edit"></i>
-                  <span class="btn-text">Sửa</span>
+                  <i class="fas fa-edit"></i><span class="btn-text">Sửa</span>
                 </a>
                 <button (click)="deleteSchedule(schedule.scheduleId)" class="btn btn-danger">
-                  <i class="fas fa-trash-alt"></i>
-                  <span class="btn-text">Xóa</span>
+                  <i class="fas fa-trash-alt"></i><span class="btn-text">Xóa</span>
                 </button>
               </div>
             </td>
           </tr>
 
+          <!-- Empty state -->
           <tr *ngIf="schedules?.length === 0">
             <td colspan="8" class="no-data-cell">
               <div class="no-data">
                 <i class="fas fa-calendar-times no-data-icon"></i>
                 <h3>Không có lịch học nào</h3>
                 <p>Chưa có lịch học được tạo. Nhấp vào "Thêm lịch học" để bắt đầu.</p>
-                <a routerLink="new" class="btn btn-primary">
-                  <i class="fas fa-plus"></i>
-                  Thêm lịch học đầu tiên
-                </a>
+                <a routerLink="new" class="btn btn-primary"><i class="fas fa-plus"></i> Thêm lịch học đầu tiên</a>
               </div>
             </td>
           </tr>

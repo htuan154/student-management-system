@@ -15,11 +15,10 @@
     <label for="course-select">Chọn lớp học:</label>
     <select id="course-select" [(ngModel)]="selectedCourseId" (change)="onCourseSelect()" class="course-select">
       <option [ngValue]="null">-- Vui lòng chọn một lớp --</option>
-      <option *ngFor="let assignment of assignedCourses" [value]="assignment.courseId">
-        {{ assignment.course?.courseName || assignment.courseId }} -
-        HK{{ assignment.semester?.semesterName || assignment.semesterId }}
-        ({{ assignment.semester?.academicYear || 'N/A' }})
-      </option>
+      <option *ngFor="let tc of assignedCourses" [value]="tc.courseId">
+    {{ optionLabel(tc) }}
+  </option>
+
     </select>
   </div>
 

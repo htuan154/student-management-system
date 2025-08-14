@@ -1,34 +1,174 @@
+/* ===============================
+   Schedule Form (SCSS)
+   =============================== */
 
-// Custom styles cho schedule form
-select {
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 8px 10px;
+.card {
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+  --text: #111827;
+  --muted: #6b7280;
+  --bg: #ffffff;
+  --info-soft: rgba(59,130,246,.15);
+  --danger: #ef4444;
+  --shadow: 0 10px 30px rgba(16,24,40,.08);
+
+  background: var(--bg);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-strong);
+
+  h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+  }
+}
+
+/* Grid layout */
+form .grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 20px;
+}
+
+.col {
+  display: grid;
+  gap: 8px;
+
+  label {
+    font-weight: 600;
+    color: var(--text);
+  }
+}
+
+.req { color: var(--danger); }
+
+/* Controls */
+select,
+input[type="text"],
+input[type="number"],
+input[type="time"] {
   width: 100%;
-  font-size: 15px;
-  background: white;
+  min-height: 44px;
+  height: 44px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--text);
+  background: #fff;
+  transition: border-color .2s ease, box-shadow .2s ease;
 
   &:focus {
-    border-color: #2563eb;
     outline: none;
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 4px var(--info-soft);
   }
 
-  &.invalid {
-    border-color: #ef4444;
+  &:disabled {
+    background: #f9fafb;
+    color: #9ca3af;
+    cursor: not-allowed;
   }
 }
 
+/* Beautify time inputs */
 input[type="time"] {
-  font-family: monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  letter-spacing: .02em;
 }
 
-input[type="number"] {
-  appearance: textfield;
-  -moz-appearance: textfield;
+/* Time range group (Start - End) */
+.time-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 
-  &::-webkit-outer-spin-button,
-  &::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+  .time-sep {
+    color: var(--muted);
+    font-weight: 700;
+  }
+  .time {
+    flex: 1 1 0;
+  }
+}
+
+/* Small helper text & field errors */
+.hint {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.field-error {
+  font-size: 12px;
+  color: #b91c1c;           /* red-700 */
+}
+
+/* Actions */
+.actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 14px;
+  margin-top: 6px;
+  border-top: 1px solid var(--border-strong);
+}
+
+/* Buttons (pill style) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #f3f4f6;  /* gray-100 */
+  color: #374151;       /* gray-700 */
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform .06s ease, box-shadow .2s ease, background .2s ease;
+
+  &:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.06); }
+  &:active { transform: translateY(0); }
+  &:disabled { opacity: .6; cursor: not-allowed; }
+
+  &.primary { background: linear-gradient(180deg, #60a5fa, #3b82f6); border: none; color: #fff; }
+  &.danger  { background: #fee2e2; color: #b91c1c; border: none; }
+}
+
+/* Error banner (submit error) */
+.error-message {
+  grid-column: 1 / -1;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+/* Utilities */
+.inline { grid-column: 1 / -1; } /* dùng cho hàng muốn chiếm full width */
+
+/* Responsive */
+@media (max-width: 768px) {
+  form .grid { grid-template-columns: 1fr; }
+  .time-group { flex-wrap: wrap;
+    .time { width: 100%; }
   }
 }

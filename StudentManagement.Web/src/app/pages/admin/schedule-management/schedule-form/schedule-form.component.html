@@ -1,96 +1,69 @@
-<div class="card" [class.loading]="loading">
+<div class="card">
   <div class="card-header">
-    <h2>{{ mode === 'create' ? 'Tạo lịch học mới' : 'Cập nhật lịch học' }}</h2>
-    <a class="btn" routerLink="/admin/schedule-management">
-      <i class="fas fa-arrow-left"></i>
-      Quay lại danh sách
-    </a>
+    <h2>{{ isEdit ? 'Cập nhật lịch học' : 'Tạo lịch học mới' }}</h2>
+    <a class="btn" routerLink="/admin/schedule-management">Quay lại</a>
   </div>
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
     <div class="grid">
-      <!-- Teacher Course ID -->
+      <!-- TeacherCourse -->
       <div class="col">
-        <label>ID Giảng viên - Môn học <span class="req">*</span></label>
-        <input
-          type="number"
-          formControlName="teacherCourseId"
-          [class.invalid]="teacherCourseId?.touched && teacherCourseId?.invalid" />
-        <div class="err" *ngIf="teacherCourseId?.touched && teacherCourseId?.invalid">
-          <span *ngIf="teacherCourseId?.errors?.['required']">Trường này bắt buộc</span>
-          <span *ngIf="teacherCourseId?.errors?.['min']">Giá trị phải lớn hơn 0</span>
-        </div>
-      </div>
-
-      <!-- Day of Week -->
-      <div class="col">
-        <label>Ngày trong tuần <span class="req">*</span></label>
-        <select
-          formControlName="dayOfWeek"
-          [class.invalid]="dayOfWeek?.touched && dayOfWeek?.invalid">
-          <option value="">-- Chọn ngày --</option>
-          <option *ngFor="let day of daysOfWeek" [value]="day.value">
-            {{ day.label }}
+        <label>Giảng viên - Môn học <span class="req">*</span></label>
+        <select formControlName="teacherCourseId"
+                [class.invalid]="teacherCourseId?.touched && teacherCourseId?.invalid">
+          <option value="">-- Chọn giảng viên - môn học --</option>
+          <option *ngFor="let tc of teacherCourses; trackBy: trackTc"
+                  [value]="tc.teacherCourseId">
+            {{ labelTC(tc) }}
           </option>
         </select>
-        <div class="err" *ngIf="dayOfWeek?.touched && dayOfWeek?.invalid">
-          Vui lòng chọn ngày trong tuần
+        <div class="field-error" *ngIf="teacherCourseId?.touched && teacherCourseId?.invalid">
+          Vui lòng chọn phân công giảng dạy.
         </div>
       </div>
 
-      <!-- Start Time -->
+      <!-- Day of week -->
       <div class="col">
-        <label>Giờ bắt đầu <span class="req">*</span></label>
-        <input
-          type="time"
-          formControlName="startTime"
-          [class.invalid]="startTime?.touched && startTime?.invalid" />
-        <div class="err" *ngIf="startTime?.touched && startTime?.invalid">
-          Vui lòng nhập giờ bắt đầu
+        <label>Thứ <span class="req">*</span></label>
+        <select formControlName="dayOfWeek">
+          <option *ngFor="let d of days" [value]="d.value">{{ d.label }}</option>
+        </select>
+      </div>
+
+      <!-- Time range -->
+      <div class="col inline">
+        <label>Thời gian <span class="req">*</span></label>
+        <div class="time-group">
+          <input class="time" type="time" formControlName="startTime" />
+          <span class="time-sep">—</span>
+          <input class="time" type="time" formControlName="endTime" />
+        </div>
+        <div class="field-error" *ngIf="form.errors?.['timeRange']">
+          {{ form.errors?.['timeRange'] }}
         </div>
       </div>
 
-      <!-- End Time -->
+      <!-- Room -->
       <div class="col">
-        <label>Giờ kết thúc <span class="req">*</span></label>
-        <input
-          type="time"
-          formControlName="endTime"
-          [class.invalid]="endTime?.touched && endTime?.invalid" />
-        <div class="err" *ngIf="endTime?.touched && endTime?.invalid">
-          Vui lòng nhập giờ kết thúc
-        </div>
-      </div>
-
-      <!-- Room Number -->
-      <div class="col">
-        <label>Số phòng</label>
-        <input type="text" formControlName="roomNumber" placeholder="VD: A101, B202..." />
-        <div class="hint">Để trống nếu chưa xác định</div>
+        <label>Phòng</label>
+        <input type="text" formControlName="roomNumber" placeholder="VD: A101" />
       </div>
 
       <!-- Location -->
       <div class="col">
         <label>Địa điểm</label>
-        <input type="text" formControlName="location" placeholder="VD: Tòa A, Tầng 2..." />
-        <div class="hint">Mô tả chi tiết vị trí</div>
+        <input type="text" formControlName="location" placeholder="VD: CS1, CS2..." />
       </div>
-    </div>
 
-    <div class="divider"></div>
+      <!-- Actions -->
+      <div class="actions">
+        <a class="btn" routerLink="/admin/schedule-management">Hủy</a>
+        <button type="submit" class="btn primary" [disabled]="form.invalid || isLoading">
+          {{ isLoading ? 'Đang lưu...' : (isEdit ? 'Cập nhật' : 'Tạo mới') }}
+        </button>
+      </div>
 
-    <div class="actions">
-      <button type="button" class="btn" routerLink="/admin/schedule-management">
-        Hủy
-      </button>
-      <button
-        type="submit"
-        class="btn primary"
-        [disabled]="saving || form.invalid">
-        <i class="fas fa-spinner fa-spin" *ngIf="saving"></i>
-        <i class="fas fa-save" *ngIf="!saving"></i>
-        {{ saving ? 'Đang lưu...' : (mode === 'create' ? 'Tạo mới' : 'Cập nhật') }}
-      </button>
+      <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
     </div>
   </form>
 </div>

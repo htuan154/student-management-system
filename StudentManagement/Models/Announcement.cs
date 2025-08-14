@@ -26,7 +26,7 @@ namespace StudentManagementSystem.Models
 
         // Navigation properties
         [ForeignKey("CreatedBy")]
-        public virtual User User { get; set; } = null!;
+        public virtual User? User { get; set; } = null!;
         public virtual ICollection<AnnouncementDetail> AnnouncementDetails { get; set; } = new List<AnnouncementDetail>();
     }
 }

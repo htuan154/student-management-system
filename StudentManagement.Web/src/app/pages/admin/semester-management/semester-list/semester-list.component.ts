@@ -22,11 +22,43 @@ export class SemesterListComponent implements OnInit {
     this.loadSemesters();
   }
 
+  private normalize(d: string | null | undefined): Date | null {
+    if (!d) return null;
+    // chấp nhận 'YYYY-MM-DD' hoặc ISO
+    const dt = new Date(d);
+    if (isNaN(dt.getTime())) return null;
+    dt.setHours(0, 0, 0, 0);
+    return dt;
+  }
+
+  private isExpired(endDate: string | null | undefined): boolean {
+    const ed = this.normalize(endDate);
+    if (!ed) return false;
+    const today = new Date(); today.setHours(0,0,0,0);
+    return ed.getTime() < today.getTime();
+  }
+
   loadSemesters(): void {
     this.isLoading = true;
     this.semesterService.getAllSemesters().subscribe({
       next: (data) => {
-        this.semesters = data;
+        // FE-only: ép lại hiển thị isActive theo endDate
+        const mapped = (data || []).map(s => ({
+          ...s,
+          isActive: s.isActive && !this.isExpired(s.endDate)
+        }));
+
+        // Sắp xếp: Active trước, rồi theo niên khóa, rồi startDate
+        mapped.sort((a, b) => {
+          if (a.isActive !== b.isActive) return a.isActive ? -1 : 1;
+          const ay = (b.academicYear || '').localeCompare(a.academicYear || ''); // desc
+          if (ay !== 0) return ay;
+          const as = this.normalize(a.startDate)?.getTime() ?? 0;
+          const bs = this.normalize(b.startDate)?.getTime() ?? 0;
+          return bs - as;
+        });
+
+        this.semesters = mapped as Semester[];
         this.isLoading = false;
       },
       error: () => {
@@ -37,8 +69,10 @@ export class SemesterListComponent implements OnInit {
   }
 
   deleteSemester(id: number): void {
-    if (confirm('Bạn có chắc muốn xóa học kỳ này?')) {
-      this.semesterService.deleteSemester(id).subscribe(() => this.loadSemesters());
-    }
+    if (!confirm('Bạn có chắc muốn xóa học kỳ này?')) return;
+    this.semesterService.deleteSemester(id).subscribe({
+      next: () => this.loadSemesters(),
+      error: () => alert('Xóa không thành công. Vui lòng thử lại.')
+    });
   }
 }

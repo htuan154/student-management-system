@@ -7,10 +7,9 @@ export interface Class {
   className: string;
   major: string;
   isActive: boolean;
-  academicYear?: string | null;
-  semester?: number | null;
-  semesterId?: number | null; // Bổ sung cho khớp backend
-  semesterObj?: Semester | null; // Nếu có model Semester
-  students?: Student[];
-  announcementDetails?: AnnouncementDetail[]; // Bổ sung nếu có model AnnouncementDetail
+  semesterId: number;
+  academicYear: string | null;
+  students: Student[];
+  semester: Semester | null;
+  announcementDetails: AnnouncementDetail[];
 }

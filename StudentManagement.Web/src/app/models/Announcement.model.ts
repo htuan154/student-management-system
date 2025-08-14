@@ -6,7 +6,8 @@ export interface Announcement {
   title: string;
   content: string;
   createdBy: string;
-  createdAt: string; // ISO date string
+  createdAt: string;
+  isActive?: boolean; 
   expiryDate?: string | null;
   user?: User | null;
   announcementDetails?: AnnouncementDetail[];

@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import { TeacherCourse } from '../models/teacher-course.model';
 import { environment } from '../../environments/environment';
 
@@ -13,14 +12,12 @@ export interface PagedTeacherCourseResponse {
   totalPages: number;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class TeacherCourseService {
+  // BE: [Route("api/[controller]")] => /api/TeacherCourse
   private apiUrl = `${environment.apiUrl}/TeacherCourse`;
-  private baseUrl = '/api/teacher-courses'; // chỉnh theo API của bạn
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   /** Lấy tất cả phân công */
   getAllTeacherCourses(): Observable<TeacherCourse[]> {
@@ -34,12 +31,12 @@ export class TeacherCourseService {
 
   /** Lấy phân công theo Teacher ID */
   getTeacherCoursesByTeacherId(teacherId: string): Observable<TeacherCourse[]> {
-    return this.http.get<TeacherCourse[]>(`${this.apiUrl}/teacher/${teacherId}`);
+    return this.http.get<TeacherCourse[]>(`${this.apiUrl}/teacher/${encodeURIComponent(teacherId)}`);
   }
 
   /** Lấy phân công theo Course ID */
   getTeacherCoursesByCourseId(courseId: string): Observable<TeacherCourse[]> {
-    return this.http.get<TeacherCourse[]>(`${this.apiUrl}/course/${courseId}`);
+    return this.http.get<TeacherCourse[]>(`${this.apiUrl}/course/${encodeURIComponent(courseId)}`);
   }
 
   /** Lấy phân công theo Semester ID */
@@ -69,52 +66,31 @@ export class TeacherCourseService {
   }
 
   /** Kiểm tra phân công đã tồn tại */
-  checkTeacherCourseExists(teacherId: string, courseId: string, semesterId: number, excludeId?: number): Observable<{exists: boolean}> {
+  checkTeacherCourseExists(teacherId: string, courseId: string, semesterId: number, excludeId?: number) {
     let params = new HttpParams()
       .set('teacherId', teacherId)
       .set('courseId', courseId)
-      .set('semesterId', semesterId.toString());
-
-    if (excludeId) {
-      params = params.set('excludeId', excludeId.toString());
-    }
-
-    return this.http.get<{exists: boolean}>(`${this.apiUrl}/check-exists`, { params });
+      .set('semesterId', String(semesterId));
+    if (excludeId != null) params = params.set('excludeId', String(excludeId));
+    return this.http.get<{ exists: boolean }>(`${this.apiUrl}/check-exists`, { params });
   }
 
-  /** Bổ sung method này */
+  /** Phân trang */
   getPagedTeacherCourses(pageNumber: number, pageSize: number, searchTerm?: string): Observable<PagedTeacherCourseResponse> {
     let params = new HttpParams()
-      .set('pageNumber', pageNumber.toString())
-      .set('pageSize', pageSize.toString());
-
-    if (searchTerm) {
-      params = params.set('searchTerm', searchTerm);
-    }
-
+      .set('pageNumber', String(pageNumber))
+      .set('pageSize', String(pageSize));
+    if (searchTerm) params = params.set('searchTerm', searchTerm);
     return this.http.get<PagedTeacherCourseResponse>(`${this.apiUrl}/paged`, { params });
   }
 
-  // Lấy danh sách phân công theo courseId
+  // Wrapper cho code cũ trong component (nếu đang gọi getByCourseId)
   getByCourseId(courseId: string): Observable<TeacherCourse[]> {
-    // Nếu API của bạn khác (ví dụ: `${this.baseUrl}/course/${courseId}`) hãy chỉnh lại endpoint này
-    return this.http
-      .get<TeacherCourse[]>(`${this.baseUrl}/by-course/${encodeURIComponent(courseId)}`)
-      .pipe(
-        catchError(err => {
-          if (err.status === 404) {
-            // Fallback: lấy tất cả rồi filter theo courseId
-            return this.http.get<TeacherCourse[]>(`${this.baseUrl}`).pipe(
-              map(list => (list || []).filter(tc => tc.courseId === courseId)),
-              catchError(() => of([]))
-            );
-          }
-          return of([]);
-        })
-      );
+    return this.getTeacherCoursesByCourseId(courseId);
   }
 
+  // Wrapper cho code cũ trong component
   getById(id: number): Observable<TeacherCourse> {
-    return this.http.get<TeacherCourse>(`${this.baseUrl}/${id}`);
+    return this.getTeacherCourseById(id);
   }
 }

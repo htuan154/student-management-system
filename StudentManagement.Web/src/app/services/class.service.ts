@@ -4,9 +4,6 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Class } from '../models';
 
-/**
- * Interface cho dữ liệu trả về khi phân trang lớp học.
- */
 export interface PagedClassResponse {
   classes: Class[];
   totalCount: number;
@@ -15,42 +12,39 @@ export interface PagedClassResponse {
   totalPages: number;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+export interface ClassCreateUpdateDto {
+  classId: string;
+  className: string;
+  major: string;
+  semesterId: number;
+  isActive: boolean;
+}
+
+@Injectable({ providedIn: 'root' })
 export class ClassService {
   private apiUrl = `${environment.apiUrl}/Classes`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-  /** Lấy tất cả các lớp học */
   getAllClasses(): Observable<Class[]> {
     return this.http.get<Class[]>(this.apiUrl);
   }
 
-  /** Lấy lớp học theo ID */
   getClassById(id: string): Observable<Class> {
     return this.http.get<Class>(`${this.apiUrl}/${id}`);
   }
 
-  /** Lấy thông tin lớp học kèm danh sách sinh viên */
-  getClassWithStudents(id: string): Observable<Class> {
-    return this.http.get<Class>(`${this.apiUrl}/${id}/students`);
+
+  createClass(dto: ClassCreateUpdateDto): Observable<void> {
+    return this.http.post<void>(this.apiUrl, dto);
   }
 
-  /** Tạo một lớp học mới */
-  createClass(classData: Omit<Class, 'classId' | 'students'>): Observable<Class> {
-    return this.http.post<Class>(this.apiUrl, classData);
+  updateClass(id: string, dto: ClassCreateUpdateDto): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${id}`, dto);
   }
 
-  /** Cập nhật thông tin lớp học */
-  updateClass(id: string, classData: Partial<Class>): Observable<Class> {
-    return this.http.put<Class>(`${this.apiUrl}/${id}`, classData);
-  }
-
-  /** Xóa một lớp học */
-  deleteClass(id: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`);
+  deleteClass(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
   /** Lấy các lớp học đang hoạt động */

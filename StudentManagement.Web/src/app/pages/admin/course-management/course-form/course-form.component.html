@@ -1,55 +1,113 @@
-<div class="form-container">
-  <header class="form-header">
-    <h1>{{ isEditMode ? 'Chỉnh sửa Môn học' : 'Tạo mới Môn học' }}</h1>
-    <button class="btn btn-secondary" routerLink="/admin/courses">Quay lại Danh sách</button>
-  </header>
+<form class="course-form" [formGroup]="courseForm" (ngSubmit)="onSubmit()">
+  <!-- Loading -->
+  <div class="alert info" *ngIf="isLoading">
+    <span>Đang xử lý…</span>
+  </div>
 
-  <div *ngIf="isLoading" class="loading-indicator">Đang tải...</div>
-  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+  <!-- Error -->
+  <div class="alert danger" *ngIf="errorMessage">
+    <span>{{ errorMessage }}</span>
+  </div>
 
-  <form [formGroup]="courseForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading" class="form-body">
-    <div class="form-group">
-      <label for="courseId">Mã Môn học</label>
-      <input id="courseId" type="text" formControlName="courseId" class="form-control"
-             maxlength="10">
-    </div>
-
-    <div class="form-group">
-      <label for="courseName">Tên Môn học</label>
-      <input id="courseName" type="text" formControlName="courseName" class="form-control"
-             maxlength="100">
-    </div>
-
-    <div class="form-group">
-      <label for="credits">Số tín chỉ</label>
-      <input id="credits" type="number" formControlName="credits" class="form-control"
-             min="1">
-    </div>
-
-    <div class="form-group">
-      <label for="department">Khoa</label>
-      <input id="department" type="text" formControlName="department" class="form-control"
-             maxlength="50">
-    </div>
-
-    <div class="form-group">
-      <label for="isActive">Trạng thái</label>
-      <select id="isActive" formControlName="isActive" class="form-control">
-        <option [ngValue]="true">Hoạt động</option>
-        <option [ngValue]="false">Không hoạt động</option>
-      </select>
-    </div>
-
-    <div class="form-group full-width">
-      <label for="description">Mô tả</label>
-      <textarea id="description" formControlName="description" class="form-control"
-                rows="4" maxlength="500"></textarea>
-    </div>
-
-    <div class="form-actions">
-      <button type="submit" class="btn btn-primary" [disabled]="courseForm.invalid || isLoading">
-        {{ isEditMode ? 'Cập nhật' : 'Tạo mới' }}
+  <!-- Course ID -->
+  <div class="form-group">
+    <label for="courseId">Mã môn học</label>
+    <div class="input-with-addon">
+      <input
+        id="courseId"
+        type="text"
+        class="form-control"
+        formControlName="courseId"
+        maxlength="10"
+        [disabled]="isEditMode || isLoading"
+        placeholder="VD: MH-ABCD" />
+      <button
+        type="button"
+        class="btn btn-secondary"
+        *ngIf="!isEditMode"
+        (click)="generateRandomCourseId()"
+        [disabled]="isLoading">
+        Tạo mã
       </button>
     </div>
-  </form>
-</div>
+    <div class="field-error" *ngIf="courseForm.get('courseId')?.touched && courseForm.get('courseId')?.invalid">
+      <span *ngIf="courseForm.get('courseId')?.errors?.['required']">Mã môn học là bắt buộc.</span>
+      <span *ngIf="courseForm.get('courseId')?.errors?.['maxlength']">Tối đa 10 ký tự.</span>
+    </div>
+  </div>
+
+  <!-- Course Name -->
+  <div class="form-group">
+    <label for="courseName">Tên môn học</label>
+    <input
+      id="courseName"
+      type="text"
+      class="form-control"
+      formControlName="courseName"
+      maxlength="100"
+      [disabled]="isLoading"
+      placeholder="Nhập tên môn học" />
+    <div class="field-error" *ngIf="courseForm.get('courseName')?.touched && courseForm.get('courseName')?.invalid">
+      <span *ngIf="courseForm.get('courseName')?.errors?.['required']">Tên môn học là bắt buộc.</span>
+      <span *ngIf="courseForm.get('courseName')?.errors?.['maxlength']">Tối đa 100 ký tự.</span>
+    </div>
+  </div>
+
+  <!-- Credits -->
+  <div class="form-group">
+    <label for="credits">Số tín chỉ</label>
+    <input
+      id="credits"
+      type="number"
+      class="form-control"
+      formControlName="credits"
+      min="1"
+      max="3"
+      [disabled]="isLoading" />
+    <div class="field-error" *ngIf="courseForm.get('credits')?.touched && courseForm.get('credits')?.invalid">
+      <span *ngIf="courseForm.get('credits')?.errors?.['required']">Nhập số tín chỉ.</span>
+      <span *ngIf="courseForm.get('credits')?.errors?.['min']">Tối thiểu 1.</span>
+      <span *ngIf="courseForm.get('credits')?.errors?.['max']">Tối đa 50.</span>
+    </div>
+  </div>
+
+  <!-- Department -->
+  <div class="form-group">
+    <label for="department">Khoa/Bộ môn</label>
+    <input
+      id="department"
+      type="text"
+      class="form-control"
+      formControlName="department"
+      [disabled]="isLoading"
+      placeholder="VD: CNTT" />
+  </div>
+
+  <!-- Description -->
+  <div class="form-group">
+    <label for="description">Mô tả</label>
+    <textarea
+      id="description"
+      rows="3"
+      class="form-control"
+      formControlName="description"
+      [disabled]="isLoading"
+      placeholder="Mô tả ngắn về môn học"></textarea>
+  </div>
+
+  <!-- IsActive -->
+  <div class="form-group inline">
+    <label class="checkbox">
+      <input type="checkbox" formControlName="isActive" [disabled]="isLoading" />
+      <span>Hoạt động</span>
+    </label>
+  </div>
+
+  <!-- Actions -->
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary" [disabled]="courseForm.invalid || isLoading">
+      {{ isEditMode ? 'Cập nhật' : 'Tạo mới' }}
+    </button>
+    <a class="btn" [routerLink]="['/admin/courses']">Hủy</a>
+  </div>
+</form>

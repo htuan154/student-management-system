@@ -1,0 +1,58 @@
+<div class="ann-page">
+  <div class="header">
+    <h2>Thông báo</h2>
+
+    <div class="toolbar">
+      <div class="search">
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="applyFilter()"
+          placeholder="Tìm theo tiêu đề hoặc nội dung..." />
+        <button class="clear" *ngIf="searchTerm" (click)="clearSearch()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <label class="filter">
+        <input type="checkbox" [(ngModel)]="showOnlyUnread" (change)="applyFilter()" />
+        Chỉ hiển thị chưa đọc
+      </label>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">Đang tải thông báo...</div>
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+  <div *ngIf="!isLoading && !errorMessage" class="list">
+    <div *ngIf="filtered.length === 0" class="empty">Không có thông báo nào.</div>
+
+    <article class="item" *ngFor="let a of filtered">
+      <header class="item-head" (click)="toggleExpand(a)">
+        <div class="title-wrap">
+          <h3 class="title">{{ a.title }}</h3>
+          <span *ngIf="isNew(a.createdAt)" class="badge new">Mới</span>
+          <span *ngIf="!a.isRead" class="badge unread">Chưa đọc</span>
+        </div>
+        <div class="meta">
+          <span class="date">
+            {{ a.createdAt | date:'HH:mm dd/MM/yyyy' }}
+          </span>
+          <button class="expand-btn" type="button">
+            <i class="fas" [class.fa-chevron-down]="!a.isExpanded" [class.fa-chevron-up]="a.isExpanded"></i>
+          </button>
+        </div>
+      </header>
+
+      <section class="content" *ngIf="a.isExpanded">
+        <div class="rich" [innerHTML]="a.content"></div>
+        <div class="meta-row">
+          <span *ngIf="a.expiryDate" class="expiry">
+            Hết hạn: {{ a.expiryDate | date:'dd/MM/yyyy' }}
+          </span>
+          <span class="author">Tạo bởi: {{ a.user?.username|| a.createdBy }}</span>
+        </div>
+      </section>
+    </article>
+  </div>
+</div>

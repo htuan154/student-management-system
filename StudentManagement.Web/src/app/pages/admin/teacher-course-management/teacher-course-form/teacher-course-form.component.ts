@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, Validators, ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 import { TeacherCourse } from '../../../../models/teacher-course.model';
@@ -18,7 +18,7 @@ import { CourseService } from '../../../../services/course.service';
   styleUrls: ['./teacher-course-form.component.scss']
 })
 export class TeacherCourseFormComponent implements OnInit {
-  form: any; // khai báo form
+  form!: FormGroup;
 
   isEditMode = false;
   id: number | null = null;
@@ -27,7 +27,7 @@ export class TeacherCourseFormComponent implements OnInit {
 
   teachers: any[] = [];
   courses: any[] = [];
-  semesters: Semester[] = [];
+  semesters: Semester[] = []; // chỉ chứa các kỳ ĐANG HOẠT ĐỘNG
 
   constructor(
     private fb: FormBuilder,
@@ -38,7 +38,6 @@ export class TeacherCourseFormComponent implements OnInit {
     private teacherService: TeacherService,
     private courseService: CourseService
   ) {
-    // Khởi tạo form trong constructor sau khi fb được inject
     this.form = this.fb.group({
       teacherId: ['', Validators.required],
       courseId: ['', Validators.required],
@@ -65,6 +64,11 @@ export class TeacherCourseFormComponent implements OnInit {
             semesterId: tc.semesterId,
             isActive: tc.isActive
           });
+          // nếu học kỳ của bản ghi không còn active -> reset, buộc chọn lại
+          if (!this.isActiveSemester(tc.semesterId!)) {
+            this.form.get('semesterId')?.setValue(null);
+            this.errorMessage = 'Học kỳ của bản ghi đã ngưng hoạt động. Vui lòng chọn học kỳ đang hoạt động.';
+          }
           this.isLoading = false;
         },
         error: () => {
@@ -75,10 +79,23 @@ export class TeacherCourseFormComponent implements OnInit {
     }
   }
 
+  /** Nạp dữ liệu danh mục; CHỈ lấy học kỳ đang hoạt động */
   loadLookups(): void {
     this.teacherService.getAllTeachers().subscribe(r => this.teachers = r || []);
     this.courseService.getAllCourses().subscribe(r => this.courses = r || []);
-    this.semesterService.getAllSemesters().subscribe(r => this.semesters = r || []);
+    this.semesterService.getActiveSemesters().subscribe(r => {
+      this.semesters = r || [];
+      // nếu đã chọn sẵn semesterId nhưng không còn active -> reset
+      const cur = this.form.get('semesterId')?.value as number | null;
+      if (cur != null && !this.isActiveSemester(cur)) {
+        this.form.get('semesterId')?.setValue(null);
+      }
+    });
+  }
+
+  /** Kiểm tra kỳ có đang hoạt động không (dựa vào danh sách đã load) */
+  private isActiveSemester(semesterId: number): boolean {
+    return this.semesters.some(s => s.semesterId === semesterId);
   }
 
   submit(): void {
@@ -87,7 +104,16 @@ export class TeacherCourseFormComponent implements OnInit {
       return;
     }
     this.isLoading = true;
+    this.errorMessage = null;
+
     const payload = this.form.value;
+
+    // CHẶN: chỉ cho phép phân công ở học kỳ đang hoạt động
+    if (!this.isActiveSemester(payload.semesterId)) {
+      this.errorMessage = 'Chỉ được phân công ở học kỳ đang hoạt động.';
+      this.isLoading = false;
+      return;
+    }
 
     const req$ = this.isEditMode && this.id
       ? this.teacherCourseService.updateTeacherCourse(this.id, payload)
