@@ -48,9 +48,13 @@
             <tr *ngFor="let enrollment of recentEnrollments">
               <!-- Giả định model Enrollment có chứa các đối tượng lồng nhau -->
               <td>{{ enrollment.course?.courseName || enrollment.courseId }}</td>
-              <td>{{ enrollment.teacher?.fullName || enrollment.teacherId || 'Chưa phân công' }}</td>
-              <td>{{ enrollment.semester || 'N/A' }}</td>
-              <td>{{ enrollment.year || 'N/A' }}</td>
+              <td>
+                {{ enrollment.teacherCourse?.teacher?.teacherId
+                   || enrollment.teacherCourseId
+                   || 'Chưa phân công' }}
+              </td>
+              <td>{{ enrollment.semester?.semesterName || 'N/A' }}</td>
+              <td>{{ enrollment.semester?.academicYear || 'N/A' }}</td>
               <td>
                 <span class="status-badge" [ngClass]="'status-' + (enrollment.status?.toLowerCase() || 'default')">
                   {{ enrollment.status }}

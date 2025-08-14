@@ -57,5 +57,9 @@ namespace StudentManagementSystem.Models
 
         [ForeignKey("TeacherId")]
         public virtual Teacher? Teacher { get; set; }
+
+        // Thêm các navigation properties này
+        public virtual ICollection<Announcement> Announcements { get; set; } = new List<Announcement>();
+        public virtual ICollection<AnnouncementDetail> AnnouncementDetails { get; set; } = new List<AnnouncementDetail>();
     }
 }

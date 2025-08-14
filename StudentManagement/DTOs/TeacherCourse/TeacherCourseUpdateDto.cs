@@ -15,10 +15,8 @@ namespace StudentManagementSystem.DTOs.TeacherCourse
         [StringLength(10)]
         public string CourseId { get; set; } = string.Empty;
 
-        [StringLength(20)]
-        public string? Semester { get; set; }
-
-        public int? Year { get; set; }
+        [Required]
+        public int SemesterId { get; set; }
 
         public bool IsActive { get; set; }
     }

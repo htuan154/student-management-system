@@ -15,13 +15,13 @@
     <label for="course-select">Chọn lớp học:</label>
     <select id="course-select" [(ngModel)]="selectedCourseId" (change)="onCourseSelect()" class="course-select">
       <option [ngValue]="null">-- Vui lòng chọn một lớp --</option>
-      <option *ngFor="let assignment of assignedCourses" [value]="assignment.courseId">
-        {{ assignment.course?.courseName || assignment.courseId }} - HK{{ assignment.semester }} ({{ assignment.year }})
-      </option>
+      <option *ngFor="let tc of assignedCourses" [value]="tc.courseId">
+    {{ optionLabel(tc) }}
+  </option>
+
     </select>
   </div>
 
-  <!-- Bảng điểm chỉ hiển thị khi đã chọn một lớp -->
   <div *ngIf="selectedCourseId" class="table-container">
     <div *ngIf="isLoading" class="loading-indicator">
       <p>Đang tải danh sách sinh viên...</p>
@@ -29,7 +29,7 @@
 
     <div *ngIf="!isLoading">
       <div class="table-actions">
-        <button class="btn btn-primary" (click)="saveAllScores()">
+        <button class="btn btn-primary" (click)="saveAllScores()" [disabled]="scores.length === 0">
           <i class="fas fa-save"></i> Lưu tất cả
         </button>
       </div>
@@ -38,10 +38,11 @@
         <thead>
           <tr>
             <th>STT</th>
-            <th>Mã Sinh viên</th>
-            <th>Điểm quá trình</th>
-            <th>Điểm giữa kỳ</th>
-            <th>Điểm cuối kỳ</th>
+            <th>Mã SV</th>
+            <th>Họ tên</th> <!-- ✅ THÊM: Cột tên sinh viên -->
+            <th>Điểm QT</th>
+            <th>Điểm GK</th>
+            <th>Điểm CK</th>
             <th>Tổng kết</th>
             <th>Kết quả</th>
           </tr>
@@ -49,27 +50,61 @@
         <tbody>
           <tr *ngFor="let score of scores; let i = index">
             <td>{{ i + 1 }}</td>
-            <td>{{ score.studentId }}</td>
+            <td>{{ score.enrollment?.student?.studentId || score.studentId || 'N/A' }}</td>
+            <td>{{ score.enrollment?.student?.fullName || 'N/A' }}</td> <!-- ✅ THÊM: Hiển thị tên -->
             <td>
-              <input type="number" class="score-input" [(ngModel)]="score.processScore" (ngModelChange)="calculateTotalScore(score)" min="0" max="10">
+              <input
+                type="number"
+                class="score-input"
+                [(ngModel)]="score.processScore"
+                (ngModelChange)="calculateTotalScore(score)"
+                min="0"
+                max="10"
+                step="0.1"
+                placeholder="0-10">
             </td>
             <td>
-              <input type="number" class="score-input" [(ngModel)]="score.midtermScore" (ngModelChange)="calculateTotalScore(score)" min="0" max="10">
+              <input
+                type="number"
+                class="score-input"
+                [(ngModel)]="score.midtermScore"
+                (ngModelChange)="calculateTotalScore(score)"
+                min="0"
+                max="10"
+                step="0.1"
+                placeholder="0-10">
             </td>
             <td>
-              <input type="number" class="score-input" [(ngModel)]="score.finalScore" (ngModelChange)="calculateTotalScore(score)" min="0" max="10">
+              <input
+                type="number"
+                class="score-input"
+                [(ngModel)]="score.finalScore"
+                (ngModelChange)="calculateTotalScore(score)"
+                min="0"
+                max="10"
+                step="0.1"
+                placeholder="0-10">
             </td>
             <td>
-              <strong>{{ score.totalScore ?? 'N/A' }}</strong>
+              <strong [ngClass]="{
+                'text-success': (score.totalScore ?? 0) >= 5.0,
+                'text-warning': (score.totalScore ?? 0) >= 4.0 && (score.totalScore ?? 0) < 5.0,
+                'text-danger': (score.totalScore ?? 0) < 4.0 && score.totalScore != null,
+                'text-muted': score.totalScore == null
+              }">
+                {{ formatScore(score.totalScore) }}
+              </strong>
             </td>
             <td>
-              <span [ngClass]="{ 'text-success': score.isPassed, 'text-danger': !score.isPassed }">
-                {{ score.isPassed === null ? 'N/A' : (score.isPassed ? 'Đậu' : 'Rớt') }}
+              <span [ngClass]="getResultClass(score.isPassed)">
+                {{ getResultText(score.isPassed) }}
               </span>
             </td>
           </tr>
           <tr *ngIf="scores.length === 0">
-            <td colspan="8" class="text-center">Chưa có sinh viên nào trong lớp học này.</td>
+            <td colspan="8" class="text-center text-muted">
+              <em>Chưa có sinh viên nào trong lớp học này.</em>
+            </td>
           </tr>
         </tbody>
       </table>

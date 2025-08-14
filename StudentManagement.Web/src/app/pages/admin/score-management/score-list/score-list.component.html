@@ -1,174 +1,199 @@
 <div class="management-container">
-  <!-- Header chung -->
   <header class="management-header">
-    <h1>Quản lý Điểm</h1>
-    <!-- Nút Quay lại, chỉ hiển thị ở tầng 2 và 3 -->
-    <button *ngIf="level > 1" class="btn btn-secondary" (click)="goBack(level === 2 ? 1 : 2)">
-      <i class="fas fa-arrow-left"></i> Quay lại
-    </button>
+    <h1>Quản lý Điểm số</h1>
+    <div class="breadcrumb">
+      <span *ngIf="level >= 1" class="active">Môn học</span>
+      <span *ngIf="level >= 2"> > Giảng viên</span>
+      <span *ngIf="level >= 3"> > Điểm số</span>
+    </div>
   </header>
 
-  <!-- Breadcrumb (Thanh điều hướng) -->
-
-  <div class="breadcrumb">
-    <span [class.active]="level >= 1" (click)="level > 1 && goBack(1)">Chọn Môn học</span>
-    <i *ngIf="level > 1" class="fas fa-chevron-right"></i>
-    <span *ngIf="level > 1" [class.active]="level >= 2" (click)="level > 2 && goBack(2)">
-      {{ selectedCourse?.courseName || 'Chọn Giảng viên' }}
-    </span>
-    <i *ngIf="level > 2" class="fas fa-chevron-right"></i>
-    <span *ngIf="level > 2" [class.active]="level >= 3">
-      {{ selectedTeacher?.fullName || 'Nhập điểm' }}
-    </span>
-  </div>
-
   <div *ngIf="isLoading" class="loading-indicator">
-    <p>Đang tải dữ liệu...</p>
+    <div class="spinner"></div>
+    <span>Đang tải dữ liệu...</span>
   </div>
 
   <div *ngIf="errorMessage" class="error-message">
     {{ errorMessage }}
+    <button (click)="errorMessage = null" class="btn-close">×</button>
   </div>
 
-  <div *ngIf="!isLoading && !errorMessage">
-    <!-- TẦNG 1: DANH SÁCH MÔN HỌC -->
+  <!-- TẦNG 1: CHỌN MÔN HỌC - DẠNG LIST -->
+  <div *ngIf="level === 1 && !isLoading" class="level-container">
+    <div class="level-header">
+      <h2>Chọn môn học</h2>
+    </div>
 
-    <div *ngIf="level === 1" class="table-container">
+    <div class="table-container">
       <table class="table">
         <thead>
           <tr>
-            <th>Mã Môn học</th>
-            <th>Tên Môn học</th>
+            <th>Mã môn học</th>
+            <th>Tên môn học</th>
             <th>Số tín chỉ</th>
-            <th>Khoa</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let course of courses" (click)="selectCourse(course)" class="clickable-row">
-            <td>{{ course.courseId }}</td>
-            <td>{{ course.courseName }}</td>
-            <td>{{ course.credits }}</td>
-            <td>{{ course.department || 'N/A' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- TẦNG 2: DANH SÁCH GIẢNG VIÊN -->
-    <div *ngIf="level === 2" class="table-container">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Mã Giảng viên</th>
-            <th>Họ và Tên</th>
-            <th>Email</th>
-            <th>Trình độ</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let teacher of teachers" (click)="selectTeacher(teacher)" class="clickable-row">
-            <td>{{ teacher.teacherId }}</td>
-            <td>{{ teacher.fullName }}</td>
-            <td>{{ teacher.email }}</td>
-            <td>{{ teacher.degree || 'N/A' }}</td>
-          </tr>
-           <tr *ngIf="teachers.length === 0">
-            <td colspan="4" class="text-center">Không có giảng viên nào được phân công dạy môn này.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- TẦNG 3: DANH SÁCH SINH VIÊN VÀ NHẬP ĐIỂM -->
-    <div *ngIf="level === 3" class="table-container">
-      <div class="score-actions">
-
-        <button
-            class="btn btn-success"
-            [routerLink]="['/admin/scores/new', selectedCourse!.courseId, selectedTeacher!.teacherId]">
-            <i class="fas fa-plus"></i> Nhập điểm mới
-        </button>
-        <button class="btn btn-primary" (click)="saveAllScores()">
-          <i class="fas fa-save"></i> Lưu tất cả điểm
-        </button>
-      </div>
-
-      <table class="table score-table">
-        <thead>
-          <tr>
-            <th>STT</th>
-            <th>MSSV</th>
-            <th>Tên SV</th>
-            <th>Điểm quá trình</th>
-            <th>Điểm giữa kỳ</th>
-            <th>Điểm cuối kỳ</th>
-            <th>Tổng kết</th>
-            <th>Đậu / Rớt</th>
             <th>Hành động</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let score of scores; let i = index">
-            <td>{{ i + 1 }}</td>
-            <td>{{ score.studentId || 'N/A' }}</td>
-            <td>{{ score.fullName || 'N/A' }}</td>
-
-            <!-- Input điểm quá trình -->
+          <tr
+            *ngFor="let course of courses; trackBy: trackByCourseId"
+            class="clickable-row">
+            <td class="course-id">{{ course.courseId }}</td>
+            <td class="course-name">{{ course.courseName }}</td>
+            <td class="course-credits">{{ course.credits }} tín chỉ</td>
             <td>
-              <input
-                type="number"
-                class="score-input"
-                [(ngModel)]="score.processScore"
-                (ngModelChange)="calculateTotalScore(score)"
-                min="0" max="10"
-              />
+              <button
+                class="btn btn-primary"
+                (click)="selectCourse(course)">
+                Chọn môn học
+              </button>
             </td>
-
-            <!-- Input điểm giữa kỳ -->
-            <td>
-              <input
-                type="number"
-                class="score-input"
-                [(ngModel)]="score.midtermScore"
-                (ngModelChange)="calculateTotalScore(score)"
-                min="0" max="10"
-              />
-            </td>
-
-            <!-- Input điểm cuối kỳ -->
-            <td>
-              <input
-                type="number"
-                class="score-input"
-                [(ngModel)]="score.finalScore"
-                (ngModelChange)="calculateTotalScore(score)"
-                min="0" max="10"
-              />
-            </td>
-
-            <!-- Tổng kết -->
-            <td>
-              <strong>{{ score.totalScore ?? 'N/A' }}</strong>
-            </td>
-
-            <!-- Passed: Hiển thị tự động -->
-            <td>
-              <span [ngClass]="{ 'text-success': score.isPassed, 'text-danger': score.isPassed === false }">
-                {{ score.isPassed === null ? 'Chưa xét' : (score.isPassed ? 'Đậu' : 'Rớt') }}
-              </span>
-            </td>
-
-            <!-- Hành động -->
-            <td class="action-buttons">
-              <button (click)="deleteScore(score.scoreId)" class="btn btn-danger">Xóa</button>
-            </td>
-          </tr>
-
-          <tr *ngIf="scores.length === 0">
-            <td colspan="9" class="text-center">Chưa có sinh viên nào đăng ký lớp học này.</td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div *ngIf="courses.length === 0" class="no-data">
+      Không có môn học nào.
+    </div>
+  </div>
+
+  <!-- TẦNG 2: CHỌN GIẢNG VIÊN -->
+  <div *ngIf="level === 2 && !isLoading" class="level-container">
+    <div class="level-header">
+      <button class="btn-back" (click)="goBack()">← Quay lại</button>
+      <h2>Chọn giảng viên - {{ selectedCourse?.courseName }}</h2>
+    </div>
+
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Mã GV</th>
+            <th>Tên giảng viên</th>
+            <th>Mã phân công</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let teacher of assignedTeachers; trackBy: trackByTeacherId"
+            class="clickable-row">
+            <td>{{ teacher.teacherId }}</td>
+            <td>{{ teacher.teacherName }}</td>
+            <td>{{ teacher.teacherCourseId }}</td>
+            <td>
+              <button
+                class="btn btn-primary"
+                (click)="selectTeacher(teacher.teacherId, teacher.teacherCourseId)">
+                Xem điểm
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="assignedTeachers.length === 0" class="no-data">
+      Chưa có giảng viên nào được phân công dạy môn này.
+    </div>
+  </div>
+
+  <!-- TẦNG 3: DANH SÁCH ĐIỂM -->
+  <div *ngIf="level === 3 && !isLoading" class="level-container">
+    <div class="level-header">
+      <div class="header-left">
+        <button class="btn-back" (click)="goBack()">← Quay lại</button>
+        <h2>
+          Điểm số - {{ selectedCourse?.courseName }}
+          (GV: {{ selectedTeacherName }})
+        </h2>
+      </div>
+      <div class="header-actions">
+        <button
+          class="btn btn-primary"
+          (click)="navigateToAddScore()"
+          title="Thêm điểm cho sinh viên">
+          ➕ Thêm điểm
+        </button>
+        <button
+          class="btn btn-success"
+          (click)="saveAllScores()"
+          [disabled]="scores.length === 0">
+          💾 Lưu tất cả điểm
+        </button>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="table scores-table">
+        <thead>
+          <tr>
+            <th>Mã SV</th>
+            <th>Họ tên</th>
+            <th>Điểm quá trình</th>
+            <th>Điểm giữa kỳ</th>
+            <th>Điểm cuối kỳ</th>
+            <th>Điểm tổng</th>
+            <th>Kết quả</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let score of scores; trackBy: trackByScoreId">
+            <td>{{ score.studentId }}</td>
+            <td>{{ score.fullName }}</td>
+            <td>
+              <input
+                type="number"
+                [(ngModel)]="score.processScore"
+                min="0"
+                max="10"
+                step="0.1"
+                class="score-input"
+                (input)="score.totalScore = calculateTotalScore(score); score.isPassed = score.totalScore >= 4">
+            </td>
+            <td>
+              <input
+                type="number"
+                [(ngModel)]="score.midtermScore"
+                min="0"
+                max="10"
+                step="0.1"
+                class="score-input"
+                (input)="score.totalScore = calculateTotalScore(score); score.isPassed = score.totalScore >= 4">
+            </td>
+            <td>
+              <input
+                type="number"
+                [(ngModel)]="score.finalScore"
+                min="0"
+                max="10"
+                step="0.1"
+                class="score-input"
+                (input)="score.totalScore = calculateTotalScore(score); score.isPassed = score.totalScore >= 4">
+            </td>
+            <td class="total-score">{{ score.totalScore?.toFixed(2) || '0.00' }}</td>
+            <td>
+              <span class="badge" [class.passed]="score.isPassed" [class.failed]="!score.isPassed">
+                {{ score.isPassed ? 'Đậu' : 'Rớt' }}
+              </span>
+            </td>
+            <td>
+              <button
+                class="btn btn-danger btn-sm"
+                (click)="deleteScore(score.scoreId)"
+                title="Xóa điểm">
+                Xóa
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="scores.length === 0" class="no-data">
+      Chưa có điểm nào cho lớp học này.
     </div>
   </div>
 </div>

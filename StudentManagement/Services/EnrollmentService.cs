@@ -3,10 +3,6 @@ using StudentManagementSystem.Data.Interfaces;
 using StudentManagementSystem.DTOs.Enrollment;
 using StudentManagementSystem.Models;
 using StudentManagementSystem.Services.Interfaces;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 
 namespace StudentManagementSystem.Services
 {
@@ -40,7 +36,7 @@ namespace StudentManagementSystem.Services
             if (enrollment == null) return null;
 
             var dto = MapToDto(enrollment);
-            await _cacheService.SetDataAsync(cacheKey, dto, System.DateTimeOffset.Now.AddMinutes(5));
+            await _cacheService.SetDataAsync(cacheKey, dto, DateTimeOffset.Now.AddMinutes(5));
             return dto;
         }
 
@@ -58,7 +54,7 @@ namespace StudentManagementSystem.Services
 
             var enrollments = await _enrollmentRepository.GetByStudentIdAsync(studentId);
             var dtos = enrollments.Select(MapToDto).ToList();
-            await _cacheService.SetDataAsync(cacheKey, dtos, System.DateTimeOffset.Now.AddMinutes(5));
+            await _cacheService.SetDataAsync(cacheKey, dtos, DateTimeOffset.Now.AddMinutes(5));
             return dtos;
         }
 
@@ -76,31 +72,73 @@ namespace StudentManagementSystem.Services
 
             var enrollments = await _enrollmentRepository.GetByCourseIdAsync(courseId);
             var dtos = enrollments.Select(MapToDto).ToList();
-            await _cacheService.SetDataAsync(cacheKey, dtos, System.DateTimeOffset.Now.AddMinutes(5));
+            await _cacheService.SetDataAsync(cacheKey, dtos, DateTimeOffset.Now.AddMinutes(5));
             return dtos;
         }
 
+        // ✅ THÊM - Method mới cho TeacherCourse
+        public async Task<IEnumerable<EnrollmentDto>> GetByTeacherCourseIdAsync(int teacherCourseId)
+        {
+            _logger.LogInformation("Getting enrollments for TeacherCourse ID: {TeacherCourseId}", teacherCourseId);
+            var cacheKey = $"{CachePrefix}:teachercourse:{teacherCourseId}";
+
+            var cachedData = await _cacheService.GetDataAsync<IEnumerable<EnrollmentDto>>(cacheKey);
+            if (cachedData != null)
+            {
+                _logger.LogInformation("Enrollments for TeacherCourse ID {TeacherCourseId} found in cache.", teacherCourseId);
+                return cachedData;
+            }
+
+            var enrollments = await _enrollmentRepository.GetByTeacherCourseIdAsync(teacherCourseId);
+            var dtos = enrollments.Select(MapToDto).ToList();
+            await _cacheService.SetDataAsync(cacheKey, dtos, DateTimeOffset.Now.AddMinutes(5));
+            return dtos;
+        }
+
+        // ✅ THÊM - Method cho Semester
+        public async Task<IEnumerable<EnrollmentDto>> GetBySemesterIdAsync(int semesterId)
+        {
+            _logger.LogInformation("Getting enrollments for Semester ID: {SemesterId}", semesterId);
+            var cacheKey = $"{CachePrefix}:semester:{semesterId}";
+
+            var cachedData = await _cacheService.GetDataAsync<IEnumerable<EnrollmentDto>>(cacheKey);
+            if (cachedData != null)
+            {
+                _logger.LogInformation("Enrollments for Semester ID {SemesterId} found in cache.", semesterId);
+                return cachedData;
+            }
+
+            var enrollments = await _enrollmentRepository.GetBySemesterIdAsync(semesterId);
+            var dtos = enrollments.Select(MapToDto).ToList();
+            await _cacheService.SetDataAsync(cacheKey, dtos, DateTimeOffset.Now.AddMinutes(5));
+            return dtos;
+        }
+
+        // ✅ SỬA - CreateAsync với schema mới
         public async Task<bool> CreateAsync(EnrollmentCreateDto dto)
         {
-            _logger.LogInformation("Creating new enrollment for Student {StudentId} in Course {CourseId}", dto.StudentId, dto.CourseId);
+            _logger.LogInformation("Creating new enrollment for Student {StudentId} in TeacherCourse {TeacherCourseId}",
+                dto.StudentId, dto.TeacherCourseId);
+
             var enrollment = new Enrollment
             {
                 StudentId = dto.StudentId,
                 CourseId = dto.CourseId,
-                TeacherId = dto.TeacherId,
-                Semester = dto.Semester,
-                Year = dto.Year,
+                TeacherCourseId = dto.TeacherCourseId, // ✅ SỬA - Sử dụng TeacherCourseId
+                SemesterId = dto.SemesterId, // ✅ SỬA - Sử dụng SemesterId
                 Status = dto.Status
             };
+
             await _enrollmentRepository.AddAsync(enrollment);
 
-            // Invalidate caches related to this student and course
-            await InvalidateRelatedCaches(dto.StudentId, dto.CourseId);
-            _logger.LogInformation("Successfully created enrollment. Related caches invalidated for Student {StudentId} and Course {CourseId}.", dto.StudentId, dto.CourseId);
+            // Invalidate caches
+            await InvalidateRelatedCaches(dto.StudentId, dto.CourseId, dto.TeacherCourseId, dto.SemesterId);
+            _logger.LogInformation("Successfully created enrollment. Related caches invalidated.");
 
             return true;
         }
 
+        // ✅ SỬA - UpdateAsync với schema mới
         public async Task<bool> UpdateAsync(EnrollmentUpdateDto dto)
         {
             _logger.LogInformation("Updating enrollment ID: {EnrollmentId}", dto.EnrollmentId);
@@ -113,16 +151,15 @@ namespace StudentManagementSystem.Services
 
             enrollment.StudentId = dto.StudentId;
             enrollment.CourseId = dto.CourseId;
-            enrollment.TeacherId = dto.TeacherId;
-            enrollment.Semester = dto.Semester;
-            enrollment.Year = dto.Year;
+            enrollment.TeacherCourseId = dto.TeacherCourseId; // ✅ SỬA
+            enrollment.SemesterId = dto.SemesterId; // ✅ SỬA
             enrollment.Status = dto.Status;
 
             await _enrollmentRepository.UpdateAsync(enrollment);
 
             // Invalidate all related caches
             await _cacheService.RemoveDataAsync($"{CachePrefix}:{dto.EnrollmentId}");
-            await InvalidateRelatedCaches(dto.StudentId, dto.CourseId);
+            await InvalidateRelatedCaches(dto.StudentId, dto.CourseId, dto.TeacherCourseId, dto.SemesterId);
             _logger.LogInformation("Successfully updated enrollment {EnrollmentId}. All related caches invalidated.", dto.EnrollmentId);
 
             return true;
@@ -142,43 +179,54 @@ namespace StudentManagementSystem.Services
 
             // Invalidate all related caches
             await _cacheService.RemoveDataAsync($"{CachePrefix}:{enrollmentId}");
-            await InvalidateRelatedCaches(enrollment.StudentId, enrollment.CourseId);
+            await InvalidateRelatedCaches(enrollment.StudentId, enrollment.CourseId,
+                enrollment.TeacherCourseId, enrollment.SemesterId);
             _logger.LogInformation("Successfully deleted enrollment {EnrollmentId}. All related caches invalidated.", enrollmentId);
 
             return true;
         }
 
-        private Task InvalidateRelatedCaches(string studentId, string courseId)
+        // ✅ SỬA - InvalidateRelatedCaches với parameters mới
+        private Task InvalidateRelatedCaches(string studentId, string courseId, int? teacherCourseId, int? semesterId)
         {
-            var studentCacheKey = $"{CachePrefix}:student:{studentId}";
-            var courseCacheKey = $"{CachePrefix}:course:{courseId}";
-
             var tasks = new List<Task>
             {
-                _cacheService.RemoveDataAsync(studentCacheKey),
-                _cacheService.RemoveDataAsync(courseCacheKey)
+                _cacheService.RemoveDataAsync($"{CachePrefix}:student:{studentId}"),
+                _cacheService.RemoveDataAsync($"{CachePrefix}:course:{courseId}")
             };
+
+            if (teacherCourseId.HasValue)
+            {
+                tasks.Add(_cacheService.RemoveDataAsync($"{CachePrefix}:teachercourse:{teacherCourseId}"));
+            }
+
+            if (semesterId.HasValue)
+            {
+                tasks.Add(_cacheService.RemoveDataAsync($"{CachePrefix}:semester:{semesterId}"));
+            }
 
             return Task.WhenAll(tasks);
         }
 
-        // Other methods
         public async Task<IEnumerable<EnrollmentDto>> SearchAsync(string searchTerm)
         {
             var enrollments = await _enrollmentRepository.SearchAsync(searchTerm);
             return enrollments.Select(MapToDto);
         }
 
-        public async Task<(IEnumerable<EnrollmentDto> Enrollments, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize, string? searchTerm = null)
+        public async Task<(IEnumerable<EnrollmentDto> Enrollments, int TotalCount)> GetPagedAsync(
+            int pageNumber, int pageSize, string? searchTerm = null)
         {
             var (enrollments, totalCount) = await _enrollmentRepository.GetPagedAsync(pageNumber, pageSize, searchTerm);
             return (enrollments.Select(MapToDto), totalCount);
         }
+
         public async Task<IEnumerable<EnrollmentDto>> GetUnscoredAsync()
         {
             var enrollments = await _enrollmentRepository.GetUnscoredAsync();
-            return enrollments.Select(MapToDto); // Giả sử bạn đã có hàm MapToDto
+            return enrollments.Select(MapToDto);
         }
+
         public async Task<IEnumerable<EnrollmentWithScoreDto>> GetStudentEnrollmentsWithScoresAsync(string studentId)
         {
             _logger.LogInformation("Getting enrollments with scores for Student ID: {StudentId}", studentId);
@@ -194,47 +242,52 @@ namespace StudentManagementSystem.Services
             var enrollments = await _enrollmentRepository.GetStudentEnrollmentsWithScoresAsync(studentId);
             var dtos = enrollments.Select(MapToEnrollmentWithScoreDto).ToList();
 
-            await _cacheService.SetDataAsync(cacheKey, dtos, System.DateTimeOffset.Now.AddMinutes(5));
+            await _cacheService.SetDataAsync(cacheKey, dtos, DateTimeOffset.Now.AddMinutes(5));
             return dtos;
         }
 
-
-        public async Task<IEnumerable<EnrollmentDto>> GetUnscoredEnrollmentsForClassAsync(string courseId, string teacherId)
+        // ✅ SỬA - GetUnscoredEnrollmentsForClassAsync với TeacherCourseId
+        public async Task<IEnumerable<EnrollmentDto>> GetUnscoredEnrollmentsForClassAsync(int teacherCourseId)
         {
-            _logger.LogInformation("Getting unscored enrollments for Course ID: {CourseId} and Teacher ID: {TeacherId}", courseId, teacherId);
-            var cacheKey = $"{CachePrefix}:unscored:{courseId}:{teacherId}";
+            _logger.LogInformation("Getting unscored enrollments for TeacherCourse ID: {TeacherCourseId}", teacherCourseId);
+            var cacheKey = $"{CachePrefix}:unscored:teachercourse:{teacherCourseId}";
 
             var cachedData = await _cacheService.GetDataAsync<IEnumerable<EnrollmentDto>>(cacheKey);
             if (cachedData != null)
             {
-                _logger.LogInformation("Unscored enrollments for class {CourseId}/{TeacherId} found in cache.", courseId, teacherId);
+                _logger.LogInformation("Unscored enrollments for TeacherCourse {TeacherCourseId} found in cache.", teacherCourseId);
                 return cachedData;
             }
 
-            var enrollments = await _enrollmentRepository.GetUnscoredEnrollmentsForClassAsync(courseId, teacherId);
+            // ✅ SỬA - Gọi đúng method name
+            var enrollments = await _enrollmentRepository.GetUnscoredEnrollmentsByTeacherCourseAsync(teacherCourseId);
             var dtos = enrollments.Select(MapToDto).ToList();
 
-            await _cacheService.SetDataAsync(cacheKey, dtos, System.DateTimeOffset.Now.AddMinutes(1)); // Cache ngắn hơn vì dữ liệu này thay đổi thường xuyên
-            _logger.LogInformation("Returning {Count} unscored enrollments for class {CourseId}/{TeacherId} from database.", dtos.Count, courseId, teacherId);
+            await _cacheService.SetDataAsync(cacheKey, dtos, DateTimeOffset.Now.AddMinutes(1));
+            _logger.LogInformation("Returning {Count} unscored enrollments for TeacherCourse {TeacherCourseId} from database.", 
+                dtos.Count, teacherCourseId);
 
             return dtos;
         }
 
-        // Helper method để map sang DTO mới - VERSION SIMPLE
+
         private static EnrollmentWithScoreDto MapToEnrollmentWithScoreDto(Enrollment e) => new EnrollmentWithScoreDto
         {
             EnrollmentId = e.EnrollmentId,
             StudentId = e.StudentId ?? string.Empty,
+            StudentName = e.Student?.FullName ?? string.Empty,
             CourseId = e.CourseId ?? string.Empty,
             CourseName = e.Course?.CourseName ?? string.Empty,
             Credits = e.Course?.Credits ?? 0,
-            TeacherId = e.TeacherId ?? string.Empty,
 
-            // Tạm thời để trống TeacherName, sẽ cập nhật sau khi biết cấu trúc Teacher model
-            TeacherName = string.Empty,
 
-            Semester = e.Semester ?? string.Empty,
-            Year = e.Year ?? 0,
+            TeacherId = e.TeacherCourse?.TeacherId ?? string.Empty,
+            TeacherName = e.TeacherCourse?.Teacher?.FullName ?? string.Empty,
+
+            SemesterId = e.SemesterId,
+            SemesterName = e.Semester?.SemesterName ?? string.Empty,
+            AcademicYear = e.Semester?.AcademicYear ?? string.Empty,
+
             Status = e.Status,
 
             // Mapping điểm từ Score navigation property
@@ -242,11 +295,10 @@ namespace StudentManagementSystem.Services
             MidtermScore = e.Score?.MidtermScore,
             FinalScore = e.Score?.FinalScore,
             TotalScore = e.Score?.TotalScore,
-            IsPassed = e.Score?.IsPassed ?? false,
+            IsPassed = e.Score?.TotalScore >= 4,
             Grade = CalculateGrade(e.Score?.TotalScore)
         };
 
-// Helper method tính grade
         private static string CalculateGrade(decimal? totalScore)
         {
             if (totalScore == null) return "N/A";
@@ -263,16 +315,21 @@ namespace StudentManagementSystem.Services
                 _ => "F"
             };
         }
+
         private static EnrollmentDto MapToDto(Enrollment e) => new EnrollmentDto
         {
             EnrollmentId = e.EnrollmentId,
             StudentId = e.StudentId,
+            StudentName = e.Student?.FullName,
             CourseId = e.CourseId,
-            TeacherId = e.TeacherId,
-            Semester = e.Semester,
-            Year = e.Year,
-            Status = e.Status,
-
+            CourseName = e.Course?.CourseName,
+            TeacherCourseId = e.TeacherCourseId,
+            TeacherId = e.TeacherCourse?.TeacherId,
+            TeacherName = e.TeacherCourse?.Teacher?.FullName,
+            SemesterId = e.SemesterId,
+            SemesterName = e.Semester?.SemesterName,
+            AcademicYear = e.Semester?.AcademicYear, 
+            Status = e.Status
         };
     }
 }

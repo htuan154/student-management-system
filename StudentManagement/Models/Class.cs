@@ -18,15 +18,18 @@ namespace StudentManagementSystem.Models
         [StringLength(100)]
         public string Major { get; set; } = string.Empty;
 
-        [StringLength(20)]
-        public string? AcademicYear { get; set; }
 
-        public int? Semester { get; set; }
+        [Required]
+        public int SemesterId { get; set; }
+
+        [ForeignKey("SemesterId")]
+        public virtual Semester Semester { get; set; } = null!;
 
         [Column(TypeName = "bit")]
         public bool IsActive { get; set; } = true;
 
         // Navigation properties
         public virtual ICollection<Student> Students { get; set; } = new List<Student>();
+        public virtual ICollection<AnnouncementDetail> AnnouncementDetails { get; set; } = new List<AnnouncementDetail>();
     }
 }

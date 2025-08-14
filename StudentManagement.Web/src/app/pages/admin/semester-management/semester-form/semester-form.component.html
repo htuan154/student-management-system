@@ -1,0 +1,64 @@
+<div class="card">
+  <div class="card-header">
+    <h2>{{ isEdit ? 'Cập nhật học kỳ' : 'Tạo học kỳ mới' }}</h2>
+    <a class="btn" routerLink="/admin/semester-management">Quay lại</a>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="grid">
+    <!-- Tên học kỳ -->
+    <div class="col">
+      <label>Tên học kỳ <span class="req">*</span></label>
+      <input type="text" formControlName="semesterName" placeholder="VD: Học kỳ I, Học kỳ II" />
+      <div class="field-error" *ngIf="form.get('semesterName')?.touched && form.get('semesterName')?.invalid">
+        Vui lòng nhập tên học kỳ.
+      </div>
+    </div>
+
+    <!-- Niên khóa -->
+    <div class="col">
+      <label>Niên khóa <span class="req">*</span></label>
+      <input type="text" formControlName="academicYear" placeholder="VD: 2024-2025" />
+      <div class="field-error" *ngIf="form.get('academicYear')?.touched && form.get('academicYear')?.invalid">
+        Vui lòng nhập niên khóa.
+      </div>
+    </div>
+
+    <!-- Ngày bắt đầu -->
+    <div class="col">
+      <label>Ngày bắt đầu <span class="req">*</span></label>
+      <input type="date" formControlName="startDate" />
+      <div class="field-error" *ngIf="form.get('startDate')?.touched && form.get('startDate')?.invalid">
+        Vui lòng chọn ngày bắt đầu.
+      </div>
+    </div>
+
+    <!-- Ngày kết thúc -->
+    <div class="col">
+      <label>Ngày kết thúc <span class="req">*</span></label>
+      <input type="date" formControlName="endDate" />
+      <div class="hint">Khi ngày kết thúc đã qua, học kỳ sẽ tự chuyển sang <strong>Không hoạt động</strong>.</div>
+      <div class="field-error" *ngIf="form.errors?.['dateRange'] && (form.get('endDate')?.touched || form.get('startDate')?.touched)">
+        {{ form.errors?.['dateRange'] }}
+      </div>
+    </div>
+
+    <div class="col inline">
+      <label class="checkbox">
+        <input type="checkbox" formControlName="isActive" />
+        <span>Đang hoạt động</span>
+      </label>
+      <div class="hint">Nếu học kỳ đã hết hạn, ô này sẽ tự tắt và bị khóa.</div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <a class="btn" routerLink="/admin/semester-management">Hủy</a>
+      <button type="submit" class="btn primary" [disabled]="form.invalid || isLoading">
+        {{ isLoading ? 'Đang lưu...' : (isEdit ? 'Cập nhật' : 'Tạo mới') }}
+      </button>
+    </div>
+
+    <!-- Error banner -->
+    <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+  </form>
+</div>

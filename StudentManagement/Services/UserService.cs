@@ -87,8 +87,6 @@ namespace StudentManagementSystem.Services
             var user = await _userRepository.GetByUsernameAsync(username);
             if (user == null) return false;
 
-            // SỬA LỖI BẢO MẬT: Sử dụng BCrypt để xác thực mật khẩu
-            // Nó sẽ tự động so sánh mật khẩu người dùng nhập với chuỗi hash trong database
             return BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
         }
 

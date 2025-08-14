@@ -1,11 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Course, Enrollment } from '../../../models';
+import { HttpErrorResponse } from '@angular/common/http';
+import { forkJoin, of } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
+
+import { Course, Enrollment, TeacherCourse } from '../../../models';
 import { CourseService } from '../../../services/course.service';
 import { EnrollmentService } from '../../../services/enrollment.service';
+import { SemesterService, StudentSemesterSummary } from '../../../services/semester.service';
+import { TeacherCourseService } from '../../../services/teacher-course.service';
 import { AuthService } from '../../../services/auth.service';
-import { HttpErrorResponse } from '@angular/common/http';
-import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-course-registration',
@@ -17,7 +21,13 @@ import { forkJoin } from 'rxjs';
 export class CourseRegistrationComponent implements OnInit {
   availableCourses: Course[] = [];
   myEnrollments: Enrollment[] = [];
+  teacherCoursesInSem: TeacherCourse[] = [];
+
+  semesters: StudentSemesterSummary[] = [];
+  selectedSemesterId: number | null = null;
+
   studentId: string | null = null;
+
   isLoading = false;
   errorMessage: string | null = null;
   successMessage: string | null = null;
@@ -25,71 +35,113 @@ export class CourseRegistrationComponent implements OnInit {
   constructor(
     private courseService: CourseService,
     private enrollmentService: EnrollmentService,
+    private semesterService: SemesterService,
+    private teacherCourseService: TeacherCourseService,
     private authService: AuthService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     const tokenPayload = this.authService.getDecodedToken();
     this.studentId = tokenPayload?.studentId;
 
-    if (this.studentId) {
-      this.loadInitialData();
-    } else {
+    if (!this.studentId) {
       this.errorMessage = 'Không thể xác định thông tin sinh viên.';
+      return;
     }
-  }
 
-  loadInitialData(): void {
     this.isLoading = true;
-    this.errorMessage = null;
+    this.semesterService.getActiveSemesters().pipe(
+      map(sems => sems.map(s => ({
+        semesterId: s.semesterId,
+        semesterName: s.semesterName,
+        academicYear: s.academicYear,
+        startDate: s.startDate,
+        endDate: s.endDate,
+        isActive: s.isActive,
+        courseCount: s.teacherCourses?.length ?? 0
+      }) as StudentSemesterSummary)),
+      switchMap((summaries: StudentSemesterSummary[]) => {
+        this.semesters = summaries.sort((a, b) => a.startDate.localeCompare(b.startDate));
+        const active = this.semesters.find(s => s.isActive);
+        this.selectedSemesterId = active
+          ? active.semesterId
+          : (this.semesters.length ? this.semesters[this.semesters.length - 1].semesterId : null);
 
-    // Tải đồng thời danh sách môn học và các môn sinh viên đã đăng ký
-    forkJoin({
-      courses: this.courseService.getAllCourses(),
-      enrollments: this.enrollmentService.getEnrollmentsByStudentId(this.studentId!)
-    }).subscribe({
-      next: ({ courses, enrollments }) => {
-        this.availableCourses = courses;
-        this.myEnrollments = enrollments;
-        this.isLoading = false;
-      },
+        return this.loadInitialData();
+      })
+    ).subscribe({
+      next: () => (this.isLoading = false),
       error: (err: HttpErrorResponse) => {
-        this.errorMessage = 'Đã có lỗi xảy ra khi tải dữ liệu.';
-        this.isLoading = false;
         console.error(err);
+        this.errorMessage = 'Không tải được dữ liệu kỳ học.';
+        this.isLoading = false;
       }
     });
   }
 
-  /**
-   * Kiểm tra xem sinh viên đã đăng ký môn học này chưa
-   */
+  onSemesterChange(value: string) {
+  this.selectedSemesterId = value ? +value : null;
+  this.loadInitialData().subscribe();
+}
+
+  private loadInitialData() {
+    if (!this.studentId || !this.selectedSemesterId) {
+      this.availableCourses = [];
+      this.myEnrollments = [];
+      this.teacherCoursesInSem = [];
+      return of(null);
+    }
+
+    this.isLoading = true;
+    this.errorMessage = null;
+
+    return forkJoin({
+      courses: this.courseService.getAllCourses(),
+      enrollments: this.enrollmentService.getEnrollmentsByStudentId(this.studentId!),
+      tcs: this.teacherCourseService.getTeacherCoursesBySemesterId(this.selectedSemesterId)
+    }).pipe(
+      map(({ courses, enrollments, tcs }) => {
+        this.teacherCoursesInSem = tcs;
+        this.myEnrollments = enrollments.filter(e => e.semesterId === this.selectedSemesterId);
+
+        const tcCourseIds = new Set(tcs.map(x => x.courseId));
+        this.availableCourses = courses.filter(c => tcCourseIds.has(c.courseId));
+
+        this.isLoading = false;
+        return null;
+      })
+    );
+  }
+
   isAlreadyEnrolled(courseId: string): boolean {
     return this.myEnrollments.some(e => e.courseId === courseId);
   }
 
-  /**
-   * Xử lý việc đăng ký môn học
-   */
   registerForCourse(courseId: string): void {
-    if (!this.studentId) {
-      this.errorMessage = 'Không thể thực hiện đăng ký.';
+    if (!this.studentId || !this.selectedSemesterId) {
+      this.errorMessage = 'Vui lòng chọn kỳ học trước khi đăng ký.';
+      return;
+    }
+
+    const teacherCourseId = this.findTeacherCourseId(courseId, this.selectedSemesterId);
+    if (!teacherCourseId) {
+      this.errorMessage = 'Môn này chưa được phân công trong kỳ đã chọn.';
       return;
     }
 
     const enrollmentData = {
       studentId: this.studentId,
-      courseId: courseId,
-      status: 'Enrolled' // Trạng thái mặc định khi đăng ký
+      courseId,
+      semesterId: this.selectedSemesterId,
+      teacherCourseId,
+      status: 'Enrolled'
     };
 
     this.enrollmentService.createEnrollment(enrollmentData).subscribe({
       next: () => {
-        this.successMessage = `Đăng ký môn học ${courseId} thành công!`;
-        // Tải lại danh sách đăng ký để cập nhật trạng thái nút bấm
-        this.loadInitialData();
-        // Tự động ẩn thông báo thành công sau 3 giây
-        setTimeout(() => this.successMessage = null, 3000);
+        this.successMessage = `Đăng ký môn ${courseId} thành công!`;
+        this.loadInitialData().subscribe();
+        setTimeout(() => (this.successMessage = null), 3000);
       },
       error: (err: HttpErrorResponse) => {
         this.errorMessage = `Lỗi khi đăng ký: ${err.error?.message || 'Vui lòng thử lại.'}`;
@@ -97,4 +149,16 @@ export class CourseRegistrationComponent implements OnInit {
       }
     });
   }
+
+  private findTeacherCourseId(courseId: string, semesterId: number): number | null {
+    const tc = this.teacherCoursesInSem.find(x => x.courseId === courseId && x.semesterId === semesterId);
+    return tc?.teacherCourseId ?? null;
+  }
+
+  hasTeacherCourseInSemester(courseId: string, semesterId: number): boolean {
+    return this.teacherCoursesInSem.some(tc => tc.courseId === courseId && tc.semesterId === semesterId);
+  }
+
+  trackBySemesterId = (_: number, s: StudentSemesterSummary) => s.semesterId;
+  trackByCourseId   = (_: number, c: Course) => c.courseId;
 }

@@ -1,48 +1,77 @@
-<div class="list-container">
-  <!-- Header của trang -->
-  <div class="header">
-    <h1>Quản lý Giảng viên</h1>
-    <a routerLink="/admin/teachers/new" class="btn btn-primary">Thêm mới Giảng viên</a>
+<div class="management-container">
+  <!-- Header -->
+  <header class="management-header">
+    <div class="title-wrap">
+      <h1>Quản lý Giảng viên</h1>
+      <span class="meta-pill">Tổng: {{ teachers?.length || 0 }}</span>
+    </div>
+
+    <a routerLink="new" class="btn btn-primary">
+      <i class="fas fa-plus"></i>
+      <span>Thêm mới</span>
+    </a>
+  </header>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="alert info">
+    <i class="fas fa-spinner fa-spin"></i>
+    <span>Đang tải dữ liệu…</span>
   </div>
 
-  <!-- Trạng thái đang tải -->
-  <div *ngIf="isLoading" class="loading-indicator">
-    <p>Đang tải dữ liệu...</p>
+  <!-- Error -->
+  <div *ngIf="errorMessage" class="alert danger">
+    <i class="fas fa-triangle-exclamation"></i>
+    <span>{{ errorMessage }}</span>
   </div>
 
-  <!-- Thông báo lỗi -->
-  <div *ngIf="errorMessage" class="error-message">
-    <p>{{ errorMessage }}</p>
-  </div>
-
-  <!-- Bảng dữ liệu (chỉ hiển thị khi không tải và không có lỗi) -->
-  <div *ngIf="!isLoading && !errorMessage" class="table-container">
+  <!-- Table -->
+  <div *ngIf="!isLoading && !errorMessage" class="table-card">
     <table class="table">
       <thead>
         <tr>
           <th>Mã GV</th>
           <th>Họ và tên</th>
           <th>Email</th>
-          <th>Khoa</th>
-          <th>Ngày bắt đầu</th>
-          <th>Hành động</th>
+          <th>Mã khoa</th>
+          <th class="col-actions">Hành động</th>
         </tr>
       </thead>
+
       <tbody>
-        <tr *ngFor="let teacher of teachers">
-          <td>{{ teacher.teacherId }}</td>
-          <td>{{ teacher.fullName }}</td>
-          <td>{{ teacher.email }}</td>
-          <td>{{ teacher.department }}</td>
-          <td>{{ teacher.hireDate | date:'dd/MM/yyyy' }}</td>
+        <tr *ngFor="let t of teachers; trackBy: trackById">
           <td>
-            <a [routerLink]="['/admin/teachers/edit', teacher.teacherId]" class="btn btn-edit">Sửa</a>
-            <button (click)="deleteTeacher(teacher.teacherId!)" class="btn btn-delete">Xóa</button>
+            <span class="code">{{ t.teacherId }}</span>
+          </td>
+
+          <td class="name-cell">
+            <span class="avatar">{{ (t.fullName || 'GV')[0] | uppercase }}</span>
+            <span class="name">{{ t.fullName }}</span>
+          </td>
+
+          <td>
+            <a class="link" href="mailto:{{ t.email }}">{{ t.email }}</a>
+          </td>
+
+          <td>
+            <span class="badge badge-id">{{ t.department || 'N/A' }}</span>
+          </td>
+
+          <td class="col-actions">
+            <div class="action-buttons">
+              <a [routerLink]="['edit', t.teacherId]" class="btn btn-secondary">
+                <i class="fas fa-edit"></i>
+                <span>Sửa</span>
+              </a>
+              <button (click)="deleteTeacher(t.teacherId)" class="btn btn-danger">
+                <i class="fas fa-trash-alt"></i>
+                <span>Xóa</span>
+              </button>
+            </div>
           </td>
         </tr>
-        <!-- Hiển thị khi không có dữ liệu -->
-        <tr *ngIf="teachers.length === 0">
-          <td colspan="6" class="text-center">Không có giảng viên nào để hiển thị.</td>
+
+        <tr *ngIf="teachers?.length === 0">
+          <td colspan="5" class="empty">Không có dữ liệu giảng viên để hiển thị.</td>
         </tr>
       </tbody>
     </table>

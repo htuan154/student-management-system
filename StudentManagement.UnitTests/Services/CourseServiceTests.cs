@@ -5,7 +5,7 @@ using StudentManagementSystem.Services;
 using StudentManagementSystem.Data.Interfaces;
 using StudentManagementSystem.Services.Interfaces;
 using StudentManagementSystem.Models;
-using StudentManagementSystem.Dtos.Course;
+using StudentManagementSystem.DTOs.Course;
 using FluentAssertions;
 using System;
 using System.Collections.Generic;

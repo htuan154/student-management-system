@@ -10,3 +10,7 @@ export * from './student.model';
 export * from './teacher-course.model';
 export * from './teacher.model';
 export * from './user.model';
+export * from './Announcement.model';
+export * from './AnnouncementDetail.model';
+export * from './Schedule.model';
+export * from './Semester.model';

@@ -4,7 +4,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using StudentManagementSystem.Controllers;
-using StudentManagementSystem.Dtos.User;
+using StudentManagementSystem.DTOs.User;
 using StudentManagementSystem.Services.Interfaces;
 using Xunit;
 

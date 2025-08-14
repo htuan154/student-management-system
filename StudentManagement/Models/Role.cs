@@ -19,5 +19,6 @@ namespace StudentManagementSystem.Models
 
         // Navigation properties
         public virtual ICollection<User> Users { get; set; } = new List<User>();
+        public virtual ICollection<AnnouncementDetail> AnnouncementDetails { get; set; } = new List<AnnouncementDetail>();
     }
 }

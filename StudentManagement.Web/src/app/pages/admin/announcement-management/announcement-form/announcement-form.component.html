@@ -1,0 +1,184 @@
+<div class="card" [class.loading]="loading || saving">
+  <div class="card-header">
+    <h2>{{ mode === 'edit' ? 'Cập nhật thông báo' : 'Tạo thông báo mới' }}</h2>
+    <a class="btn" routerLink="/admin/announcement-management">Quay lại</a>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <!-- Thông tin cơ bản -->
+    <div class="grid">
+      <div class="col">
+        <label>Tiêu đề <span class="req">*</span></label>
+        <input type="text" formControlName="title" placeholder="Nhập tiêu đề" />
+        <div class="err" *ngIf="form.get('title')?.touched && form.get('title')?.invalid">
+          Vui lòng nhập tiêu đề (≤ 200 ký tự).
+        </div>
+      </div>
+
+      <div class="col">
+        <label>Ngày hết hạn</label>
+        <input type="datetime-local" formControlName="expiryDate" />
+      </div>
+
+      <div class="col" style="grid-column: 1 / -1;">
+        <label>Nội dung <span class="req">*</span></label>
+        <textarea formControlName="content" rows="6" placeholder="Nhập nội dung thông báo..."></textarea>
+        <div class="err" *ngIf="form.get('content')?.touched && form.get('content')?.invalid">
+          Vui lòng nhập nội dung.
+        </div>
+      </div>
+
+      <div class="col">
+        <label>Người tạo</label>
+        <div class="readonly-pill">
+          {{ currentUserName || '—' }}
+        </div>
+      </div>
+
+      <div class="col">
+        <label>Ghi đè danh sách người nhận cũ (khi sửa)</label>
+        <div class="row chk">
+          <input type="checkbox" id="ow" formControlName="overwriteDetails" />
+          <label for="ow">Ghi đè</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Phạm vi nhận -->
+    <h3>Phạm vi nhận thông báo (tùy chọn)</h3>
+    <p class="hint">
+      Mặc định bật <b>Thông báo chung</b> (mọi người đều nhận). Nếu muốn giới hạn đối tượng,
+      tắt công tắc và chọn ở các danh sách bên dưới.
+    </p>
+
+    <div class="row chk" style="margin-bottom: 10px;">
+      <input type="checkbox" formControlName="isGlobal" id="isGlobal" />
+      <label for="isGlobal">Thông báo chung (mọi người đều nhận)</label>
+    </div>
+
+    <!-- 4 dropdown + chips (KHÔNG dùng ngModel, KHÔNG dùng 'as HTMLSelectElement') -->
+    <div class="grid" *ngIf="!form.value.isGlobal">
+      <!-- Vai trò -->
+      <div class="col">
+        <label>Vai trò</label>
+        <div class="combobox">
+          <select #roleSel (change)="onAdd('roleIds', roleSel.value); roleSel.value=''">
+            <option value="">-- Chọn vai trò --</option>
+            <option *ngFor="let r of roleOptions" [value]="r.id">
+              {{ r.name }} ({{ r.id }})
+            </option>
+          </select>
+
+          <div class="chips">
+            <span class="chip"
+                  *ngFor="let id of (form.value.roleIds || [])"
+                  (click)="removeItem('roleIds', id)"
+                  title="Bỏ chọn">
+              {{ labelOf(id, roleOptions) }} ({{ id }}) ×
+            </span>
+          </div>
+
+          <div class="inline-actions">
+            <button type="button" class="btn sm" (click)="selectAll('roleIds', roleOptions)">Chọn tất cả</button>
+            <button type="button" class="btn sm" (click)="clearAll('roleIds')">Bỏ chọn</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lớp học -->
+      <div class="col">
+        <label>Lớp học</label>
+        <div class="combobox">
+          <select #classSel (change)="onAdd('classIds', classSel.value); classSel.value=''">
+            <option value="">-- Chọn lớp --</option>
+            <option *ngFor="let c of classOptions" [value]="c.id">
+              {{ c.name }} ({{ c.id }})
+            </option>
+          </select>
+
+          <div class="chips">
+            <span class="chip"
+                  *ngFor="let id of (form.value.classIds || [])"
+                  (click)="removeItem('classIds', id)"
+                  title="Bỏ chọn">
+              {{ labelOf(id, classOptions) }} ({{ id }}) ×
+            </span>
+          </div>
+
+          <div class="inline-actions">
+            <button type="button" class="btn sm" (click)="selectAll('classIds', classOptions)">Chọn tất cả</button>
+            <button type="button" class="btn sm" (click)="clearAll('classIds')">Bỏ chọn</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Môn học -->
+      <div class="col">
+        <label>Môn học</label>
+        <div class="combobox">
+          <select #courseSel (change)="onAdd('courseIds', courseSel.value); courseSel.value=''">
+            <option value="">-- Chọn môn --</option>
+            <option *ngFor="let c of courseOptions" [value]="c.id">
+              {{ c.name }} ({{ c.id }})
+            </option>
+          </select>
+
+          <div class="chips">
+            <span class="chip"
+                  *ngFor="let id of (form.value.courseIds || [])"
+                  (click)="removeItem('courseIds', id)"
+                  title="Bỏ chọn">
+              {{ labelOf(id, courseOptions) }} ({{ id }}) ×
+            </span>
+          </div>
+
+          <div class="inline-actions">
+            <button type="button" class="btn sm" (click)="selectAll('courseIds', courseOptions)">Chọn tất cả</button>
+            <button type="button" class="btn sm" (click)="clearAll('courseIds')">Bỏ chọn</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Người dùng -->
+      <div class="col">
+        <label>Người dùng</label>
+        <div class="combobox">
+          <select #userSel (change)="onAdd('userIds', userSel.value); userSel.value=''">
+            <option value="">-- Chọn người dùng --</option>
+            <option *ngFor="let u of userOptions" [value]="u.id">
+              {{ u.name }} ({{ u.id }})
+            </option>
+          </select>
+
+          <div class="chips">
+            <span class="chip"
+                  *ngFor="let id of (form.value.userIds || [])"
+                  (click)="removeItem('userIds', id)"
+                  title="Bỏ chọn">
+              {{ labelOf(id, userOptions) }} ({{ id }}) ×
+            </span>
+          </div>
+
+          <div class="inline-actions">
+            <button type="button" class="btn sm" (click)="selectAll('userIds', userOptions)">Chọn tất cả</button>
+            <button type="button" class="btn sm" (click)="clearAll('userIds')">Bỏ chọn</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nút hành động -->
+    <div class="actions">
+      <a class="btn" routerLink="/admin/announcement-management">Hủy</a>
+      <button type="submit" class="btn primary" [disabled]="saving || form.invalid">
+        {{ mode === 'edit' ? 'Cập nhật' : 'Tạo' }}
+      </button>
+    </div>
+
+    <div class="err" *ngIf="errorMessage" style="margin-top: 10px;">
+      {{ errorMessage }}
+    </div>
+  </form>
+</div>

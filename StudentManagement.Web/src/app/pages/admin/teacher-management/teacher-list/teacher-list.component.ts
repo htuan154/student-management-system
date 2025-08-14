@@ -37,6 +37,7 @@ export class TeacherListComponent implements OnInit {
       }
     });
   }
+  trackById = (_: number, t: Teacher) => t.teacherId;
 
   deleteTeacher(id: string): void {
     if (confirm('Are you sure you want to delete this teacher?')) {

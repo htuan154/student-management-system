@@ -1,114 +1,524 @@
+// Variables
+// ✅ SỬA: Định nghĩa lại CSS variables với giá trị cụ thể
+:root {
+  --primary-color: #3b82f6;
+  --primary-hover: #2563eb;
+  --primary-dark: #1d4ed8;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  --white: #ffffff;
+  --border-radius: 8px;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
 
-$primary-color: #007bff;
-$secondary-color: #6c757d;
-$danger-color: #dc3545;
-$background-color: #f4f7fa;
-$white: #fff;
-$text-dark: #2c3e50;
-$border-color: #dee2e6;
-
-// Container chính cho trang
+// Base styles
 .management-container {
-  padding: 2rem;
-  background-color: $background-color;
+  padding: 24px;
+  background-color: var(--gray-50);
   min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-// Header của trang
+// Header styles
 .management-header {
-  display: flex;
-  justify-content: space-between;
+  margin-bottom: 24px;
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin: 0;
+    }
+
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      .stats {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--gray-600);
+        font-size: 14px;
+
+        .sep {
+          width: 1px;
+          height: 16px;
+          background-color: var(--gray-300);
+        }
+
+        strong {
+          color: var(--gray-900);
+          font-weight: 600;
+        }
+      }
+    }
+  }
+
+  .search-row {
+    margin-bottom: 16px;
+
+    .search-input {
+      width: 100%;
+      max-width: 400px;
+      padding: 12px 16px;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--border-radius);
+      font-size: 14px;
+      background-color: var(--white);
+      transition: all 0.2s ease;
+
+      &:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgb(59 130 246 / 0.1);
+      }
+
+      &::placeholder {
+        color: var(--gray-400);
+      }
+    }
+  }
+
+  .filters {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+
+    .filter {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      label {
+        font-size: 14px;
+        color: var(--gray-700);
+        font-weight: 500;
+        white-space: nowrap;
+      }
+
+      select {
+        padding: 8px 12px;
+        border: 1px solid var(--gray-300);
+        border-radius: var(--border-radius);
+        font-size: 14px;
+        background-color: var(--white);
+        min-width: 120px;
+        cursor: pointer;
+        transition: border-color 0.2s ease;
+
+        &:focus {
+          outline: none;
+          border-color: var(--primary-color);
+        }
+      }
+    }
+  }
+}
+
+// Button styles
+.btn {
+  display: inline-flex;
   align-items: center;
-  margin-bottom: 2rem;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px; // Fallback thay vì var(--border-radius)
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
 
-  h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: $text-dark;
-  }
-}
+  &.btn-primary {
+    background-color: #3b82f6 !important; // ✅ SỬA: Fallback + !important
+    color: #ffffff !important;
 
-// Khung trắng chứa bảng
-.table-container {
-  background-color: $white;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-}
-
-// Bảng dữ liệu
-.table {
-  width: 100%;
-  border-collapse: collapse;
-
-  thead tr {
-    background-color: $primary-color;
-    color: $white;
-    text-align: left;
-  }
-
-  th, td {
-    padding: 1rem 1.25rem;
-    vertical-align: middle;
-  }
-
-  tbody tr {
-    border-bottom: 1px solid $border-color;
-    &:last-of-type {
-      border-bottom: none;
-    }
     &:hover {
-      background-color: #f8f9fa;
+      background-color: #2563eb !important; // ✅ SỬA: Fallback hover
+      transform: translateY(-1px);
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    }
+  }
+
+  i {
+    font-size: 14px;
+  }
+}
+
+// Alert styles
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-radius: var(--border-radius);
+  margin-bottom: 20px;
+  font-size: 14px;
+
+  &.info {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+    border: 1px solid #93c5fd;
+  }
+
+  &.danger {
+    background-color: #fecaca;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+  }
+
+  i {
+    font-size: 16px;
+  }
+}
+
+// Table styles
+.table-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+
+    thead {
+      background-color: #3b82f6 !important; // ✅ SỬA: Fallback màu xanh
+      color: #ffffff !important;
+
+      th {
+        padding: 16px 20px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        background-color: #3b82f6 !important; // ✅ SỬA: Đảm bảo màu header
+
+        &.col-id {
+          width: 80px;
+        }
+
+        &.col-actions {
+          width: 200px;
+          text-align: center;
+        }
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid #e5e7eb;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+          background-color: #f9fafb;
+        }
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        td {
+          padding: 16px 20px;
+          font-size: 14px;
+          vertical-align: middle;
+
+          &.code {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-weight: 600;
+            color: var(--gray-600);
+          }
+
+          &.name-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            .avatar {
+              width: 40px;
+              height: 40px;
+              border-radius: 50%;
+              background-color: var(--primary-color);
+              color: var(--white);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-weight: 600;
+              font-size: 16px;
+              flex-shrink: 0;
+            }
+
+            .name-wrap {
+              .name {
+                font-weight: 600;
+                color: var(--gray-900);
+                margin-bottom: 2px;
+              }
+
+              .sub {
+                font-size: 12px;
+                color: var(--gray-500);
+              }
+            }
+          }
+
+          &.empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray-500);
+            font-style: italic;
+          }
+
+          &.col-actions {
+            text-align: center;
+          }
+
+          .link {
+            color: var(--primary-color);
+            text-decoration: none;
+
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background-color: var(--gray-50);
+    border-top: 1px solid var(--gray-200);
+
+    .hint {
+      font-size: 14px;
+      color: var(--gray-600);
+    }
+
+    .pager {
+      display: flex;
+      gap: 4px;
+
+      .page-btn {
+        padding: 8px 12px;
+        border: 1px solid var(--gray-300);
+        background-color: var(--white);
+        color: var(--gray-600);
+        font-size: 14px;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+
+        &:hover:not(:disabled) {
+          background-color: var(--gray-50);
+          border-color: var(--gray-400);
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        &.is-active {
+          background-color: var(--primary-color);
+          color: var(--white);
+          border-color: var(--primary-color);
+        }
+      }
     }
   }
 }
 
-// Các nút hành động
+// Badge and status styles
+.badge-soft {
+  display: inline-block;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 12px;
+  background-color: var(--gray-100);
+  color: var(--gray-700);
+  border: 1px solid var(--gray-200);
+}
+
+// Status styles
+// ✅ SỬA: Status badges với màu cụ thể
+.status {
+  display: inline-block;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 12px;
+
+  &.active {
+    background-color: #dcfce7 !important; // ✅ SỬA: Màu xanh lá
+    color: #166534 !important;
+    border: 1px solid #bbf7d0 !important;
+  }
+
+  &.inactive {
+    background-color: #fef2f2 !important;
+    color: #dc2626 !important;
+    border: 1px solid #fecaca !important;
+  }
+}
+
+// Action buttons
 .action-buttons {
   display: flex;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: 8px;
+
+  .chip {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 6px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &.chip-edit {
+      background-color: #dbeafe !important; // ✅ SỬA: Màu xanh nhạt
+      color: #1d4ed8 !important;
+      border: 1px solid #93c5fd !important;
+
+      &:hover {
+        background-color: #bfdbfe !important;
+        transform: translateY(-1px);
+      }
+    }
+
+    &.chip-delete {
+      background-color: #fecaca !important; // ✅ SỬA: Màu đỏ nhạt
+      color: #dc2626 !important;
+      border: 1px solid #fca5a5 !important;
+
+      &:hover {
+        background-color: #fca5a5 !important;
+        transform: translateY(-1px);
+      }
+    }
+  }
 }
 
-// Style chung cho các nút
-.btn {
-  display: inline-flex; // Quan trọng để icon và chữ canh đều
-  align-items: center;
-  gap: 0.5rem; // Khoảng cách giữa icon và chữ
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  text-decoration: none;
+// Responsive design
+@media (max-width: 768px) {
+  .management-container {
+    padding: 16px;
+  }
+
+  .management-header {
+    .header-top {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .top-right {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+
+    .filters {
+      flex-direction: column;
+      gap: 12px;
+
+      .filter {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+
+        select {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  .table-card {
+    overflow-x: auto;
+
+    .table {
+      min-width: 800px;
+    }
+
+    .table-footer {
+      flex-direction: column;
+      gap: 16px;
+      align-items: flex-start;
+    }
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 4px;
+
+    .chip {
+      font-size: 11px;
+      padding: 4px 8px;
+    }
+  }
 }
 
-.btn-primary {
-  background-color: $primary-color;
-  color: white;
-  &:hover { background-color: darken($primary-color, 10%); }
-}
-.btn-secondary {
-  background-color: $secondary-color;
-  color: white;
-  &:hover { background-color: darken($secondary-color, 10%); }
-}
-.btn-danger {
-  background-color: $danger-color;
-  color: white;
-  &:hover { background-color: darken($danger-color, 10%); }
+// Loading animation
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-// Các chỉ báo và thông báo
-.loading-indicator, .error-message, .text-center {
-  text-align: center;
-  padding: 1.5rem;
+.fa-spin {
+  animation: spin 1s linear infinite;
 }
 
-.error-message {
-  color: $danger-color;
-  background-color: lighten($danger-color, 35%);
-  border: 1px solid lighten($danger-color, 30%);
-  border-radius: 5px;
+// Focus styles for accessibility
+*:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+button:focus,
+select:focus,
+input:focus,
+a:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
 }

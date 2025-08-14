@@ -1,51 +1,105 @@
-<div class="class-form-container">
-  <h2>{{ isEditMode ? 'Cập nhật lớp học' : 'Thêm lớp học mới' }}</h2>
+<form class="class-form" [formGroup]="classForm" (ngSubmit)="onSubmit()">
+  <!-- Alerts -->
+  <div class="alert info" *ngIf="isLoading">Đang xử lý…</div>
+  <div class="alert danger" *ngIf="errorMessage">{{ errorMessage }}</div>
 
-  <form [formGroup]="classForm" (ngSubmit)="onSubmit()">
-    <div class="form-grid">
-      <div class="form-group">
-        <label for="classId">Mã lớp</label>
-        <input id="classId" formControlName="classId" [readonly]="isEditMode" />
-      </div>
-
-      <div class="form-group">
-        <label for="className">Tên lớp</label>
-        <input id="className" formControlName="className" />
-      </div>
-
-      <div class="form-group">
-        <label for="major">Chuyên ngành</label>
-        <input id="major" formControlName="major" />
-      </div>
-
-      <div class="form-group">
-        <label for="academicYear">Niên khóa</label>
-        <input id="academicYear" formControlName="academicYear" />
-      </div>
-
-      <div class="form-group">
-        <label for="semester">Học kỳ</label>
-        <input id="semester" type="number" formControlName="semester" />
-      </div>
-
-      <div class="form-group">
-        <label for="isActive">Trạng thái</label>
-        <select id="isActive" formControlName="isActive">
-          <option [value]="true">Hoạt động</option>
-          <option [value]="false">Không hoạt động</option>
-        </select>
-      </div>
+  <!-- Class ID -->
+  <div class="form-group">
+    <label for="classId">Mã lớp</label>
+    <input
+      id="classId"
+      type="text"
+      class="form-control"
+      formControlName="classId"
+      maxlength="10"
+      [disabled]="isEditMode || isLoading"
+      placeholder="VD: CL-CT01" />
+    <div class="field-error" *ngIf="classForm.get('classId')?.touched && classForm.get('classId')?.invalid">
+      <span *ngIf="classForm.get('classId')?.errors?.['required']">Mã lớp là bắt buộc.</span>
+      <span *ngIf="classForm.get('classId')?.errors?.['maxlength']">Tối đa 10 ký tự.</span>
     </div>
+  </div>
 
-    <div *ngIf="errorMessage" class="alert">
-      {{ errorMessage }}
+  <!-- Class Name -->
+  <div class="form-group">
+    <label for="className">Tên lớp</label>
+    <input
+      id="className"
+      type="text"
+      class="form-control"
+      formControlName="className"
+      maxlength="50"
+      [disabled]="isLoading"
+      placeholder="Nhập tên lớp" />
+    <div class="field-error" *ngIf="classForm.get('className')?.touched && classForm.get('className')?.invalid">
+      <span *ngIf="classForm.get('className')?.errors?.['required']">Tên lớp là bắt buộc.</span>
+      <span *ngIf="classForm.get('className')?.errors?.['maxlength']">Tối đa 50 ký tự.</span>
     </div>
+  </div>
 
-    <div class="form-actions">
-      <button type="submit" [disabled]="classForm.invalid || isLoading">
-        {{ isEditMode ? 'Cập nhật' : 'Thêm mới' }}
-      </button>
-      <button type="button" (click)="goBack()">Hủy</button>
+  <!-- Major -->
+  <div class="form-group">
+    <label for="major">Chuyên ngành</label>
+    <input
+      id="major"
+      type="text"
+      class="form-control"
+      formControlName="major"
+      maxlength="100"
+      [disabled]="isLoading"
+      placeholder="VD: Công nghệ thông tin" />
+    <div class="field-error" *ngIf="classForm.get('major')?.touched && classForm.get('major')?.invalid">
+      <span *ngIf="classForm.get('major')?.errors?.['required']">Chuyên ngành là bắt buộc.</span>
+      <span *ngIf="classForm.get('major')?.errors?.['maxlength']">Tối đa 100 ký tự.</span>
     </div>
-  </form>
+  </div>
+<!-- Học kỳ -->
+<div class="form-group">
+  <label for="semesterId">Học kỳ</label>
+
+  <select
+    id="semesterId"
+    class="form-control"
+    formControlName="semesterId"
+    [disabled]="isLoading || isLoadingSemesters"
+  >
+    <option [ngValue]="null" disabled>-- Chọn học kỳ --</option>
+    <option
+      *ngFor="let s of semesterOptions; trackBy: trackSemester"
+      [ngValue]="s.semesterId"
+    >
+      {{ s.semesterName }} – {{ s.academicYear }}{{ s.isActive ? '' : ' (ngưng)' }}
+    </option>
+  </select>
+
+  <div class="field-error" *ngIf="classForm.get('semesterId')?.touched && classForm.get('semesterId')?.invalid">
+    <span>Chọn học kỳ.</span>
+  </div>
 </div>
+  <div class="form-group">
+  <label for="academicYear">Niên khóa</label>
+  <input id="academicYear" type="text" class="form-control" formControlName="academicYear" readonly />
+</div>
+
+  <!-- Description (optional, nếu có) - bạn có thể xoá nếu DTO không có -->
+  <div class="form-group" *ngIf="classForm.get('description')">
+    <label for="description">Mô tả</label>
+    <textarea id="description" class="form-control" rows="3" formControlName="description" [disabled]="isLoading" placeholder="Mô tả về lớp (không bắt buộc)"></textarea>
+  </div>
+
+  <!-- IsActive -->
+  <div class="form-group inline">
+    <label class="checkbox">
+      <input type="checkbox" formControlName="isActive" [disabled]="isLoading" />
+      <span>Hoạt động</span>
+    </label>
+  </div>
+
+  <!-- Actions -->
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary" [disabled]="classForm.invalid || isLoading">
+      {{ isEditMode ? 'Cập nhật' : 'Tạo mới' }}
+    </button>
+    <a class="btn" [routerLink]="['/admin/classes']">Hủy</a>
+  </div>
+</form>

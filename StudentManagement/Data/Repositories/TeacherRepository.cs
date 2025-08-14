@@ -10,6 +10,19 @@ namespace StudentManagementSystem.Data.Repositories
         {
         }
 
+        public override async Task<IEnumerable<Teacher>> GetAllAsync()
+        {
+            return await _dbSet
+                .Include(t => t.Users)
+                .Include(t => t.TeacherCourses)
+                    .ThenInclude(tc => tc.Enrollments)
+                        .ThenInclude(e => e.Student)
+                .Include(t => t.TeacherCourses)
+                    .ThenInclude(tc => tc.Enrollments)
+                        .ThenInclude(e => e.Course)
+                .ToListAsync();
+        }
+
         public async Task<Teacher?> GetTeacherWithUsersAsync(string teacherId)
         {
             return await _dbSet
@@ -28,10 +41,12 @@ namespace StudentManagementSystem.Data.Repositories
         public async Task<Teacher?> GetTeacherWithEnrollmentsAsync(string teacherId)
         {
             return await _dbSet
-                .Include(t => t.Enrollments)
-                    .ThenInclude(e => e.Student)
-                .Include(t => t.Enrollments)
-                    .ThenInclude(e => e.Course)
+                .Include(t => t.TeacherCourses)
+                    .ThenInclude(tc => tc.Enrollments)
+                        .ThenInclude(e => e.Student)
+                .Include(t => t.TeacherCourses)
+                    .ThenInclude(tc => tc.Enrollments)
+                        .ThenInclude(e => e.Course)
                 .FirstOrDefaultAsync(t => t.TeacherId == teacherId);
         }
 
@@ -41,10 +56,12 @@ namespace StudentManagementSystem.Data.Repositories
                 .Include(t => t.Users)
                 .Include(t => t.TeacherCourses)
                     .ThenInclude(tc => tc.Course)
-                .Include(t => t.Enrollments)
-                    .ThenInclude(e => e.Student)
-                .Include(t => t.Enrollments)
-                    .ThenInclude(e => e.Course)
+                .Include(t => t.TeacherCourses)
+                    .ThenInclude(tc => tc.Enrollments)
+                        .ThenInclude(e => e.Student)
+                .Include(t => t.TeacherCourses)
+                    .ThenInclude(tc => tc.Enrollments)
+                        .ThenInclude(e => e.Course)
                 .FirstOrDefaultAsync(t => t.TeacherId == teacherId);
         }
 
@@ -165,13 +182,16 @@ namespace StudentManagementSystem.Data.Repositories
                 .CountAsync();
         }
 
+        // Đếm Enrollment qua TeacherCourses
         public async Task<int> GetTeacherEnrollmentCountAsync(string teacherId)
         {
             return await _dbSet
                 .Where(t => t.TeacherId == teacherId)
-                .SelectMany(t => t.Enrollments)
+                .SelectMany(t => t.TeacherCourses)
+                .SelectMany(tc => tc.Enrollments)
                 .CountAsync();
         }
+
         public async Task<IEnumerable<Teacher>> GetTeachersByCourseIdAsync(string courseId)
         {
             return await _dbSet

@@ -1,87 +1,131 @@
-.form-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 24px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.card {
+  --border: #e5e7eb;           /* gray-200 */
+  --border-strong: #d1d5db;     /* gray-300 */
+  --text: #111827;              /* gray-900 */
+  --muted: #6b7280;             /* gray-500 */
+  --bg: #ffffff;                /* white */
+  --info-soft: rgba(59, 130, 246, 0.15); /* blue-500 @ 15% */
+  --danger: #ef4444;            /* red-500 */
+  --shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
+
+  background: var(--bg);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 20px;
 }
 
-.form-header {
+.card-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-
-  h1 {
-    font-size: 24px;
-    font-weight: 600;
-    margin: 0;
-  }
-
-  .btn-secondary {
-    padding: 8px 16px;
-    font-size: 14px;
-  }
-}
-
-.loading-indicator,
-.error-message {
-  text-align: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
   margin-bottom: 16px;
-  font-weight: bold;
+  border-bottom: 1px solid var(--border-strong);
+}
+.card-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
 }
 
-.form-body {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+/* Form grid */
+form .grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 20px;
+}
+.col { display: grid; gap: 8px; }
+
+/* Labels */
+.col label { font-weight: 600; color: var(--text); }
+.req { color: var(--danger); }
+
+/* Inputs / Selects */
+.col input[type="text"],
+.col input[type="number"],
+.col select {
+  width: 100%;
+  min-height: 44px;
+  height: 44px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--text);
+  background: #fff;
+  transition: border-color .2s ease, box-shadow .2s ease;
 }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
+.col select:focus,
+.col input:focus {
+  outline: none;
+  border-color: #60a5fa;            /* blue-400 */
+  box-shadow: 0 0 0 4px var(--info-soft);
+}
+
+/* Checkbox */
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
   gap: 8px;
-
-  label {
-    font-weight: 500;
-    margin-bottom: 4px;
-  }
-
-  .form-control {
-    padding: 10px 12px;
-    font-size: 14px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-  }
+  height: 44px;               /* align with inputs */
+  padding: 0 2px;
+  color: var(--text);
+  font-weight: 500;
 }
+.checkbox-label input[type="checkbox"] { width: 18px; height: 18px; }
 
-// Row layout cho học kỳ và giáo viên
-.row-two {
+/* Actions */
+.actions {
+  grid-column: 1 / -1;
   display: flex;
-  gap: 24px;
-
-  .form-group {
-    flex: 1;
-  }
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 14px;
+  margin-top: 6px;
+  border-top: 1px solid var(--border-strong);
 }
 
-// Row layout cho năm học và năm học (giữ lại cả hai để đáp ứng yêu cầu mô phỏng)
-.row-year {
-  display: flex;
-  gap: 24px;
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #f3f4f6;     /* gray-100 */
+  color: #374151;           /* gray-700 */
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .06s ease, box-shadow .2s ease, background .2s ease;
+  text-decoration: none;    /* for <a> with .btn */
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
+.btn:active { transform: translateY(0); }
+.btn:disabled { opacity: .6; cursor: not-allowed; }
 
-  .form-group {
-    flex: 1;
-  }
+.btn.primary {
+  background: linear-gradient(180deg, #60a5fa, #3b82f6);
+  border: none;
+  color: #fff;
 }
 
-.form-actions {
-  text-align: right;
-  margin-top: 24px;
+/* Error message */
+.error-message {
+  grid-column: 1 / -1;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #b91c1c;            /* red-700 */
+  background: #fef2f2;       /* red-50 */
+  border: 1px solid #fecaca; /* red-200 */
+}
 
-  .btn-primary {
-    padding: 10px 20px;
-    font-size: 16px;
-  }
+/* Responsive */
+@media (max-width: 768px) {
+  form .grid { grid-template-columns: 1fr; }
 }

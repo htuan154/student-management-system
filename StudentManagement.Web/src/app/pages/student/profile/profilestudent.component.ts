@@ -114,10 +114,10 @@ export class ProfileStudentComponent implements OnInit {
         // Tải thông tin user nếu có
         if (student.user) {
           this.userInfo = student.user;
-          console.log('userInfo:', this.userInfo);
+
         } else {
           this.userInfo = null;
-          console.log('userInfo is null');
+
         }
 
         this.isLoading = false;

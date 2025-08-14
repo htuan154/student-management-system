@@ -18,10 +18,6 @@ namespace StudentManagementSystem.Models
         [StringLength(10)]
         public string CourseId { get; set; } = string.Empty;
 
-        [StringLength(20)]
-        public string? Semester { get; set; }
-
-        public int? Year { get; set; }
 
         [Column(TypeName = "bit")]
         public bool IsActive { get; set; } = true;
@@ -32,5 +28,15 @@ namespace StudentManagementSystem.Models
 
         [ForeignKey("CourseId")]
         public virtual Course Course { get; set; } = null!;
+
+        [Required]
+        public int SemesterId { get; set; }
+
+        [ForeignKey("SemesterId")]
+        public virtual Semester Semester { get; set; } = null!;
+
+        // Thêm các navigation properties này
+        public virtual ICollection<Schedule> Schedules { get; set; } = new List<Schedule>();
+        public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
     }
 }

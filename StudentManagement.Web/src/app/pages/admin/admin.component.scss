@@ -13,9 +13,10 @@ $header-bg: #ffffff;
 $border-color: #e0e0e0;
 $shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 $shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
+$sidebar-width: 280px;
 
 :host {
-  display: flex;
+  display: block;
   height: 100vh;
   overflow: hidden;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -27,11 +28,12 @@ $shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
   width: 100%;
   height: 100vh;
   overflow: hidden;
+  position: relative;
 }
 
 // Sidebar
 .sidebar {
-  width: 280px;
+  width: $sidebar-width;
   background: $sidebar-bg;
   color: $sidebar-text;
   display: flex;
@@ -40,8 +42,12 @@ $shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
   flex-shrink: 0;
   border-right: 1px solid $border-color;
   box-shadow: $shadow;
-  position: relative;
-  z-index: 100;
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  z-index: 1000;
+  transform: translateX(0);
 
   .sidebar-header {
     padding: 2rem 1.5rem 1.5rem;
@@ -190,16 +196,15 @@ $shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
   }
 }
 
-// Main content area
+// Main content
 .main-content {
-  flex-grow: 1;
+  margin-left: $sidebar-width;
+  width: calc(100% - #{$sidebar-width});
+  min-height: 100vh;
+  background: $content-bg;
   display: flex;
   flex-direction: column;
-  background: $content-bg;
   overflow: hidden;
-  margin-left: 280px;
-  width: calc(100% - 280px);
-  transition: all 0.3s ease-in-out;
 }
 
 .main-header {
@@ -211,7 +216,7 @@ $shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
   box-shadow: $shadow;
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: 100;
   min-height: 70px;
 
   .sidebar-toggle {
@@ -244,8 +249,8 @@ $shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
 // Content area
 .content-area {
   flex: 1;
-  padding: 2rem;
   overflow-y: auto;
+  overflow-x: hidden;
 
   &::-webkit-scrollbar {
     width: 8px;
@@ -273,7 +278,7 @@ $shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 99;
+  z-index: 999;
   opacity: 0;
   visibility: hidden;
   transition: all 0.3s ease;
@@ -282,19 +287,13 @@ $shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
 // Responsive design
 @media (max-width: 1024px) {
   .content-area {
-    padding: 1.5rem;
+    padding: 0;
   }
 }
 
 @media (max-width: 992px) {
   .sidebar {
-    position: fixed;
-    left: -280px;
-    top: 0;
-    height: 100%;
-    z-index: 100;
-    transition: left 0.3s ease-in-out;
-    box-shadow: $shadow-lg;
+    transform: translateX(-100%);
   }
 
   .main-content {
@@ -304,7 +303,7 @@ $shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
 
   .admin-layout.sidebar-open {
     .sidebar {
-      left: 0;
+      transform: translateX(0);
     }
 
     .sidebar-overlay {
@@ -325,10 +324,6 @@ $shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
     }
   }
 
-  .content-area {
-    padding: 1rem;
-  }
-
   .sidebar-nav ul li a {
     padding: 0.875rem 1.5rem;
   }
@@ -337,7 +332,6 @@ $shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
 @media (max-width: 480px) {
   .sidebar {
     width: 260px;
-    left: -260px;
   }
 
   .main-header {
@@ -346,10 +340,6 @@ $shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
     .page-title {
       font-size: 1.25rem;
     }
-  }
-
-  .content-area {
-    padding: 0.75rem;
   }
 
   .sidebar-header {
@@ -434,150 +424,5 @@ $shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
   .logout-btn,
   .sidebar-toggle {
     transition: none;
-  }
-}
-
-// Additional styles for admin specific features
-.admin-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.stat-card {
-  background: $header-bg;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: $shadow;
-  border-left: 4px solid $primary;
-  transition: transform 0.3s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: $shadow-lg;
-  }
-
-  .stat-value {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: $primary;
-    margin: 0;
-  }
-
-  .stat-label {
-    color: $sidebar-text-muted;
-    font-size: 0.9rem;
-    margin: 0.5rem 0 0;
-  }
-}
-
-// Management table styles
-.admin-table {
-  background: $header-bg;
-  border-radius: 12px;
-  box-shadow: $shadow;
-  overflow: hidden;
-  border: 1px solid $border-color;
-
-  .table-header {
-    background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
-    color: $sidebar-active-text;
-    padding: 1rem 1.5rem;
-    font-weight: 600;
-    font-size: 1.1rem;
-  }
-
-  .table-content {
-    padding: 1.5rem;
-  }
-}
-
-// Form styles for admin
-.admin-form {
-  background: $header-bg;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: $shadow;
-  border: 1px solid $border-color;
-
-  .form-group {
-    margin-bottom: 1.5rem;
-
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-      color: $sidebar-text;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 0.875rem;
-      border: 2px solid $border-color;
-      border-radius: 8px;
-      font-size: 1rem;
-      transition: border-color 0.3s ease;
-
-      &:focus {
-        outline: none;
-        border-color: $primary;
-      }
-    }
-  }
-
-  .btn-group {
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
-    margin-top: 2rem;
-  }
-}
-
-// Button styles
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.875rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-
-  &.btn-primary {
-    background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
-    color: $sidebar-active-text;
-
-    &:hover {
-      background: linear-gradient(135deg, $primary-dark 0%, $primary 100%);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba($primary, 0.4);
-    }
-  }
-
-  &.btn-secondary {
-    background: #6c757d;
-    color: $sidebar-active-text;
-
-    &:hover {
-      background: #5a6268;
-      transform: translateY(-2px);
-    }
-  }
-
-  &.btn-danger {
-    background: #dc3545;
-    color: $sidebar-active-text;
-
-    &:hover {
-      background: #c82333;
-      transform: translateY(-2px);
-    }
   }
 }

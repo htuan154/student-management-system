@@ -1,76 +1,76 @@
-<div class="form-container">
-  <header class="form-header">
-    <h2>{{ isEditMode ? 'Chỉnh sửa Đăng ký học phần' : 'Thêm mới Đăng ký học phần' }}</h2>
-    <a routerLink="/admin/enrollments" class="btn-back">Quay lại Danh sách</a>
-  </header>
+<div class="card">
+  <div class="card-header">
+    <h2>{{ isEditMode ? 'Cập nhật đăng ký' : 'Tạo đăng ký mới' }}</h2>
+    <a class="btn" routerLink="/admin/enrollments">Quay lại</a>
+  </div>
 
-  <div *ngIf="isLoading" class="loading-indicator">Đang tải...</div>
-  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
-
-  <form [formGroup]="enrollmentForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading">
-    <div class="form-grid">
-      <!-- Student Dropdown -->
-      <div class="form-field">
-        <label for="studentId">Sinh viên</label>
-        <select id="studentId" formControlName="studentId" class="form-control">
-          <option [ngValue]="null" disabled>Chọn sinh viên</option>
-          <option *ngFor="let student of students" [ngValue]="student.studentId">
-            {{ student.fullName }} ({{ student.studentId }})
+  <form [formGroup]="enrollmentForm" (ngSubmit)="onSubmit()">
+    <div class="grid">
+      <!-- Student -->
+      <div class="col">
+        <label>Sinh viên <span class="req">*</span></label>
+        <select formControlName="studentId" [disabled]="isEditMode || isLoading">
+          <option [ngValue]="''">-- Chọn sinh viên --</option>
+          <option *ngFor="let s of students; trackBy: trackStudent" [ngValue]="s.studentId">
+            {{ s.studentId }} - {{ s.fullName || s.studentId }}
           </option>
         </select>
       </div>
 
-      <!-- Course Dropdown -->
-      <div class="form-field">
-        <label for="courseId">Môn học</label>
-        <select id="courseId" formControlName="courseId" class="form-control">
-          <option [ngValue]="null" disabled>Chọn môn học</option>
-          <option *ngFor="let course of courses" [ngValue]="course.courseId">
-            {{ course.courseName }} ({{ course.courseId }})
+      <!-- Course -->
+      <div class="col">
+        <label>Môn học <span class="req">*</span></label>
+        <select formControlName="courseId" [disabled]="isLoading">
+          <option [ngValue]="''">-- Chọn môn học --</option>
+          <option *ngFor="let c of courses; trackBy: trackCourse" [ngValue]="c.courseId">
+            {{ c.courseId }} - {{ c.courseName }}
           </option>
         </select>
       </div>
 
-      <!-- Teacher Dropdown -->
-      <div class="form-field">
-        <label for="teacherId">Giảng viên</label>
-        <select id="teacherId" formControlName="teacherId" class="form-control">
-          <option [ngValue]="null">Chưa phân công</option>
-          <option *ngFor="let teacher of teachers" [ngValue]="teacher.teacherId">
-            {{ teacher.fullName }}
+      <!-- TeacherCourse -->
+      <div class="col">
+        <label>Lớp giảng dạy (Teacher Course)</label>
+        <select formControlName="teacherCourseId"
+                [disabled]="!enrollmentForm.get('courseId')?.value || isLoading || isLoadingTeacherCourses">
+          <option [ngValue]="null">-- Chưa phân công --</option>
+          <option *ngFor="let tc of teacherCourses; trackBy: trackTeacherCourse" [ngValue]="tc.teacherCourseId">
+            {{ tc.teacher?.fullName || tc.teacherId || ('GV#' + tc.teacherCourseId) }}
+            — {{ tc.semester?.semesterName || ('HK ' + tc.semesterId) }}
           </option>
         </select>
+        <div class="hint">Chọn lớp giảng dạy tương ứng (nếu có)</div>
       </div>
 
       <!-- Semester -->
-      <div class="form-field">
-        <label for="semester">Học kỳ</label>
-        <input type="text" id="semester" formControlName="semester" class="form-control">
-      </div>
-
-      <!-- Year -->
-      <div class="form-field">
-        <label for="year">Năm học</label>
-        <input type="number" id="year" formControlName="year" class="form-control">
+      <div class="col">
+        <label>Học kỳ <span class="req">*</span></label>
+        <select formControlName="semesterId" [disabled]="isLoading">
+          <option [ngValue]="null">-- Chọn học kỳ --</option>
+          <option *ngFor="let s of semesters; trackBy: trackSemester" [ngValue]="s.semesterId">
+            {{ s.semesterName }} ({{ s.academicYear }})
+          </option>
+        </select>
       </div>
 
       <!-- Status -->
-      <div class="form-field">
-        <label for="status">Trạng thái</label>
-
-        <select id="status" formControlName="status" class="form-control">
-            <option value="Enrolled">Đã đăng ký (Enrolled)</option>
-            <!-- <option value="Completed">Hoàn thành (Completed)</option>
-            <option value="Dropped">Đã hủy (Dropped)</option> -->
+      <div class="col">
+        <label>Trạng thái</label>
+        <select formControlName="status" [disabled]="isLoading">
+          <option value="Enrolled">Enrolled</option>
+          <option value="Dropped">Dropped</option>
+          <option value="Completed">Completed</option>
         </select>
       </div>
     </div>
 
-    <!-- Nút bấm -->
-    <div class="form-actions">
-      <button type="submit" class="btn btn-primary" [disabled]="enrollmentForm.invalid || isLoading">
-        {{ isEditMode ? 'Cập nhật' : 'Tạo mới' }}
+    <div class="actions">
+      <a class="btn" routerLink="/admin/enrollments">Hủy</a>
+      <button type="submit" class="btn primary" [disabled]="enrollmentForm.invalid || isLoading">
+        {{ isLoading ? 'Đang lưu...' : (isEditMode ? 'Cập nhật' : 'Tạo mới') }}
       </button>
     </div>
+
+    <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
   </form>
 </div>

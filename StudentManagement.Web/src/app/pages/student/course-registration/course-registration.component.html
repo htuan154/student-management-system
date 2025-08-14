@@ -1,7 +1,31 @@
 <div class="management-container">
   <header class="management-header">
-    <h1>Đăng ký học phần</h1>
-  </header>
+  <h1>Đăng ký học phần</h1>
+
+  <div class="semester-select">
+    <label for="semesterSelect">Kỳ học</label>
+
+    <div class="select-wrap" [class.disabled]="isLoading">
+      <select id="semesterSelect"
+              [value]="selectedSemesterId ?? ''"
+              (change)="onSemesterChange($any($event.target).value)"
+              [disabled]="isLoading || !semesters?.length">
+        <option value="">-- Chọn kỳ --</option>
+        <option *ngFor="let s of semesters; trackBy: trackBySemesterId" [value]="s.semesterId">
+          {{ s.academicYear }} · {{ s.semesterName }}
+        </option>
+      </select>
+      <span class="chevron" aria-hidden="true">▾</span>
+    </div>
+
+    <small class="hint"
+           *ngIf="!isLoading && (!semesters || semesters.length === 0)">
+      Chưa có kỳ học khả dụng.
+    </small>
+    <small class="hint" *ngIf="isLoading">Đang tải kỳ học…</small>
+  </div>
+</header>
+
 
   <div *ngIf="isLoading" class="loading-indicator">
     <p>Đang tải danh sách môn học...</p>
@@ -14,7 +38,13 @@
     {{ errorMessage }}
   </div>
 
-  <div *ngIf="!isLoading && !errorMessage" class="table-container">
+  <!-- Khi chưa chọn kỳ -->
+  <div *ngIf="!isLoading && !errorMessage && !selectedSemesterId" class="hint">
+    Vui lòng chọn kỳ học để xem danh sách môn có thể đăng ký.
+  </div>
+
+  <!-- Bảng -->
+  <div *ngIf="!isLoading && !errorMessage && selectedSemesterId" class="table-container">
     <table class="table table-hover">
       <thead>
         <tr>
@@ -26,24 +56,31 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let course of availableCourses">
+        <tr *ngFor="let course of availableCourses; trackBy: trackByCourseId">
           <td>{{ course.courseId }}</td>
           <td>{{ course.courseName }}</td>
           <td>{{ course.credits }}</td>
           <td>{{ course.department || 'N/A' }}</td>
           <td class="action-buttons">
-            <!-- Nếu đã đăng ký, hiển thị trạng thái -->
-            <span *ngIf="isAlreadyEnrolled(course.courseId)" class="status-enrolled">
-              <i class="fas fa-check-circle"></i> Đã đăng ký
+            <span *ngIf="isAlreadyEnrolled(course.courseId)" class="status-enrolled" aria-live="polite">
+              <i class="fas fa-check-circle" aria-hidden="true"></i> Đã đăng ký
             </span>
-            <!-- Nếu chưa, hiển thị nút đăng ký -->
-            <button *ngIf="!isAlreadyEnrolled(course.courseId)" (click)="registerForCourse(course.courseId)" class="btn btn-primary">
+
+            <button
+              *ngIf="!isAlreadyEnrolled(course.courseId)"
+              (click)="registerForCourse(course.courseId)"
+              class="btn btn-primary"
+              [disabled]="!selectedSemesterId || !hasTeacherCourseInSemester(course.courseId, selectedSemesterId!)"
+              title="Đăng ký học phần trong kỳ đã chọn">
               Đăng ký
             </button>
           </td>
         </tr>
+
         <tr *ngIf="availableCourses.length === 0">
-          <td colspan="5" class="text-center">Hiện không có môn học nào để đăng ký.</td>
+          <td colspan="5" class="text-center">
+            Hiện không có môn học nào mở trong kỳ này.
+          </td>
         </tr>
       </tbody>
     </table>

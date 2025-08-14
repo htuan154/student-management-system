@@ -30,5 +30,6 @@ namespace StudentManagementSystem.Models
         // Navigation properties
         public virtual ICollection<TeacherCourse> TeacherCourses { get; set; } = new List<TeacherCourse>();
         public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+        public virtual ICollection<AnnouncementDetail> AnnouncementDetails { get; set; } = new List<AnnouncementDetail>();
     }
 }

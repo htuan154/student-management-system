@@ -1,0 +1,69 @@
+<div class="card">
+  <div class="card-header">
+    <h2>{{ isEdit ? 'Cập nhật lịch học' : 'Tạo lịch học mới' }}</h2>
+    <a class="btn" routerLink="/admin/schedule-management">Quay lại</a>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="grid">
+      <!-- TeacherCourse -->
+      <div class="col">
+        <label>Giảng viên - Môn học <span class="req">*</span></label>
+        <select formControlName="teacherCourseId"
+                [class.invalid]="teacherCourseId?.touched && teacherCourseId?.invalid">
+          <option value="">-- Chọn giảng viên - môn học --</option>
+          <option *ngFor="let tc of teacherCourses; trackBy: trackTc"
+                  [value]="tc.teacherCourseId">
+            {{ labelTC(tc) }}
+          </option>
+        </select>
+        <div class="field-error" *ngIf="teacherCourseId?.touched && teacherCourseId?.invalid">
+          Vui lòng chọn phân công giảng dạy.
+        </div>
+      </div>
+
+      <!-- Day of week -->
+      <div class="col">
+        <label>Thứ <span class="req">*</span></label>
+        <select formControlName="dayOfWeek">
+          <option *ngFor="let d of days" [value]="d.value">{{ d.label }}</option>
+        </select>
+      </div>
+
+      <!-- Time range -->
+      <div class="col inline">
+        <label>Thời gian <span class="req">*</span></label>
+        <div class="time-group">
+          <input class="time" type="time" formControlName="startTime" />
+          <span class="time-sep">—</span>
+          <input class="time" type="time" formControlName="endTime" />
+        </div>
+        <div class="field-error" *ngIf="form.errors?.['timeRange']">
+          {{ form.errors?.['timeRange'] }}
+        </div>
+      </div>
+
+      <!-- Room -->
+      <div class="col">
+        <label>Phòng</label>
+        <input type="text" formControlName="roomNumber" placeholder="VD: A101" />
+      </div>
+
+      <!-- Location -->
+      <div class="col">
+        <label>Địa điểm</label>
+        <input type="text" formControlName="location" placeholder="VD: CS1, CS2..." />
+      </div>
+
+      <!-- Actions -->
+      <div class="actions">
+        <a class="btn" routerLink="/admin/schedule-management">Hủy</a>
+        <button type="submit" class="btn primary" [disabled]="form.invalid || isLoading">
+          {{ isLoading ? 'Đang lưu...' : (isEdit ? 'Cập nhật' : 'Tạo mới') }}
+        </button>
+      </div>
+
+      <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+    </div>
+  </form>
+</div>

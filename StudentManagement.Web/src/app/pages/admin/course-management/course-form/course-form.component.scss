@@ -1,125 +1,147 @@
-// Container chính cho form
-.form-container {
-  max-width: 900px;
-  margin: 1.5rem auto;
-  padding: 24px 32px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-}
+/* Card container */
+.course-form {
+  --border: #e5e7eb;          /* gray-200 */
+  --border-strong: #d1d5db;    /* gray-300 */
+  --text: #111827;             /* gray-900 */
+  --muted: #6b7280;            /* gray-500 */
+  --bg: #ffffff;               /* white */
+  --info: #2563eb;             /* blue-600 */
+  --info-soft: rgba(59, 130, 246, 0.15); /* blue-500 @ 15% */
+  --danger: #ef4444;           /* red-500 */
+  --shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
 
-// Header của form
-.form-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #e9ecef;
+  background: var(--bg);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 24px;
 
-  h1 {
-    font-size: 22px;
-    font-weight: 700;
-    color: #2c3e50;
-  }
-
-  .btn {
-    font-size: 14px;
-    padding: 8px 16px;
-  }
-}
-
-// Body sử dụng grid layout với khoảng cách lớn hơn
-.form-body {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px 32px; // tăng khoảng cách giữa các ô
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 20px;
 }
 
-// Một nhóm form (label + input)
-.form-group {
-  display: flex;
-  flex-direction: column;
-
-  label {
-    margin-bottom: 6px;
-    font-weight: 600;
-    font-size: 14px;
-    color: #495057;
-  }
-
-  .form-control {
-    width: 100%;
-    padding: 10px 12px;
-    font-size: 14px;
-    border: 1px solid #ced4da;
-    border-radius: 6px;
-    transition: border-color 0.2s, box-shadow 0.2s;
-
-    &:focus {
-      outline: none;
-      border-color: #80bdff;
-      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-    }
-
-    &:disabled {
-      background-color: #e9ecef;
-    }
-  }
-
-  textarea.form-control {
-    resize: vertical;
-    min-height: 100px;
-  }
-}
-
-// Trường toàn chiều ngang
-.full-width {
+/* Alerts span full width */
+.course-form > .alert {
   grid-column: 1 / -1;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+.alert.info { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.alert.danger { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+
+/* Field groups */
+.form-group {
+  display: grid;
+  gap: 8px;
 }
 
-// Khu vực nút hành động
+/* Description (textarea) takes full width */
+.form-group:has(textarea) { grid-column: 1 / -1; }
+
+/* Inline checkbox area */
+.form-group.inline { grid-column: 1 / -1; }
+
+/* Labels */
+.form-group label {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Inputs */
+.form-control, .input-with-addon input {
+  width: 100%;
+  min-height: 44px;
+  height: 44px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--text);
+  background: #fff;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+textarea.form-control {
+  min-height: 110px;
+  height: auto;
+  resize: vertical;
+}
+
+.form-control::placeholder { color: #9ca3af; }
+.form-control:focus {
+  outline: none;
+  border-color: #60a5fa;      /* blue-400 */
+  box-shadow: 0 0 0 4px var(--info-soft);
+}
+
+/* Addon button beside input */
+.input-with-addon {
+  display: flex;
+  align-items: stretch; /* đảm bảo cùng chiều cao với input */
+  gap: 8px;
+}
+.input-with-addon .btn { /* nút Tạo mã cùng chiều cao input */
+  height: 44px;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #f3f4f6;   /* gray-100 */
+  color: #374151;         /* gray-700 */
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform .06s ease, box-shadow .2s ease, background .2s ease;
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
+.btn:active { transform: translateY(0); }
+.btn:disabled { opacity: .6; cursor: not-allowed; }
+
+.btn-primary {
+  background: linear-gradient(180deg, #60a5fa, #3b82f6);
+  border: none;
+  color: #fff;
+}
+
+.btn-secondary {
+  background: #e5e7eb; /* gray-200 */
+  color: #111827;
+}
+
+/* Checkbox */
+.checkbox { display: inline-flex; gap: 8px; align-items: center; font-weight: 500; color: var(--text); }
+.checkbox input[type="checkbox"] { width: 18px; height: 18px; }
+
+/* Error text under fields */
+.field-error { color: var(--danger); font-size: 12px; }
+
+/* Actions row */
 .form-actions {
   grid-column: 1 / -1;
   display: flex;
   justify-content: flex-end;
-  margin-top: 32px;
-  padding-top: 20px;
-  border-top: 1px solid #e9ecef;
+  gap: 12px;
+  padding-top: 14px;
+  margin-top: 6px;
+  border-top: 1px solid var(--border-strong);
 }
 
-// Nút chung
-.btn {
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-// Nút chính
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-
-  &:hover {
-    background-color: #0056b3;
+/* Responsive */
+@media (max-width: 768px) {
+  .course-form {
+    grid-template-columns: 1fr;
   }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-}
-
-// Nút phụ
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
-
-  &:hover {
-    background-color: #5a6268;
-  }
+  .form-group:has(textarea),
+  .form-group.inline,
+  .form-actions { grid-column: auto; }
 }

@@ -48,10 +48,21 @@ namespace StudentManagementSystem.Data.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public virtual async Task DeleteAsync(T entity)
+        public virtual async Task<bool> DeleteAsync(int id)
+        {
+            var entity = await GetByIdAsync(id);
+            if (entity == null) return false;
+
+            _dbSet.Remove(entity);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public virtual async Task<bool> DeleteAsync(T entity)
         {
             _dbSet.Remove(entity);
             await _context.SaveChangesAsync();
+            return true;
         }
 
         public virtual async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)

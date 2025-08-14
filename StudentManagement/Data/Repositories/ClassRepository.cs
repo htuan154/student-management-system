@@ -14,6 +14,17 @@ namespace StudentManagementSystem.Data.Repositories
         {
             return await _dbSet
                 .Include(c => c.Students)
+                .Include(c => c.Semester)
+                .FirstOrDefaultAsync(c => c.ClassId == classId);
+        }
+
+
+        public async Task<Class?> GetClassWithFullDetailsAsync(string classId)
+        {
+            return await _dbSet
+                .Include(c => c.Students)
+                .Include(c => c.Semester)
+                .Include(c => c.AnnouncementDetails) // Nếu cần thông báo
                 .FirstOrDefaultAsync(c => c.ClassId == classId);
         }
 
@@ -44,24 +55,29 @@ namespace StudentManagementSystem.Data.Repositories
         public async Task<IEnumerable<Class>> SearchClassesAsync(string searchTerm)
         {
             return await _dbSet
+                .Include(c => c.Semester)
                 .Where(c => c.ClassName.Contains(searchTerm) ||
                            c.ClassId.Contains(searchTerm) ||
                            c.Major.Contains(searchTerm) ||
-                           (c.AcademicYear != null && c.AcademicYear.Contains(searchTerm)))
+                           (c.Semester != null && c.Semester.SemesterName.Contains(searchTerm)) || // ✅ THÊM
+                           (c.Semester != null && c.Semester.AcademicYear.Contains(searchTerm))) // ✅ THÊM
                 .ToListAsync();
         }
 
         public async Task<(IEnumerable<Class> Classes, int TotalCount)> GetPagedClassesAsync(
-            int pageNumber, int pageSize, string? searchTerm = null, bool? isActive = null)
+            int pageNumber, int pageSize, string? searchTerm = null, bool? isActive = null, int? semesterId = null) // ✅ THÊM semesterId
         {
-            var query = _dbSet.AsQueryable();
+            var query = _dbSet
+                .Include(c => c.Semester) // ✅ THÊM
+                .AsQueryable();
 
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 query = query.Where(c => c.ClassName.Contains(searchTerm) ||
                                         c.ClassId.Contains(searchTerm) ||
                                         c.Major.Contains(searchTerm) ||
-                                        (c.AcademicYear != null && c.AcademicYear.Contains(searchTerm)));
+                                        (c.Semester != null && c.Semester.SemesterName.Contains(searchTerm)) || // ✅ THÊM
+                                        (c.Semester != null && c.Semester.AcademicYear.Contains(searchTerm))); // ✅ THÊM
             }
 
             if (isActive.HasValue)
@@ -69,8 +85,15 @@ namespace StudentManagementSystem.Data.Repositories
                 query = query.Where(c => c.IsActive == isActive.Value);
             }
 
+            // ✅ THÊM - Filter by semester
+            if (semesterId.HasValue)
+            {
+                query = query.Where(c => c.SemesterId == semesterId.Value);
+            }
+
             var totalCount = await query.CountAsync();
             var classes = await query
+                .OrderBy(c => c.ClassName) // ✅ THÊM ordering
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -88,7 +111,9 @@ namespace StudentManagementSystem.Data.Repositories
         public async Task<IEnumerable<Class>> GetClassesByAcademicYearAsync(string academicYear)
         {
             return await _dbSet
-                .Where(c => c.AcademicYear == academicYear && c.IsActive)
+                .Include(c => c.Semester)
+                .Where(c => c.Semester != null && c.Semester.AcademicYear == academicYear && c.IsActive)
+                .OrderBy(c => c.ClassName)
                 .ToListAsync();
         }
 
@@ -101,9 +126,57 @@ namespace StudentManagementSystem.Data.Repositories
         {
 
             var hasStudents = await _context.Students.AnyAsync(s => s.ClassId == classId);
+            var hasAnnouncements = await _context.AnnouncementDetails.AnyAsync(ad => ad.ClassId == classId);
+
+            return !hasStudents && !hasAnnouncements; // ✅ Check cả announcements
+        }
+
+        // ✅ THÊM - Statistics methods
+        public async Task<int> GetClassCountBySemesterAsync(int semesterId)
+        {
+            return await _dbSet
+                .CountAsync(c => c.SemesterId == semesterId);
+        }
+
+        public async Task<int> GetActiveClassCountBySemesterAsync(int semesterId)
+        {
+            return await _dbSet
+                .CountAsync(c => c.SemesterId == semesterId && c.IsActive);
+        }
 
 
-            return !hasStudents;
+        public async Task<IEnumerable<Class>> GetClassesBySemesterIdAsync(int semesterId)
+        {
+            return await _dbSet
+                .Include(c => c.Semester)
+                .Where(c => c.SemesterId == semesterId)
+                .OrderBy(c => c.ClassName)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Class>> GetActiveClassesBySemesterIdAsync(int semesterId)
+        {
+            return await _dbSet
+                .Include(c => c.Semester)
+                .Where(c => c.SemesterId == semesterId && c.IsActive)
+                .OrderBy(c => c.ClassName)
+                .ToListAsync();
+        }
+
+        public override async Task<IEnumerable<Class>> GetAllAsync()
+        {
+            return await _dbSet
+                .Include(c => c.Semester)
+                .OrderBy(c => c.ClassName)
+                .ToListAsync();
+        }
+
+
+        public override async Task<Class?> GetByIdAsync(object id)
+        {
+            return await _dbSet
+                .Include(c => c.Semester)
+                .FirstOrDefaultAsync(c => c.ClassId == (string)id);
         }
     }
 }

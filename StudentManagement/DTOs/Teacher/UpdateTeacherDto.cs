@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace StudentManagementSystem.DTOs.Teacher
 {
@@ -26,6 +27,7 @@ namespace StudentManagementSystem.DTOs.Teacher
 
         public DateTime HireDate { get; set; }
 
+        [Column(TypeName = "decimal(12,2)")]
         [Range(0, double.MaxValue, ErrorMessage = "Salary must be a positive value")]
         public decimal? Salary { get; set; }
     }

@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using StudentManagementSystem;
-using StudentManagementSystem.Dtos.Auth;
+using StudentManagementSystem.DTOs.Auth;
 using Xunit;
 using System.Text.Json.Serialization;
 

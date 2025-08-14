@@ -37,7 +37,9 @@ export class RoleListComponent implements OnInit {
       }
     });
   }
-  
+  trackById = (_: number, r: Role) => r.roleId;
+
+
   deleteRole(id: string): void {
     if (confirm('Are you sure you want to delete this role?')) {
       this.roleService.deleteRole(id).subscribe({

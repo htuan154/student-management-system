@@ -86,6 +86,25 @@ const routes: Routes = [
             (m) => m.ScoreManagementModule
           ),
       },
+      {
+        path: 'announcement-management',
+        loadChildren: () =>
+          import('./announcement-management/announcement-management.module').then(
+            (m) => m.AnnouncementManagementModule
+          ),
+      },
+      {
+        path: 'semester-management',
+        loadChildren: () =>
+          import('./semester-management/semester-management.module').then(m => m.SemesterManagementModule)
+      },
+      {
+        path: 'schedule-management',
+        loadChildren: () =>
+          import('./schedule-management/schedule-management.module').then(
+            (m) => m.ScheduleManagementModule
+          ),
+      },
     ]
   }
 ];

@@ -46,8 +46,6 @@ namespace StudentManagementSystem.Services
 
             if (scores != null && scores.Any())
             {
-                // ✅ SỬA LỖI: Sử dụng overload của Average() cho kiểu nullable để code an toàn hơn
-                // Hàm Average này sẽ tự động bỏ qua các giá trị null
                 var avgDecimal = scores.Average(s => s.TotalScore);
                 if (avgDecimal.HasValue)
                 {
@@ -55,16 +53,18 @@ namespace StudentManagementSystem.Services
                 }
             }
 
+
             var recentActivities = enrollments
-                .OrderByDescending(e => e.Year)
-                .ThenByDescending(e => e.Semester)
+                .Where(e => e.Semester != null)
+                .OrderByDescending(e => e.Semester!.StartDate)
                 .Take(5)
                 .Select(e => new RecentActivityDto
                 {
                     CourseName = e.Course?.CourseName ?? "N/A",
-                    TeacherName = e.Teacher?.FullName ?? "Chưa phân công",
-                    Semester = e.Semester,
-                    Year = e.Year,
+                    TeacherName = e.TeacherCourse?.Teacher?.FullName ?? "Chưa phân công",
+                    SemesterId = e.SemesterId,
+                    SemesterName = e.Semester?.SemesterName ?? "N/A",
+                    AcademicYear = e.Semester?.AcademicYear ?? "N/A",
                     Status = e.Status
                 })
                 .ToList();
