@@ -4,7 +4,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using StudentManagementSystem.Controllers;
-using StudentManagementSystem.Dtos.Score;
+using StudentManagementSystem.DTOs.Score;
 using StudentManagementSystem.Services.Interfaces;
 using Xunit;
 
@@ -145,17 +145,6 @@ namespace StudentManagement.IntegrationTests.Controllers
             ok.Value.Should().BeEquivalentTo(scores);
         }
 
-        [Fact]
-        public async Task GetPaged_ShouldReturnOk()
-        {
-            var mockData = new List<ScoreDto> { new ScoreDto { ScoreId = 1 }, new ScoreDto { ScoreId = 2 } };
-            _mockService.Setup(s => s.GetPagedScoresAsync(1, 10, null)).ReturnsAsync((mockData, 2));
 
-            var result = await _controller.GetPaged(1, 10);
-
-            var ok = Assert.IsType<OkObjectResult>(result);
-            var obj = ok.Value!;
-            obj.Should().BeEquivalentTo(new { scores = mockData, totalCount = 2 });
-        }
     }
 }

@@ -2,11 +2,12 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 using StudentManagementSystem.Controllers;
 using StudentManagementSystem.DTOs.Class;
-using StudentManagementSystem.Dtos.Course;
-using StudentManagementSystem.Dtos.TeacherCourse;
+using StudentManagementSystem.DTOs.Course;
+using StudentManagementSystem.DTOs.TeacherCourse;
 using StudentManagementSystem.Services.Interfaces;
 using Xunit;
 
@@ -15,12 +16,14 @@ namespace StudentManagement.IntegrationTests.Controller
     public class TeacherCourseControllerTests
     {
         private readonly Mock<ITeacherCourseService> _mockService;
+        private readonly Mock<ILogger<TeacherCourseController>> _mockLogger;
         private readonly TeacherCourseController _controller;
 
         public TeacherCourseControllerTests()
         {
             _mockService = new Mock<ITeacherCourseService>();
-            _controller = new TeacherCourseController(_mockService.Object);
+            _mockLogger = new Mock<ILogger<TeacherCourseController>>();
+            _controller = new TeacherCourseController(_mockService.Object, _mockLogger.Object);
         }
 
         [Fact]

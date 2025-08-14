@@ -39,7 +39,7 @@ const routes: Routes = [
       expectedRole: 'Teacher'
     }
   },
-  // Route bắt các đường dẫn không hợp lệ
+ 
   {
     path: '**',
     redirectTo: 'login'

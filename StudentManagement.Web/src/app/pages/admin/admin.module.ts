@@ -15,9 +15,11 @@ import { StudentManagementComponent } from './student-management/student-managem
 import { EnrollmentManagementComponent } from './enrollment-management/enrollment-management.component';
 import { ScoreManagementComponent } from './score-management/score-management.component';
 import { EmployeeManagementComponent } from './employee-management/employee-management.component';
+import { AnnouncementManagementComponent } from './announcement-management/announcement-management.component';
+import { SemesterManagementComponent } from './semester-management/semester-management.component';
+import { ScheduleManagementComponent } from './schedule-management/schedule-management.component';
 
 @NgModule({
-
   imports: [
     AdminComponent,
     DashboardComponent,
@@ -33,8 +35,10 @@ import { EmployeeManagementComponent } from './employee-management/employee-mana
     StudentManagementComponent,
     EnrollmentManagementComponent,
     ScoreManagementComponent,
-    EmployeeManagementComponent
+    EmployeeManagementComponent,
+    AnnouncementManagementComponent,
+    SemesterManagementComponent,
+    ScheduleManagementComponent
   ],
-
 })
 export class AdminModule { }

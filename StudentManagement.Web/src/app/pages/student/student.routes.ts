@@ -6,8 +6,8 @@ import { StudentComponent } from './student.component';
 import { StudentDashboardComponent } from './dashboard/student-dashboard.component';
 import { MyScoresComponent } from './my-scores/my-scores.component';
 import { CourseRegistrationComponent } from './course-registration/course-registration.component';
-import { ProfileStudentComponent } from './profile/profilestudent.component'; // Thêm dòng này
-
+import { ProfileStudentComponent } from './profile/profilestudent.component';
+import { ScheduleComponent } from './schedule/schedule.component';
 const routes: Routes = [
   {
     path: '',
@@ -17,8 +17,9 @@ const routes: Routes = [
       { path: 'dashboard', component: StudentDashboardComponent },
       { path: 'my-scores', component: MyScoresComponent },
       { path: 'course-registration', component: CourseRegistrationComponent },
-      { path: 'profile', component: ProfileStudentComponent }, // Thêm dòng này
-      // Thêm các route khác cho sinh viên ở đây
+      { path: 'profile', component: ProfileStudentComponent },
+      { path: 'schedule', component: ScheduleComponent },
+
     ]
   }
 ];

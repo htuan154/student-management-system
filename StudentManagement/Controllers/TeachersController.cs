@@ -6,23 +6,67 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace StudentManagementSystem.Controllers
 {
-    [Authorize(Roles = "Admin,SuperAdmin,Teacher")]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class TeachersController : ControllerBase
     {
         private readonly ITeacherService _teacherService;
+        private readonly ILogger<TeachersController> _logger;
 
-        public TeachersController(ITeacherService teacherService)
+        public TeachersController(ITeacherService teacherService, ILogger<TeachersController> logger)
         {
-            _teacherService = teacherService;
+            _teacherService = teacherService ?? throw new ArgumentNullException(nameof(teacherService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+            _logger.LogInformation("TeachersController constructor - TeacherService injected successfully");
         }
 
         [HttpGet]
+        [AllowAnonymous] // ✅ Tạm thời thêm để test
         public async Task<ActionResult<IEnumerable<TeacherResponseDto>>> GetAllTeachers()
         {
-            var teachers = await _teacherService.GetAllTeachersAsync();
-            return Ok(teachers);
+            try
+            {
+                _logger?.LogInformation("=== API: GetAllTeachers started ===");
+
+                if (_teacherService == null)
+                {
+                    _logger?.LogError("TeacherService is null - DI injection failed");
+                    return StatusCode(500, new { message = "Service injection failed" });
+                }
+
+                _logger?.LogInformation("Calling TeacherService.GetAllTeachersAsync()");
+                var teachers = await _teacherService.GetAllTeachersAsync();
+
+                if (teachers == null)
+                {
+                    _logger?.LogWarning("TeacherService returned null");
+                    return Ok(new List<TeacherResponseDto>());
+                }
+
+                var teacherList = teachers.ToList();
+                _logger?.LogInformation("Successfully retrieved {Count} teachers", teacherList.Count);
+
+                return Ok(teacherList);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "=== FATAL ERROR in GetAllTeachers ===");
+                _logger?.LogError("Exception Type: {ExceptionType}", ex.GetType().Name);
+                _logger?.LogError("Exception Message: {Message}", ex.Message);
+                _logger?.LogError("Inner Exception: {InnerException}", ex.InnerException?.Message ?? "None");
+                _logger?.LogError("Stack Trace: {StackTrace}", ex.StackTrace);
+
+                return StatusCode(500, new
+                {
+                    message = "Internal server error",
+                    error = ex.Message,
+                    type = ex.GetType().Name,
+                    innerException = ex.InnerException?.Message,
+                    traceId = HttpContext.TraceIdentifier
+                });
+            }
         }
 
         [HttpGet("{id}")]

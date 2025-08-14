@@ -18,6 +18,8 @@ namespace StudentManagementSystem.Tests.Services
     {
         // --- Dependencies được giả lập (Mocks) ---
         private readonly Mock<IStudentRepository> _mockStudentRepository;
+        private readonly Mock<IEnrollmentRepository> _mockEnrollmentRepository;
+        private readonly Mock<IScoreRepository> _mockScoreRepository;
         private readonly Mock<ICacheService> _mockCacheService;
         private readonly Mock<ILogger<StudentService>> _mockLogger;
 
@@ -27,11 +29,15 @@ namespace StudentManagementSystem.Tests.Services
         public StudentServiceTests()
         {
             _mockStudentRepository = new Mock<IStudentRepository>();
+            _mockEnrollmentRepository = new Mock<IEnrollmentRepository>();
+            _mockScoreRepository = new Mock<IScoreRepository>();
             _mockCacheService = new Mock<ICacheService>();
             _mockLogger = new Mock<ILogger<StudentService>>();
 
             _studentService = new StudentService(
                 _mockStudentRepository.Object,
+                _mockEnrollmentRepository.Object,
+                _mockScoreRepository.Object,
                 _mockCacheService.Object,
                 _mockLogger.Object
             );

@@ -13,8 +13,9 @@ namespace StudentManagementSystem.Services.Interfaces
         Task<IEnumerable<ClassResponseDto>> GetActiveClassesAsync();
         Task<IEnumerable<ClassResponseDto>> SearchClassesAsync(string searchTerm);
         Task<(IEnumerable<ClassResponseDto> Classes, int TotalCount)> GetPagedClassesAsync(
-            int pageNumber, int pageSize, string? searchTerm = null, bool? isActive = null);
+            int pageNumber, int pageSize, string? searchTerm = null, bool? isActive = null, int? semesterId = null);
         Task<IEnumerable<ClassResponseDto>> GetClassesByMajorAsync(string major);
+        Task<IEnumerable<ClassResponseDto>> GetClassesBySemesterIdAsync(int semesterId);
         Task<IEnumerable<ClassResponseDto>> GetClassesByAcademicYearAsync(string academicYear);
         Task<bool> IsClassIdExistsAsync(string classId);
         Task<bool> IsClassNameExistsAsync(string className, string? excludeClassId = null);

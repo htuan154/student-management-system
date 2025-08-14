@@ -1,12 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { Enrollment } from '../models';
+import { Enrollment } from '../models/enrollment.model';
 
-/**
- * Interface cho dữ liệu trả về khi phân trang.
- */
 export interface PagedEnrollmentResponse {
   enrollments: Enrollment[];
   totalCount: number;
@@ -20,42 +18,35 @@ export class EnrollmentService {
 
   constructor(private http: HttpClient) { }
 
-  /**
-   * Lấy thông tin đăng ký theo ID.
-   * @param id ID của lượt đăng ký.
-   */
+
   getEnrollmentById(id: number): Observable<Enrollment> {
     return this.http.get<Enrollment>(`${this.apiUrl}/${id}`);
   }
 
-  /**
-   * Lấy tất cả các lượt đăng ký của một sinh viên.
-   * @param studentId ID của sinh viên.
-   */
   getEnrollmentsByStudentId(studentId: string): Observable<Enrollment[]> {
     return this.http.get<Enrollment[]>(`${this.apiUrl}/student/${studentId}`);
   }
 
-  /**
-   * Lấy tất cả các lượt đăng ký trong một khóa học.
-   * @param courseId ID của khóa học.
-   */
   getEnrollmentsByCourseId(courseId: string): Observable<Enrollment[]> {
-    return this.http.get<Enrollment[]>(`${this.apiUrl}/course/${courseId}`);
+    return this.http.get<Enrollment[]>(`${this.apiUrl}/by-course/${encodeURIComponent(courseId)}`);
   }
 
-  /**
-   * Tìm kiếm các lượt đăng ký.
-   * @param term Từ khóa tìm kiếm.
-   */
+  getEnrollmentsByTeacherCourseId(teacherCourseId: number): Observable<Enrollment[]> {
+    return this.http.get<Enrollment[]>(`${this.apiUrl}/teacher-course/${teacherCourseId}`);
+  }
+
+
+  getEnrollmentsBySemesterId(semesterId: number): Observable<Enrollment[]> {
+    return this.http.get<Enrollment[]>(`${this.apiUrl}/semester/${semesterId}`);
+  }
+
+
   searchEnrollments(term: string): Observable<Enrollment[]> {
     const params = new HttpParams().set('term', term);
     return this.http.get<Enrollment[]>(`${this.apiUrl}/search`, { params });
   }
 
-  /**
-   * Lấy danh sách đăng ký được phân trang.
-   */
+  /** Lấy danh sách đăng ký được phân trang */
   getPagedEnrollments(pageNumber: number, pageSize: number, searchTerm?: string): Observable<PagedEnrollmentResponse> {
     let params = new HttpParams()
       .set('pageNumber', pageNumber.toString())
@@ -67,62 +58,64 @@ export class EnrollmentService {
     return this.http.get<PagedEnrollmentResponse>(`${this.apiUrl}/paged`, { params });
   }
 
-  /**
-   * Tạo một lượt đăng ký mới.
-   * @param enrollmentData Dữ liệu để tạo lượt đăng ký.
-   */
-  createEnrollment(enrollmentData: Omit<Enrollment, 'enrollmentId' | 'student' | 'course' | 'teacher' | 'score'>): Observable<any> {
+  /** Tạo một lượt đăng ký mới */
+  createEnrollment(enrollmentData: any): Observable<any> {
     return this.http.post(this.apiUrl, enrollmentData);
   }
 
-  /**
-   * Cập nhật một lượt đăng ký.
-   * @param id ID của lượt đăng ký cần cập nhật.
-   * @param enrollmentData Dữ liệu cập nhật.
-   */
-  updateEnrollment(id: number, enrollmentData: Partial<Enrollment>): Observable<any> {
+  /** Cập nhật một lượt đăng ký */
+  updateEnrollment(id: number, enrollmentData: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}`, enrollmentData);
   }
 
-  /**
-   * Xóa một lượt đăng ký.
-   * @param id ID của lượt đăng ký cần xóa.
-   */
+  /** Xóa một lượt đăng ký */
   deleteEnrollment(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
-  /**
-   * Lấy danh sách các lượt đăng ký chưa được chấm điểm.
-   * @returns Một Observable chứa mảng các Enrollment.
-   */
+  /** Lấy danh sách các lượt đăng ký chưa được chấm điểm */
   getUnscoredEnrollments(): Observable<Enrollment[]> {
-    const url = `${this.apiUrl}/unscored`;
-    return this.http.get<Enrollment[]>(url);
+    return this.http.get<Enrollment[]>(`${this.apiUrl}/unscored`);
   }
 
-  /**
-   * Lấy danh sách đăng ký của sinh viên kèm điểm số.
-   * @param studentId ID của sinh viên.
-   * @returns Một Observable chứa mảng các Enrollment kèm điểm số.
-   */
+  /** ✅ SỬA - Lấy danh sách đăng ký chưa có điểm cho một lớp học cụ thể */
+  getUnscoredEnrollmentsForClass(teacherCourseId: number): Observable<Enrollment[]> {
+    // Sử dụng endpoint có sẵn: /api/Enrollment/unscored-by-class?teacherCourseId=xxx
+    return this.http.get<Enrollment[]>(`${this.apiUrl}/unscored-by-class?teacherCourseId=${teacherCourseId}`).pipe(
+      catchError(error => {
+        console.error('Error getting unscored enrollments:', error);
+        return of([] as Enrollment[]);
+      })
+    );
+  }
+
+  /** Tìm TeacherCourse từ teacherId + courseId (sử dụng TeacherCourseService) */
+  getTeacherCourseByIds(teacherId: string, courseId: string): Observable<any> {
+    // Sử dụng TeacherCourseController endpoint có sẵn
+    return this.http.get<any[]>(`/api/TeacherCourse/teacher/${teacherId}`).pipe(
+      map(teacherCourses =>
+        teacherCourses.find(tc => tc.courseId === courseId)
+      ),
+      catchError(error => {
+        console.error('Error finding teacher course:', error);
+        return of(null);
+      })
+    );
+  }
+
+  /** Lấy enrollments theo teacherCourseId - SỬ DỤNG ENDPOINT CÓ SẴN */
+  getEnrollmentsByTeacherCourse(teacherCourseId: number): Observable<Enrollment[]> {
+    // Sử dụng endpoint có sẵn: /api/Enrollment/teacher-course/{teacherCourseId}
+    return this.http.get<Enrollment[]>(`${this.apiUrl}/teacher-course/${teacherCourseId}`).pipe(
+      catchError(error => {
+        console.error('Error getting enrollments by teacher course:', error);
+        return of([] as Enrollment[]);
+      })
+    );
+  }
+
+  /** Lấy danh sách đăng ký của sinh viên kèm điểm số */
   getStudentEnrollmentsWithScores(studentId: string): Observable<Enrollment[]> {
     return this.http.get<Enrollment[]>(`${this.apiUrl}/student/${studentId}/with-scores`);
-  }
-  /**
- * Lấy danh sách đăng ký chưa có điểm cho một lớp học cụ thể.
- * @param courseId ID của môn học.
- * @param teacherId ID của giảng viên.
- */
-  getUnscoredEnrollmentsForClass(courseId: string, teacherId: string): Observable<Enrollment[]> {
-    const params = new HttpParams()
-      .set('courseId', courseId)
-      .set('teacherId', teacherId);
-
-    // URL của API endpoint này cần được tạo ở backend
-    // Ví dụ: /api/Enrollment/unscored-by-class
-    const url = `${this.apiUrl}/unscored-by-class`;
-
-    return this.http.get<Enrollment[]>(url, { params });
   }
 }

@@ -1,0 +1,96 @@
+<div class="card" [class.loading]="loading">
+  <div class="card-header">
+    <h2>{{ mode === 'create' ? 'Tạo lịch học mới' : 'Cập nhật lịch học' }}</h2>
+    <a class="btn" routerLink="/admin/schedule-management">
+      <i class="fas fa-arrow-left"></i>
+      Quay lại danh sách
+    </a>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="grid">
+      <!-- Teacher Course ID -->
+      <div class="col">
+        <label>ID Giảng viên - Môn học <span class="req">*</span></label>
+        <input
+          type="number"
+          formControlName="teacherCourseId"
+          [class.invalid]="teacherCourseId?.touched && teacherCourseId?.invalid" />
+        <div class="err" *ngIf="teacherCourseId?.touched && teacherCourseId?.invalid">
+          <span *ngIf="teacherCourseId?.errors?.['required']">Trường này bắt buộc</span>
+          <span *ngIf="teacherCourseId?.errors?.['min']">Giá trị phải lớn hơn 0</span>
+        </div>
+      </div>
+
+      <!-- Day of Week -->
+      <div class="col">
+        <label>Ngày trong tuần <span class="req">*</span></label>
+        <select
+          formControlName="dayOfWeek"
+          [class.invalid]="dayOfWeek?.touched && dayOfWeek?.invalid">
+          <option value="">-- Chọn ngày --</option>
+          <option *ngFor="let day of daysOfWeek" [value]="day.value">
+            {{ day.label }}
+          </option>
+        </select>
+        <div class="err" *ngIf="dayOfWeek?.touched && dayOfWeek?.invalid">
+          Vui lòng chọn ngày trong tuần
+        </div>
+      </div>
+
+      <!-- Start Time -->
+      <div class="col">
+        <label>Giờ bắt đầu <span class="req">*</span></label>
+        <input
+          type="time"
+          formControlName="startTime"
+          [class.invalid]="startTime?.touched && startTime?.invalid" />
+        <div class="err" *ngIf="startTime?.touched && startTime?.invalid">
+          Vui lòng nhập giờ bắt đầu
+        </div>
+      </div>
+
+      <!-- End Time -->
+      <div class="col">
+        <label>Giờ kết thúc <span class="req">*</span></label>
+        <input
+          type="time"
+          formControlName="endTime"
+          [class.invalid]="endTime?.touched && endTime?.invalid" />
+        <div class="err" *ngIf="endTime?.touched && endTime?.invalid">
+          Vui lòng nhập giờ kết thúc
+        </div>
+      </div>
+
+      <!-- Room Number -->
+      <div class="col">
+        <label>Số phòng</label>
+        <input type="text" formControlName="roomNumber" placeholder="VD: A101, B202..." />
+        <div class="hint">Để trống nếu chưa xác định</div>
+      </div>
+
+      <!-- Location -->
+      <div class="col">
+        <label>Địa điểm</label>
+        <input type="text" formControlName="location" placeholder="VD: Tòa A, Tầng 2..." />
+        <div class="hint">Mô tả chi tiết vị trí</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="actions">
+      <button type="button" class="btn" routerLink="/admin/schedule-management">
+        Hủy
+      </button>
+      <button
+        type="submit"
+        class="btn primary"
+        [disabled]="saving || form.invalid">
+        <i class="fas fa-spinner fa-spin" *ngIf="saving"></i>
+        <i class="fas fa-save" *ngIf="!saving"></i>
+        {{ saving ? 'Đang lưu...' : (mode === 'create' ? 'Tạo mới' : 'Cập nhật') }}
+      </button>
+    </div>
+  </form>
+</div>

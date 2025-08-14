@@ -76,22 +76,40 @@ namespace StudentManagementSystem.Services
             return dtos;
         }
 
+        public async Task<IEnumerable<TeacherCourseDto>> GetBySemesterIdAsync(int semesterId)
+        {
+            _logger.LogInformation("Getting teacher courses for Semester ID: {SemesterId}", semesterId);
+            var cacheKey = $"{CachePrefix}:semester:{semesterId}";
+            var cachedData = await _cacheService.GetDataAsync<IEnumerable<TeacherCourseDto>>(cacheKey);
+            if (cachedData != null)
+            {
+                _logger.LogInformation("Data found in cache for key: {CacheKey}", cacheKey);
+                return cachedData;
+            }
+
+            var tcs = await _teacherCourseRepository.GetBySemesterIdAsync(semesterId);
+            var dtos = tcs.Select(MapToDto).ToList();
+            await _cacheService.SetDataAsync(cacheKey, dtos, System.DateTimeOffset.Now.AddMinutes(15));
+            return dtos;
+        }
+
         public async Task<bool> CreateAsync(TeacherCourseCreateDto dto)
         {
-            _logger.LogInformation("Assigning Teacher {TeacherId} to Course {CourseId}", dto.TeacherId, dto.CourseId);
+            _logger.LogInformation("Assigning Teacher {TeacherId} to Course {CourseId} in Semester {SemesterId}",
+                dto.TeacherId, dto.CourseId, dto.SemesterId);
+
             var tc = new TeacherCourse
             {
                 TeacherId = dto.TeacherId,
                 CourseId = dto.CourseId,
-                Semester = dto.Semester,
-                Year = dto.Year,
+                SemesterId = dto.SemesterId,
                 IsActive = dto.IsActive
             };
             await _teacherCourseRepository.AddAsync(tc);
 
-            // Invalidate caches
-            await InvalidateTeacherCourseCaches(dto.TeacherId, dto.CourseId);
-            _logger.LogInformation("Assignment created. Caches invalidated for Teacher {TeacherId} and Course {CourseId}.", dto.TeacherId, dto.CourseId);
+            await InvalidateTeacherCourseCaches(dto.TeacherId, dto.CourseId, dto.SemesterId);
+            _logger.LogInformation("Assignment created. Caches invalidated for Teacher {TeacherId} and Course {CourseId}.",
+                dto.TeacherId, dto.CourseId);
             return true;
         }
 
@@ -105,19 +123,16 @@ namespace StudentManagementSystem.Services
                 return false;
             }
 
-            // Invalidate caches for old values before updating
-            await InvalidateTeacherCourseCaches(tc.TeacherId, tc.CourseId);
+            await InvalidateTeacherCourseCaches(tc.TeacherId, tc.CourseId, tc.SemesterId);
 
             tc.TeacherId = dto.TeacherId;
             tc.CourseId = dto.CourseId;
-            tc.Semester = dto.Semester;
-            tc.Year = dto.Year;
+            tc.SemesterId = dto.SemesterId;
             tc.IsActive = dto.IsActive;
             await _teacherCourseRepository.UpdateAsync(tc);
 
-            // Invalidate caches for new values
             await _cacheService.RemoveDataAsync($"{CachePrefix}:{dto.TeacherCourseId}");
-            await InvalidateTeacherCourseCaches(dto.TeacherId, dto.CourseId);
+            await InvalidateTeacherCourseCaches(dto.TeacherId, dto.CourseId, dto.SemesterId);
             _logger.LogInformation("Assignment {Id} updated and related caches invalidated.", dto.TeacherCourseId);
 
             return true;
@@ -135,23 +150,24 @@ namespace StudentManagementSystem.Services
 
             await _teacherCourseRepository.DeleteAsync(tc);
 
-            // Invalidate caches
             await _cacheService.RemoveDataAsync($"{CachePrefix}:{teacherCourseId}");
-            await InvalidateTeacherCourseCaches(tc.TeacherId, tc.CourseId);
+            await InvalidateTeacherCourseCaches(tc.TeacherId, tc.CourseId, tc.SemesterId);
             _logger.LogInformation("Assignment {Id} deleted and related caches invalidated.", teacherCourseId);
 
             return true;
         }
 
-        private Task InvalidateTeacherCourseCaches(string teacherId, string courseId)
+        private Task InvalidateTeacherCourseCaches(string teacherId, string courseId, int semesterId)
         {
             var teacherCacheKey = $"{CachePrefix}:teacher:{teacherId}";
             var courseCacheKey = $"{CachePrefix}:course:{courseId}";
+            var semesterCacheKey = $"{CachePrefix}:semester:{semesterId}";
 
             var tasks = new List<Task>
             {
                 _cacheService.RemoveDataAsync(teacherCacheKey),
-                _cacheService.RemoveDataAsync(courseCacheKey)
+                _cacheService.RemoveDataAsync(courseCacheKey),
+                _cacheService.RemoveDataAsync(semesterCacheKey)
             };
             return Task.WhenAll(tasks);
         }
@@ -163,19 +179,33 @@ namespace StudentManagementSystem.Services
             return tcs.Select(MapToDto);
         }
 
-        public async Task<(IEnumerable<TeacherCourseDto> TeacherCourses, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize, string? searchTerm = null)
+        public async Task<(IEnumerable<TeacherCourseDto> TeacherCourses, int TotalCount)> GetPagedAsync(
+            int pageNumber, int pageSize, string? searchTerm = null)
         {
             var (tcs, totalCount) = await _teacherCourseRepository.GetPagedAsync(pageNumber, pageSize, searchTerm);
             return (tcs.Select(MapToDto), totalCount);
+        }
+
+        public async Task<bool> IsTeacherCourseExistsAsync(string teacherId, string courseId, int semesterId, int? excludeId = null)
+        {
+            return await _teacherCourseRepository.IsTeacherCourseExistsAsync(teacherId, courseId, semesterId, excludeId);
+        }
+
+        public async Task<int> GetTeacherWorkloadAsync(string teacherId, int semesterId)
+        {
+            return await _teacherCourseRepository.GetTeacherWorkloadAsync(teacherId, semesterId);
         }
 
         private static TeacherCourseDto MapToDto(TeacherCourse tc) => new TeacherCourseDto
         {
             TeacherCourseId = tc.TeacherCourseId,
             TeacherId = tc.TeacherId,
+            TeacherName = tc.Teacher?.FullName,
             CourseId = tc.CourseId,
-            Semester = tc.Semester,
-            Year = tc.Year,
+            CourseName = tc.Course?.CourseName,
+            SemesterId = tc.SemesterId,
+            SemesterName = tc.Semester?.SemesterName,
+            AcademicYear = tc.Semester?.AcademicYear,
             IsActive = tc.IsActive
         };
     }

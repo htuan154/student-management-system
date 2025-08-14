@@ -148,14 +148,21 @@ namespace StudentManagementSystem.Services
 
         public async Task<IEnumerable<TeacherResponseDto>> GetAllTeachersAsync()
         {
-            _logger.LogInformation("Getting all teachers.");
-            var teachers = await _teacherRepository.GetAllAsync();
-            var teacherDtos = new List<TeacherResponseDto>();
-            foreach (var teacher in teachers)
+            try
             {
-                teacherDtos.Add(await MapToResponseDtoAsync(teacher));
+                _logger.LogInformation("Fetching all teachers from repository");
+
+                var teachers = await _teacherRepository.GetAllAsync();
+                var result = teachers.Select(t => MapToResponseDtoAsync(t).Result).ToList();
+
+                _logger.LogInformation("Successfully fetched {Count} teachers", result.Count);
+                return result;
             }
-            return teacherDtos;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching all teachers");
+                throw;
+            }
         }
 
         public async Task<(IEnumerable<TeacherResponseDto> Teachers, int TotalCount)> GetPagedTeachersAsync(
@@ -259,12 +266,14 @@ namespace StudentManagementSystem.Services
         #endregion
 
         #region Mapping Methods
-        private async Task<TeacherResponseDto> MapToResponseDtoAsync(Teacher teacher)
+        private Task<TeacherResponseDto> MapToResponseDtoAsync(Teacher teacher)
         {
-            var courseCount = await _teacherRepository.GetTeacherCourseCountAsync(teacher.TeacherId);
-            var enrollmentCount = await _teacherRepository.GetTeacherEnrollmentCountAsync(teacher.TeacherId);
+            // Đếm enrollments qua TeacherCourses
+            var enrollmentCount = teacher.TeacherCourses?
+                .SelectMany(tc => tc.Enrollments ?? new List<Enrollment>())
+                .Count() ?? 0;
 
-            return new TeacherResponseDto
+            var dto = new TeacherResponseDto
             {
                 TeacherId = teacher.TeacherId,
                 FullName = teacher.FullName,
@@ -276,9 +285,12 @@ namespace StudentManagementSystem.Services
                 HireDate = teacher.HireDate,
                 Salary = teacher.Salary,
                 UserCount = teacher.Users?.Count ?? 0,
-                CourseCount = courseCount,
-                EnrollmentCount = enrollmentCount
+                CourseCount = teacher.TeacherCourses?.Count ?? 0,
+                EnrollmentCount = enrollmentCount,
+                IsActive = (teacher.TeacherCourses?.Count ?? 0) > 0
             };
+
+            return Task.FromResult(dto);
         }
 
         private TeacherDetailResponseDto MapToDetailResponseDto(Teacher teacher)
@@ -300,14 +312,16 @@ namespace StudentManagementSystem.Services
                     CourseName = tc.Course.CourseName,
                     Credits = tc.Course.Credits
                 }).ToList() ?? new List<CourseInfoDto>(),
-                Enrollments = teacher.Enrollments?.Select(e => new EnrollmentInfoDto
-                {
-                    StudentId = e.Student.StudentId,
-                    StudentName = e.Student.FullName,
-                    CourseId = e.Course.CourseId,
-                    CourseName = e.Course.CourseName,
-                    Status = e.Status
-                }).ToList() ?? new List<EnrollmentInfoDto>()
+                Enrollments = teacher.TeacherCourses?
+                    .SelectMany(tc => tc.Enrollments ?? new List<Enrollment>())
+                    .Select(e => new EnrollmentInfoDto
+                    {
+                        StudentId = e.Student.StudentId,
+                        StudentName = e.Student.FullName,
+                        CourseId = e.Course.CourseId,
+                        CourseName = e.Course.CourseName,
+                        Status = e.Status
+                    }).ToList() ?? new List<EnrollmentInfoDto>()
             };
         }
 

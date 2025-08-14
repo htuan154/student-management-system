@@ -15,7 +15,7 @@ export interface CourseStats {
   courseId: string;
   courseName: string;
   semester: string;
-  year: number;
+  academicYear: string; // ✅ SỬA: Đổi từ year: number thành academicYear: string
   totalStudents: number;
   passedStudents: number;
   failedStudents: number;
@@ -103,8 +103,9 @@ export class TeacherDashboardComponent implements OnInit {
       stats.push({
         courseId: result.assignment.courseId,
         courseName: result.assignment.course?.courseName || 'N/A',
-        semester: result.assignment.semester || 'N/A',
-        year: result.assignment.year || 0,
+        // ✅ SỬA: Lấy từ semester object
+        semester: result.assignment.semester?.semesterName || 'N/A',
+        academicYear: result.assignment.semester?.academicYear || 'N/A', // ✅ SỬA: Dùng academicYear
         totalStudents: result.scores.length,
         passedStudents: passed,
         failedStudents: failed

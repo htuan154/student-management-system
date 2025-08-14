@@ -25,14 +25,12 @@ namespace StudentManagementSystem.Models
         [Range(0, 10, ErrorMessage = "Final score must be between 0 and 10")]
         public decimal? FinalScore { get; set; }
 
-        // Computed properties (calculated fields)
-        [Column(TypeName = "decimal(4,2)")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public decimal? TotalScore { get; private set; }
+        // ✅ SỬA: Đổi thành NotMapped properties (tính toán runtime)
+        [NotMapped]
+        public decimal? TotalScore => CalculateTotalScore();
 
-        [Column(TypeName = "bit")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public bool? IsPassed { get; private set; }
+        [NotMapped]
+        public bool? IsPassed => CalculateIsPassed();
 
         // Navigation properties
         [ForeignKey("EnrollmentId")]

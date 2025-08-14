@@ -67,25 +67,29 @@ export class CourseFormComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.courseForm.invalid) {
-      return;
-    }
-
-    this.isLoading = true;
-    const formData = this.courseForm.getRawValue();
-
-    const operation = this.isEditMode
-      ? this.courseService.updateCourse(this.courseId!, formData)
-      : this.courseService.createCourse(formData);
-
-    operation.subscribe({
-      next: () => {
-        this.router.navigate(['/admin/courses']);
-      },
-      error: (err) => {
-        this.errorMessage = `An error occurred. ${err.error?.message || ''}`;
-        this.isLoading = false;
-      }
-    });
+  if (this.courseForm.invalid) {
+    return;
   }
+
+  this.isLoading = true;
+  const formData = this.courseForm.getRawValue();
+
+  // Ép số cho credits để chắc chắn BE nhận number
+  formData.credits = +formData.credits;
+
+  const operation = this.isEditMode
+    ? this.courseService.updateCourse(this.courseId!, formData)
+    : this.courseService.createCourse(formData);
+
+  operation.subscribe({
+    next: () => {
+      this.router.navigate(['/admin/courses']);
+    },
+    error: (err) => {
+      this.errorMessage = `An error occurred. ${err.error?.message || ''}`;
+      this.isLoading = false;
+    }
+  });
+}
+
 }

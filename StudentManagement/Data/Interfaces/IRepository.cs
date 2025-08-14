@@ -10,7 +10,9 @@ namespace StudentManagementSystem.Data.Interfaces
         Task<IEnumerable<T>> FindAllAsync(Expression<Func<T, bool>> predicate);
         Task<T> AddAsync(T entity);
         Task UpdateAsync(T entity);
-        Task DeleteAsync(T entity);
+        Task<bool> DeleteAsync(int id);
+        Task<bool> DeleteAsync(T entity);
+
         Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
         Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null);
     }

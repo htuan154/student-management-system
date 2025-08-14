@@ -1,18 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router'; // ⬅ Thêm Router
 import { FormsModule } from '@angular/forms';
 import { forkJoin, Observable } from 'rxjs';
 
-// Import models
-import { Course, Teacher, Score } from '../../../../models';
-
-// Import services
+import { Course, Score, TeacherCourse, Enrollment } from '../../../../models';
 import { CourseService } from '../../../../services/course.service';
-import { EnrollmentService } from '../../../../services/enrollment.service'; // ✅ THAY ĐỔI: Dùng EnrollmentService
+import { TeacherCourseService } from '../../../../services/teacher-course.service';
+import { EnrollmentService } from '../../../../services/enrollment.service';
 import { ScoreService } from '../../../../services/score.service';
-import { TeacherService } from '../../../../services/teacher.service';
 
 @Component({
   selector: 'app-score-list',
@@ -26,31 +23,38 @@ export class ScoreListComponent implements OnInit {
   isLoading = false;
   errorMessage: string | null = null;
 
+  // Tầng 1: Danh sách môn học
   courses: Course[] = [];
   selectedCourse: Course | null = null;
 
-  teachers: Teacher[] = [];
-  selectedTeacher: Teacher | null = null;
+  // Tầng 2: Danh sách giảng viên được phân công dạy môn đó
+  assignedTeachers: { teacherId: string; teacherName: string; teacherCourseId: number }[] = [];
+  selectedTeacherId: string | null = null;
+  selectedTeacherCourseId: number | null = null;
 
+  // Tầng 3: Danh sách điểm sinh viên
   scores: Score[] = [];
 
   constructor(
     private courseService: CourseService,
-    private enrollmentService: EnrollmentService, // ✅ THAY ĐỔI: Inject EnrollmentService
+    private teacherCourseService: TeacherCourseService,
+    private enrollmentService: EnrollmentService,
     private scoreService: ScoreService,
-    private teacherService: TeacherService
-  ) { }
+    private router: Router // ⬅ Thêm Router injection
+  ) {}
 
   ngOnInit(): void {
     this.loadCourses();
   }
 
-  // --- Tầng 1 ---
+  // === TẦNG 1: CHỌN MÔN HỌC ===
   loadCourses(): void {
     this.isLoading = true;
+    this.errorMessage = null;
+
     this.courseService.getAllCourses().subscribe({
       next: (data) => {
-        this.courses = data;
+        this.courses = data || [];
         this.isLoading = false;
       },
       error: (err) => this.handleError(err, 'Không thể tải danh sách môn học.')
@@ -59,133 +63,150 @@ export class ScoreListComponent implements OnInit {
 
   selectCourse(course: Course): void {
     this.selectedCourse = course;
+    this.resetLowerLevels();
     this.level = 2;
-    this.loadTeachersForCourse(course.courseId);
+    this.loadAssignedTeachers(course.courseId);
   }
 
-  // --- Tầng 2 ---
-  loadTeachersForCourse(courseId: string): void {
+  // === TẦNG 2: CHỌN GIẢNG VIÊN ĐƯỢC PHÂN CÔNG ===
+  loadAssignedTeachers(courseId: string): void {
     this.isLoading = true;
-    // ✅ THAY ĐỔI: Lấy giảng viên từ danh sách đăng ký của môn học
-    this.enrollmentService.getEnrollmentsByCourseId(courseId).subscribe({
-      next: (enrollments) => {
-        if (!enrollments || enrollments.length === 0) {
-          this.teachers = [];
-          this.isLoading = false;
-          return;
-        }
+    this.errorMessage = null;
 
-        // Lọc ra các mã giảng viên duy nhất từ danh sách đăng ký
-        const teacherIds = [...new Set(enrollments.map(e => e.teacherId).filter(id => id != null))] as string[];
+    this.teacherCourseService.getTeacherCoursesByCourseId(courseId).subscribe({
+      next: (teacherCourses) => {
+        // Map ra danh sách giảng viên với thông tin cần thiết
+        this.assignedTeachers = (teacherCourses || [])
+          .filter(tc => tc.isActive) // Chỉ lấy phân công đang hoạt động
+          .map(tc => ({
+            teacherId: tc.teacherId,
+            teacherName: tc.teacher?.fullName || tc.teacher?.teacherId || tc.teacherId,
+            teacherCourseId: tc.teacherCourseId
+          }));
 
-        if (teacherIds.length === 0) {
-          this.teachers = [];
-          this.isLoading = false;
-          return;
-        }
-
-        // Gọi API để lấy thông tin chi tiết của từng giảng viên
-        const teacherRequests = teacherIds.map(id => this.teacherService.getTeacherById(id));
-
-        forkJoin(teacherRequests).subscribe({
-          next: (teachersData) => {
-            this.teachers = teachersData;
-            this.isLoading = false;
-          },
-          error: (err) => this.handleError(err, 'Không thể tải thông tin giảng viên.')
-        });
+        this.isLoading = false;
       },
-      error: (err) => this.handleError(err, 'Không thể tải danh sách phân công cho môn học.')
+      error: (err) => this.handleError(err, 'Không thể tải danh sách giảng viên được phân công.')
     });
   }
 
-  selectTeacher(teacher: Teacher): void {
-    this.selectedTeacher = teacher;
+  selectTeacher(teacherId: string, teacherCourseId: number): void {
+    this.selectedTeacherId = teacherId;
+    this.selectedTeacherCourseId = teacherCourseId;
     this.level = 3;
-    this.loadScores(this.selectedCourse!.courseId, teacher.teacherId);
+    // Dùng teacherId + courseId thay vì teacherCourseId
+    this.loadScoresByTeacherAndCourse(teacherId, this.selectedCourse!.courseId);
   }
 
-  // --- Tầng 3 ---
-  loadScores(courseId: string, teacherId: string): void {
+  // === TẦNG 3: DANH SÁCH ĐIỂM SINH VIÊN ===
+  loadScoresByTeacherAndCourse(teacherId: string, courseId: string): void {
     this.isLoading = true;
-    this.scoreService.getByTeacherAndSubject(teacherId, courseId).subscribe({
+    this.errorMessage = null;
+
+    this.scoreService.getScoresByTeacherAndCourse(teacherId, courseId).subscribe({
       next: (scores) => {
-        this.scores = scores.map(s => ({
-          ...s,
-          processScore: s.processScore ?? null,
-          midtermScore: s.midtermScore ?? null,
-          finalScore: s.finalScore ?? null,
-          totalScore: s.totalScore ?? this.calculateTotalScore(s),
-          isPassed: s.isPassed ?? null
-        }));
+        console.log('Scores loaded:', scores); // Debug log
+        this.scores = (scores || []).map(score => {
+          const total = this.calculateTotalScore(score);
+          return {
+            ...score,
+            totalScore: total,
+            isPassed: total >= 4,
+            // Fallback cho thông tin sinh viên
+            studentId: score.studentId || score.enrollment?.studentId || score.enrollment?.student?.studentId || 'N/A',
+            fullName: score.fullName || score.enrollment?.student?.fullName || 'N/A'
+          };
+        });
+
+        if (this.scores.length === 0) {
+          console.warn('No scores found for teacher:', teacherId, 'course:', courseId);
+        }
+
         this.isLoading = false;
       },
       error: (err: HttpErrorResponse) => {
-        if (err.status === 404) {
-          this.scores = [];
-          this.isLoading = false;
-        } else {
-          this.handleError(err, 'Không thể tải danh sách điểm.');
-        }
+        console.error('Failed to load scores:', err);
+        this.errorMessage = 'Không thể tải danh sách điểm. Server error.';
+        this.scores = [];
+        this.isLoading = false;
       }
     });
   }
 
+  // === HELPER METHODS ===
   calculateTotalScore(score: Score): number {
-    const process = score.processScore ?? 0;
-    const midterm = score.midtermScore ?? 0;
-    const final = score.finalScore ?? 0;
-    const total = +(process * 0.2 + midterm * 0.3 + final * 0.5).toFixed(2);
-    score.totalScore = total;
-    score.isPassed = total >= 4;
-    return total;
+    const process = score.processScore || 0;
+    const midterm = score.midtermScore || 0;
+    const final = score.finalScore || 0;
+    return +(process * 0.2 + midterm * 0.3 + final * 0.5).toFixed(2);
+  }
+
+  // Thêm getter cho tên giảng viên được chọn
+  get selectedTeacherName(): string {
+    if (!this.selectedTeacherId || !this.assignedTeachers.length) return 'N/A';
+    const teacher = this.assignedTeachers.find(t => t.teacherId === this.selectedTeacherId);
+    return teacher?.teacherName || 'N/A';
   }
 
   saveAllScores(): void {
+    if (!this.scores.length) return;
+
     this.isLoading = true;
     const updateRequests: Observable<any>[] = [];
+
     this.scores.forEach(score => {
-      const scoreData: Partial<Score> = {
+      const totalScore = this.calculateTotalScore(score);
+      const scoreData = {
         scoreId: score.scoreId,
         processScore: score.processScore,
         midtermScore: score.midtermScore,
         finalScore: score.finalScore,
-        totalScore: score.totalScore,
-        isPassed: score.isPassed
+        totalScore: totalScore,
+        isPassed: totalScore >= 4
       };
+
       updateRequests.push(this.scoreService.updateScore(score.scoreId, scoreData));
     });
+
     forkJoin(updateRequests).subscribe({
       next: () => {
         alert('Lưu điểm thành công!');
-        this.isLoading = false;
-        this.loadScores(this.selectedCourse!.courseId, this.selectedTeacher!.teacherId);
+        this.loadScoresByTeacherAndCourse(this.selectedTeacherId!, this.selectedCourse!.courseId);
       },
-      error: (err) => this.handleError(err, 'Đã có lỗi xảy ra khi lưu điểm.')
+      error: (err) => this.handleError(err, 'Có lỗi xảy ra khi lưu điểm.')
     });
   }
 
-  deleteScore(id: number): void {
-    if (confirm('Bạn có chắc chắn muốn xóa điểm này không?')) {
-      this.scoreService.deleteScore(id).subscribe({
-        next: () => {
-          this.loadScores(this.selectedCourse!.courseId, this.selectedTeacher!.teacherId);
-        },
-        error: (err: HttpErrorResponse) => {
-          this.handleError(err, 'Lỗi xảy ra khi xóa điểm.');
-        }
-      });
+  deleteScore(scoreId: number): void {
+    if (!confirm('Bạn có chắc chắn muốn xóa điểm này không?')) return;
+
+    this.scoreService.deleteScore(scoreId).subscribe({
+      next: () => {
+        this.loadScoresByTeacherAndCourse(this.selectedTeacherId!, this.selectedCourse!.courseId);
+      },
+      error: (err) => this.handleError(err, 'Có lỗi xảy ra khi xóa điểm.')
+    });
+  }
+
+  // === NAVIGATION ===
+  goBack(): void {
+    if (this.level === 3) {
+      this.level = 2;
+      this.selectedTeacherId = null;
+      this.selectedTeacherCourseId = null;
+      this.scores = [];
+    } else if (this.level === 2) {
+      this.level = 1;
+      this.resetLowerLevels();
+      this.selectedCourse = null;
     }
   }
 
-  goBack(toLevel: 1 | 2): void {
-    this.level = toLevel;
-    if (toLevel === 1) {
-      this.selectedCourse = null;
-      this.selectedTeacher = null;
-    } else {
-      this.selectedTeacher = null;
-    }
+  private resetLowerLevels(): void {
+    this.assignedTeachers = [];
+    this.selectedTeacherId = null;
+    this.selectedTeacherCourseId = null;
+    this.scores = [];
   }
 
   private handleError(error: HttpErrorResponse, message: string): void {
@@ -193,4 +214,28 @@ export class ScoreListComponent implements OnInit {
     this.isLoading = false;
     console.error(error);
   }
+
+  // ⬅ THÊM METHOD navigateToAddScore()
+  navigateToAddScore(): void {
+    if (this.selectedCourse && this.selectedTeacherId) {
+      // Navigate to add score form với courseId và teacherId
+      this.router.navigate(['/admin/scores/add'], {
+        queryParams: {
+          courseId: this.selectedCourse.courseId,
+          teacherId: this.selectedTeacherId,
+          courseName: this.selectedCourse.courseName,
+          teacherName: this.selectedTeacherName
+        }
+      });
+    } else {
+      console.error('Missing course or teacher information');
+      alert('Lỗi: Thiếu thông tin môn học hoặc giảng viên.');
+    }
+  }
+
+  // === TRACK BY FUNCTIONS ===
+  trackByCourseId = (_: number, course: Course) => course.courseId;
+  trackByTeacherId = (_: number, teacher: any) => teacher.teacherId;
+  trackByScoreId = (_: number, score: Score) => score.scoreId;
 }
+

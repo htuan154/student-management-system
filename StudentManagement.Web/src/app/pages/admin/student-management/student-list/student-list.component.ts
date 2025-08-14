@@ -9,7 +9,8 @@ import { RouterModule } from '@angular/router';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './student-list.component.html',
-  styleUrls: ['./student-list.component.scss']
+  styleUrls: ['./student-list.component.scss'],
+
 })
 export class StudentListComponent implements OnInit {
   students: Student[] = [];
@@ -50,5 +51,9 @@ export class StudentListComponent implements OnInit {
         }
       });
     }
+  }
+
+  trackById(_: number, s: Student) {
+    return s.studentId;
   }
 }

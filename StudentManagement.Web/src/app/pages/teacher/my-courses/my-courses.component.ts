@@ -2,11 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 
 // Import models and services
 import { TeacherCourse } from '../../../models';
 import { TeacherCourseService } from '../../../services/teacher-course.service';
 import { AuthService } from '../../../services/auth.service';
+import { EnrollmentService } from '../../../services/enrollment.service';
+import { SemesterService } from '../../../services/semester.service';
+import { Enrollment } from '../../../models/enrollment.model';
+import { Semester } from '../../../models/Semester.model';
 
 @Component({
   selector: 'app-my-courses',
@@ -17,6 +23,11 @@ import { AuthService } from '../../../services/auth.service';
 })
 export class MyCoursesComponent implements OnInit {
   assignedCourses: TeacherCourse[] = [];
+
+  // Maps: key = teacherCourseId
+  tcSemesterName: Record<number, string> = {};
+  tcAcademicYear: Record<number, string> = {};
+
   isLoading = false;
   errorMessage: string | null = null;
   teacherId: string | null = null;
@@ -24,7 +35,9 @@ export class MyCoursesComponent implements OnInit {
   constructor(
     private teacherCourseService: TeacherCourseService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private enrollmentService: EnrollmentService,
+    private semesterService: SemesterService
   ) { }
 
   ngOnInit(): void {
@@ -59,19 +72,18 @@ export class MyCoursesComponent implements OnInit {
       next: (data) => {
         console.log('Raw API response:', data);
 
-        // Debug từng course
+        // Debug từng course - KHÔNG dùng tc.semester vì không có trong model
         data.forEach((tc, index) => {
           console.log(`Course ${index}:`, {
             teacherCourseId: tc.teacherCourseId,
             courseId: tc.courseId,
             courseName: tc.course?.courseName,
             courseCode: tc.course?.courseId,
-            semester: tc.semester,
             fullCourseObject: tc.course
           });
         });
 
-        this.assignedCourses = data;
+        this.afterLoadAssignedCourses(data);
         this.isLoading = false;
       },
       error: (err: HttpErrorResponse) => {
@@ -83,6 +95,38 @@ export class MyCoursesComponent implements OnInit {
           message: err.message,
           url: err.url
         });
+      }
+    });
+  }
+
+  private afterLoadAssignedCourses(courses: TeacherCourse[]) {
+    this.assignedCourses = courses || [];
+    this.hydrateSemesters(this.assignedCourses);
+  }
+
+  private hydrateSemesters(tcs: TeacherCourse[]) {
+    if (!tcs?.length) return;
+
+    const jobs = tcs.map(tc =>
+      // Lấy enrollments theo courseId rồi lọc đúng teacherCourseId
+      this.enrollmentService.getEnrollmentsByCourseId(tc.courseId).pipe(
+        map((enrs: Enrollment[] = []) => enrs.find(e => e.teacherCourseId === tc.teacherCourseId)?.semesterId || null),
+        switchMap((semId: number | null) =>
+          semId ? this.semesterService.getSemesterById(semId) : of<Semester | null>(null)
+        ),
+        map((sem: Semester | null) => ({
+          tcId: tc.teacherCourseId,
+          name: sem?.semesterName ?? 'N/A',
+          year: sem?.academicYear ?? 'N/A'
+        })),
+        catchError(() => of({ tcId: tc.teacherCourseId, name: 'N/A', year: 'N/A' }))
+      )
+    );
+
+    forkJoin(jobs).subscribe(results => {
+      for (const r of results) {
+        this.tcSemesterName[r.tcId] = r.name;
+        this.tcAcademicYear[r.tcId] = r.year;
       }
     });
   }
@@ -108,7 +152,7 @@ export class MyCoursesComponent implements OnInit {
    * Lấy số lượng sinh viên
    */
   getStudentCount(course: TeacherCourse): number {
-    return course.course?.enrollments?.length || 0;
+    return 0; 
   }
 
   /**

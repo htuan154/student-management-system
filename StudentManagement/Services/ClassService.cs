@@ -1,3 +1,4 @@
+
 using Microsoft.Extensions.Logging;
 using StudentManagementSystem.Data.Interfaces;
 using StudentManagementSystem.DTOs.Class;
@@ -157,10 +158,10 @@ namespace StudentManagementSystem.Services
                     throw new InvalidOperationException("Class name already exists.");
                 }
 
+
                 classItem.ClassName = updateClassDto.ClassName;
                 classItem.Major = updateClassDto.Major;
-                classItem.AcademicYear = updateClassDto.AcademicYear;
-                classItem.Semester = updateClassDto.Semester;
+                classItem.SemesterId = updateClassDto.SemesterId;
                 classItem.IsActive = updateClassDto.IsActive;
 
                 await _classRepository.UpdateAsync(classItem);
@@ -251,12 +252,13 @@ namespace StudentManagementSystem.Services
         }
 
         public async Task<(IEnumerable<ClassResponseDto> Classes, int TotalCount)> GetPagedClassesAsync(
-            int pageNumber, int pageSize, string? searchTerm = null, bool? isActive = null)
+            int pageNumber, int pageSize, string? searchTerm = null, bool? isActive = null, int? semesterId = null)
         {
-            _logger.LogInformation("Attempting to get paged classes. Page: {PageNumber}, Size: {PageSize}, Term: {SearchTerm}, IsActive: {IsActive}", pageNumber, pageSize, searchTerm, isActive);
+            _logger.LogInformation("Attempting to get paged classes. Page: {PageNumber}, Size: {PageSize}, Term: {SearchTerm}, IsActive: {IsActive}, SemesterId: {SemesterId}",
+                pageNumber, pageSize, searchTerm, isActive, semesterId);
             try
             {
-                var (classes, totalCount) = await _classRepository.GetPagedClassesAsync(pageNumber, pageSize, searchTerm, isActive);
+                var (classes, totalCount) = await _classRepository.GetPagedClassesAsync(pageNumber, pageSize, searchTerm, isActive, semesterId);
                 var result = new List<ClassResponseDto>();
                 foreach (var classItem in classes)
                 {
@@ -293,6 +295,27 @@ namespace StudentManagementSystem.Services
             }
         }
 
+        public async Task<IEnumerable<ClassResponseDto>> GetClassesBySemesterIdAsync(int semesterId)
+        {
+            _logger.LogInformation("Attempting to get classes by semester ID: {SemesterId}", semesterId);
+            try
+            {
+                var classes = await _classRepository.GetClassesBySemesterIdAsync(semesterId);
+                var result = new List<ClassResponseDto>();
+                foreach (var classItem in classes)
+                {
+                    var studentCount = await _classRepository.GetStudentCountInClassAsync(classItem.ClassId);
+                    result.Add(MapToResponseDto(classItem, studentCount));
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while getting classes by semester ID {SemesterId}.", semesterId);
+                throw;
+            }
+        }
+
         public async Task<IEnumerable<ClassResponseDto>> GetClassesByAcademicYearAsync(string academicYear)
         {
             _logger.LogInformation("Attempting to get classes by academic year: {AcademicYear}", academicYear);
@@ -302,7 +325,7 @@ namespace StudentManagementSystem.Services
                 var result = new List<ClassResponseDto>();
                 foreach (var classItem in classes)
                 {
-                    var studentCount = await _classRepository.GetStudentCountInClassAsync(classItem.ClassId);
+                    var studentCount = await _classRepository.GetStudentCountInClassAsync (classItem.ClassId);
                     result.Add(MapToResponseDto(classItem, studentCount));
                 }
                 return result;
@@ -357,13 +380,25 @@ namespace StudentManagementSystem.Services
         }
 
         #region Private Helper and Mapping Methods
+
+        // ✅ THÊM - InvalidateClassCacheAsync method
         private async Task InvalidateClassCacheAsync(string classId)
         {
-            await _cacheService.RemoveDataAsync($"{ClassCacheKeyPrefix}:{classId}");
-            await _cacheService.RemoveDataAsync($"{ClassCacheKeyPrefix}:{classId}:students");
-            _logger.LogInformation("Cache for class {ClassId} invalidated.", classId);
+            var cacheKeys = new[]
+            {
+                $"{ClassCacheKeyPrefix}:{classId}",
+                $"{ClassCacheKeyPrefix}:{classId}:students"
+            };
+
+            foreach (var key in cacheKeys)
+            {
+                await _cacheService.RemoveDataAsync(key);
+            }
+
+            _logger.LogInformation("Cache invalidated for class {ClassId}.", classId);
         }
 
+        // ✅ SỬA - MapToResponseDto sử dụng Semester navigation property
         private ClassResponseDto MapToResponseDto(Class classItem, int studentCount)
         {
             return new ClassResponseDto
@@ -371,13 +406,15 @@ namespace StudentManagementSystem.Services
                 ClassId = classItem.ClassId,
                 ClassName = classItem.ClassName,
                 Major = classItem.Major,
-                AcademicYear = classItem.AcademicYear,
-                Semester = classItem.Semester,
+                SemesterId = classItem.SemesterId,
+                SemesterName = classItem.Semester?.SemesterName,
+                AcademicYear = classItem.Semester?.AcademicYear,
                 IsActive = classItem.IsActive,
                 StudentCount = studentCount
             };
         }
 
+        // ✅ SỬA - MapToClassWithStudentsDto với đầy đủ properties
         private ClassWithStudentsDto MapToClassWithStudentsDto(Class classItem)
         {
             return new ClassWithStudentsDto
@@ -385,14 +422,16 @@ namespace StudentManagementSystem.Services
                 ClassId = classItem.ClassId,
                 ClassName = classItem.ClassName,
                 Major = classItem.Major,
-                AcademicYear = classItem.AcademicYear,
-                Semester = classItem.Semester,
+                SemesterId = classItem.SemesterId,
+                SemesterName = classItem.Semester?.SemesterName, // ✅ Đã có trong DTO
+                AcademicYear = classItem.Semester?.AcademicYear, // ✅ Đã có trong DTO
                 IsActive = classItem.IsActive,
                 Students = classItem.Students.Select(MapStudentToResponseDto),
                 StudentCount = classItem.Students.Count
             };
         }
 
+        // ✅ SỬA - MapToClass với SemesterId
         private Class MapToClass(CreateClassDto dto)
         {
             return new Class
@@ -400,8 +439,7 @@ namespace StudentManagementSystem.Services
                 ClassId = dto.ClassId,
                 ClassName = dto.ClassName,
                 Major = dto.Major,
-                AcademicYear = dto.AcademicYear,
-                Semester = dto.Semester,
+                SemesterId = dto.SemesterId,
                 IsActive = dto.IsActive
             };
         }
@@ -420,6 +458,7 @@ namespace StudentManagementSystem.Services
                 ClassName = student.Class?.ClassName ?? string.Empty
             };
         }
+
         #endregion
     }
 }

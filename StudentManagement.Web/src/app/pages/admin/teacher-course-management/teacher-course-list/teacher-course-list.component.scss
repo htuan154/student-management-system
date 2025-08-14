@@ -1,99 +1,117 @@
-// Container chính cho trang, với nền xám nhạt
+// ===== Palette =====
+$primary: #3b82f6;
+$primary-600: #2563eb;
+$danger-600: #dc2626;
+$border: #e5e7eb;
+$bg: #f7f9fc;
+$text: #0f172a;
+$muted: #64748b;
+$table-head: #0b3b7e;
+
+// ===== Layout =====
 .management-container {
-  padding: 2rem;
-  background-color: #f4f7fa;
-  height: 100%;
+  padding: 16px 20px 28px;
+  background: $bg;
+  min-height: 100%;
 }
 
-// Header của trang, chứa tiêu đề và nút "Thêm mới"
 .management-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
 
   h1 {
-    font-size: 1.75rem;
+    margin: 0;
+    font-size: 22px;
     font-weight: 700;
-    color: #2c3e50;
+    color: $text;
   }
 }
 
-// Khung trắng chứa bảng dữ liệu
-.table-container {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
+// ===== Alerts =====
+.loading-indicator, .error-message {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid $border;
+  background: #fff;
+  margin-bottom: 10px;
+  font-size: 14px;
+  text-align: center;
 }
 
-// Bảng dữ liệu
+.error-message {
+  border-color: #fecaca;
+  background: #fff1f2;
+  color: $danger-600;
+}
+
+// ===== Table Container =====
+.table-container {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(2, 6, 23, 0.04);
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
 
-  thead tr {
-    background-color: #007bff;
-    color: #fff;
+  thead th {
+    background: $primary !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    font-size: 13px;
     text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   }
 
-  th, td {
-    padding: 1rem 1.25rem;
+  tbody td {
+    padding: 12px;
+    font-size: 14px;
+    color: $text;
+    border-bottom: 1px solid $border;
     vertical-align: middle;
   }
 
-  tbody tr {
-    border-bottom: 1px solid #dee2e6;
-    &:last-of-type {
-      border-bottom: none;
-    }
-    &:hover {
-      background-color: #f8f9fa;
-    }
+  tbody tr:hover { background: #fafcff; }
+
+  .text-center {
+    text-align: center;
+    color: $muted;
+    padding: 28px 0;
   }
 }
 
-// Các nút hành động (Sửa, Xóa)
-.action-buttons {
-  display: flex;
-  gap: 0.5rem;
-}
-
-// Style chung cho các nút bấm
+// ===== Buttons =====
 .btn {
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 13px;
+  border: 1px solid transparent;
   cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  transition: 0.15s ease;
+  text-decoration: none;
+
+  &-primary {
+    background: $primary;
+    color: #fff;
+    &:hover { background: $primary-600; }
+  }
+
+  &-info {
+    background: #0dcaf0;
+    color: #fff;
+    &:hover { background: #0bb5d0; }
+  }
 }
 
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
-}
-.btn-danger {
-  background-color: #dc3545;
-  color: white;
-}
-
-.text-center {
-  text-align: center;
-}
-
-// Trạng thái
-.status-active {
-  color: #28a745;
-  font-weight: 500;
-}
-.status-inactive {
-  color: #dc3545;
-  font-weight: 500;
-}
+.action-buttons { display: inline-flex; gap: 8px; }

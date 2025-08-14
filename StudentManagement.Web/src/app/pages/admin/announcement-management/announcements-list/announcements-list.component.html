@@ -1,0 +1,62 @@
+<div class="card">
+  <div class="card-header">
+    <h2>Quản lý thông báo</h2>
+    <div class="toolbar">
+      <input
+        type="text"
+        placeholder="Tìm theo tiêu đề/nội dung..."
+        [value]="searchTerm"
+        (input)="onSearchChange($any($event.target).value)"
+      />
+      <button class="btn primary" (click)="onCreate()">+ Tạo thông báo</button>
+    </div>
+  </div>
+
+  <div class="card-body" *ngIf="!loading; else loadingTpl">
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="width: 56px;">ID</th>
+          <th>Tiêu đề</th>
+          <th>Ngày tạo</th>
+          <th>Hết hạn</th>
+          <th>Người tạo</th>
+          <th style="width: 160px;">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let a of items; let i = index">
+          <td>{{ (pageNumber - 1) * pageSize + i + 1 }}</td>
+          <td class="title-cell">
+            <div class="title">{{ a.title }}</div>
+            <div class="sub">{{ a.content }}</div>
+          </td>
+          <td>{{ a.createdAt | date: 'short' }}</td>
+          <td>
+            <span [class.muted]="!a.expiryDate">
+              {{ a.expiryDate ? (a.expiryDate | date:'short') : 'Không đặt' }}
+            </span>
+          </td>
+          <td>{{ a.createdBy }}</td>
+          <td class="actions">
+            <button class="btn" (click)="onEdit(a)">Sửa</button>
+            <button class="btn danger" (click)="onDelete(a)">Xoá</button>
+          </td>
+        </tr>
+        <tr *ngIf="!items?.length">
+          <td colspan="6" class="empty">Không có dữ liệu</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pager" *ngIf="totalPages > 1">
+      <button class="btn" (click)="goPage(pageNumber-1)" [disabled]="pageNumber===1">‹</button>
+      <span>{{ getFromToLabel() }}</span>
+      <button class="btn" (click)="goPage(pageNumber+1)" [disabled]="pageNumber===totalPages">›</button>
+    </div>
+  </div>
+
+  <ng-template #loadingTpl>
+    <div class="loading">Đang tải...</div>
+  </ng-template>
+</div>

@@ -2,7 +2,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using StudentManagementSystem.Controllers;
-using StudentManagementSystem.Dtos.Role;
+using StudentManagementSystem.DTOs.Role;
 using StudentManagementSystem.Services.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;

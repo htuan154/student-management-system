@@ -1,0 +1,69 @@
+<div class="schedule-container">
+  <header class="schedule-header">
+  <h1>Lịch học của tôi</h1>
+
+  <label class="filter">
+  <span>Kỳ học</span>
+  <select #sem (change)="onChangeSemester(sem.value)">
+    <option value="">Tất cả</option>
+    <option *ngFor="let s of semesters; trackBy: trackSem"
+            [value]="s.semesterId"
+            [selected]="s.semesterId === selectedSemesterId">
+      {{ s.semesterName }} • {{ s.academicYear }} ({{ s.courseCount }} môn)
+    </option>
+  </select>
+</label>
+
+
+</header>
+
+
+  <div *ngIf="isLoading" class="alert info">
+    <i class="fas fa-spinner fa-spin"></i>
+    <span>Đang tải lịch…</span>
+  </div>
+
+  <div *ngIf="!isLoading && errorMessage" class="alert danger">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage" class="table-wrap">
+    <table class="timetable-table">
+      <thead>
+        <tr>
+          <th class="time-col">Khung giờ</th>
+          <th *ngFor="let d of days">{{ dayLabel(d) }}</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let slot of timeSlots">
+          <th class="slot-head">{{ slot.label }}</th>
+
+          <td *ngFor="let d of days">
+            <ng-container *ngIf="cell(d, slot).length; else emptyCell">
+              <div class="course" *ngFor="let it of cell(d, slot)">
+                <div class="title">{{ courseTitle(it) }}</div>
+                <div class="meta">
+                  <span *ngIf="it.roomNumber">Phòng {{ it.roomNumber }}</span>
+                  <span *ngIf="it.location">• {{ it.location }}</span>
+                  <span *ngIf="teacherName(it)">• {{ teacherName(it) }}</span>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-template #emptyCell>
+              <div class="empty"></div>
+            </ng-template>
+          </td>
+        </tr>
+
+        <tr *ngIf="timeSlots.length === 0">
+          <td class="no-data" [attr.colspan]="days.length + 1">
+            Chưa có lịch để hiển thị.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

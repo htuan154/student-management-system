@@ -2,18 +2,18 @@
 
 import { Enrollment } from './enrollment.model';
 import { TeacherCourse } from './teacher-course.model';
+import { AnnouncementDetail } from './AnnouncementDetail.model';
 
 export interface Course {
   courseId: string;
   courseName: string;
   credits: number;
-  isActive: boolean;
-
-  // Thuộc tính tùy chọn
   department?: string | null;
   description?: string | null;
+  isActive: boolean;
 
-  // Mảng các đối tượng quan hệ
+  // Navigation properties
   teacherCourses?: TeacherCourse[];
   enrollments?: Enrollment[];
+  announcementDetails?: AnnouncementDetail[];
 }

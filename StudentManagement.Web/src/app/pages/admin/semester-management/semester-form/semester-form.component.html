@@ -1,0 +1,47 @@
+
+<div class="card">
+  <div class="card-header">
+    <h2>{{ isEdit ? 'Cập nhật học kỳ' : 'Thêm học kỳ mới' }}</h2>
+    <a class="btn" routerLink="/admin/semester-management">Quay lại</a>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="grid">
+      <div class="col">
+        <label>Tên học kỳ *</label>
+        <input type="text" formControlName="semesterName" placeholder="VD: Học kỳ 1" />
+      </div>
+
+      <div class="col">
+        <label>Năm học *</label>
+        <input type="text" formControlName="academicYear" placeholder="VD: 2024-2025" />
+      </div>
+
+      <div class="col">
+        <label>Ngày bắt đầu *</label>
+        <input type="date" formControlName="startDate" />
+      </div>
+
+      <div class="col">
+        <label>Ngày kết thúc *</label>
+        <input type="date" formControlName="endDate" />
+      </div>
+
+      <div class="col">
+        <label class="checkbox-label">
+          <input type="checkbox" formControlName="isActive" />
+          <span>Đang hoạt động</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn" routerLink="/admin/semester-management">
+        Hủy
+      </button>
+      <button type="submit" class="btn primary" [disabled]="form.invalid">
+        {{ isEdit ? 'Cập nhật' : 'Tạo mới' }}
+      </button>
+    </div>
+  </form>
+</div>

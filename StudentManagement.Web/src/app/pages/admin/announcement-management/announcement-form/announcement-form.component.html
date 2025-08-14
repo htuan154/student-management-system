@@ -1,0 +1,77 @@
+<div class="card" [class.loading]="loading">
+  <div class="card-header">
+    <h2>{{ mode === 'create' ? 'Tạo thông báo' : 'Cập nhật thông báo' }}</h2>
+    <a class="btn" routerLink="/admin/announcement-management">Danh sách</a>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="grid">
+      <div class="col">
+        <label>Tiêu đề <span class="req">*</span></label>
+        <input type="text" formControlName="title" />
+        <div class="err" *ngIf="form.controls.title.touched && form.controls.title.invalid">
+          Bắt buộc, tối đa 200 ký tự
+        </div>
+      </div>
+
+      <div class="col">
+        <label>Người tạo <span class="req">*</span></label>
+        <input type="text" formControlName="createdBy" />
+        <div class="err" *ngIf="form.controls.createdBy.touched && form.controls.createdBy.invalid">
+          Bắt buộc
+        </div>
+      </div>
+
+      <div class="col">
+        <label>Ngày hết hạn</label>
+        <input type="datetime-local" formControlName="expiryDate" />
+      </div>
+    </div>
+
+    <div class="col">
+      <label>Nội dung <span class="req">*</span></label>
+      <textarea rows="6" formControlName="content"></textarea>
+      <div class="err" *ngIf="form.controls.content.touched && form.controls.content.invalid">
+        Bắt buộc
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3>Phạm vi nhận thông báo (tuỳ chọn)</h3>
+    <p class="hint">Nhập danh sách ID phân tách bằng dấu phẩy, ví dụ: <code>r1,r2,r3</code></p>
+
+    <div class="grid">
+      <div class="col">
+        <label>Role IDs (CSV)</label>
+        <input type="text" formControlName="roleIds" placeholder="role1,role2" />
+      </div>
+      <div class="col">
+        <label>Class IDs (CSV)</label>
+        <input type="text" formControlName="classIds" placeholder="cls1,cls2" />
+      </div>
+      <div class="col">
+        <label>Course IDs (CSV)</label>
+        <input type="text" formControlName="courseIds" placeholder="course1,course2" />
+      </div>
+      <div class="col">
+        <label>User IDs (CSV)</label>
+        <input type="text" formControlName="userIds" placeholder="user1,user2" />
+      </div>
+    </div>
+
+    <div class="row" *ngIf="mode==='edit'">
+      <label class="chk">
+        <input type="checkbox" formControlName="overwriteDetails" />
+        Ghi đè toàn bộ chi tiết cũ (xoá rồi tạo lại)
+      </label>
+    </div>
+
+    <div class="actions">
+      <button class="btn" type="button" routerLink="/admin/announcement-management">Huỷ</button>
+      <button class="btn primary" type="submit" [disabled]="saving">
+        {{ saving ? 'Đang lưu...' : (mode === 'create' ? 'Tạo' : 'Cập nhật') }}
+      </button>
+    </div>
+  </form>
+</div>

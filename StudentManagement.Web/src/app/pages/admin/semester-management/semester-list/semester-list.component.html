@@ -1,0 +1,35 @@
+<div class="card">
+  <div class="card-header">
+    <h2>Danh sách học kỳ</h2>
+    <a class="btn primary" [routerLink]="['/admin/semester-management/new']">Thêm học kỳ</a>
+  </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Tên học kỳ</th>
+        <th>Năm học</th>
+        <th>Ngày bắt đầu</th>
+        <th>Ngày kết thúc</th>
+        <th>Trạng thái</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let s of semesters">
+        <td>{{ s.semesterName }}</td>
+        <td>{{ s.academicYear }}</td>
+        <td>{{ s.startDate | date:'dd/MM/yyyy' }}</td>
+        <td>{{ s.endDate | date:'dd/MM/yyyy' }}</td>
+        <td>
+          <span [class.active]="s.isActive" [class.inactive]="!s.isActive">
+            {{ s.isActive ? 'Đang hoạt động' : 'Không hoạt động' }}
+          </span>
+        </td>
+        <td>
+          <a [routerLink]="['/admin/semester-management/edit', s.semesterId]" class="btn">Sửa</a>
+          <button (click)="deleteSemester(s.semesterId)" class="btn danger">Xóa</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

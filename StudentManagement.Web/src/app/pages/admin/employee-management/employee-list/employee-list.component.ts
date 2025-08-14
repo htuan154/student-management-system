@@ -37,6 +37,7 @@ export class EmployeeListComponent implements OnInit {
       }
     });
   }
+  trackById = (_: number, e: Employee) => e.employeeId;
 
   deleteEmployee(id: string): void {
     if (confirm('Are you sure you want to delete this employee?')) {

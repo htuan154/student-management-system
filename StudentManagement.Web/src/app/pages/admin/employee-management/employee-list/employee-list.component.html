@@ -1,51 +1,77 @@
 <div class="management-container">
+  <!-- Header -->
   <header class="management-header">
-    <h1>Quản lý Nhân viên</h1>
-    <button class="btn btn-primary" routerLink="new">
-      Thêm nhân viên
-    </button>
+    <div class="title-wrap">
+      <h1>Quản lý Nhân viên</h1>
+      <span class="meta-pill">Tổng: {{ employees?.length || 0 }}</span>
+    </div>
+
+    <a routerLink="new" class="btn btn-primary">
+      <i class="fas fa-plus"></i>
+      <span>Thêm mới</span>
+    </a>
   </header>
 
-  <div *ngIf="isLoading" class="loading-indicator">
-    Đang tải dữ liệu...
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="alert info">
+    <i class="fas fa-spinner fa-spin"></i>
+    <span>Đang tải dữ liệu…</span>
   </div>
 
-  <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage }}
+  <!-- Error -->
+  <div *ngIf="errorMessage" class="alert danger">
+    <i class="fas fa-triangle-exclamation"></i>
+    <span>{{ errorMessage }}</span>
   </div>
 
-  <div *ngIf="!isLoading && !errorMessage" class="table-container">
-    <table class="table table-hover">
+  <!-- Table -->
+  <div *ngIf="!isLoading && !errorMessage" class="table-card">
+    <table class="table">
       <thead>
         <tr>
-          <th>Mã nhân viên</th>
+          <th>Mã NV</th>
           <th>Họ và tên</th>
           <th>Email</th>
           <th>Phòng ban</th>
-          <th>Chức vụ</th>
-          <th>Hành động</th>
+          <th class="col-actions">Hành động</th>
         </tr>
       </thead>
+
       <tbody>
-        <tr *ngFor="let employee of employees">
-          <td>{{ employee.employeeId }}</td>
-          <td>{{ employee.fullName }}</td>
-          <td>{{ employee.email }}</td>
-          <td>{{ employee.department || '—' }}</td>
-          <td>{{ employee.position || '—' }}</td>
-          <td class="action-buttons">
-            <button [routerLink]="['edit', employee.employeeId]" class="btn btn-secondary">
-              Edit
-            </button>
-            <button (click)="deleteEmployee(employee.employeeId)" class="btn btn-danger">
-              Delete
-            </button>
+        <tr *ngFor="let e of employees; trackBy: trackById">
+          <td>
+            <span class="code">{{ e.employeeId }}</span>
+          </td>
+
+          <td class="name-cell">
+            <span class="avatar">{{ (e.fullName || 'NV')[0] | uppercase }}</span>
+            <span class="name">{{ e.fullName }}</span>
+          </td>
+
+          <td>
+            <a class="link" href="mailto:{{ e.email }}">{{ e.email }}</a>
+          </td>
+
+          <td>
+            <span class="badge badge-id">{{e.department || 'N/A' }}</span>
+          </td>
+
+          <td class="col-actions">
+            <div class="action-buttons">
+              <a [routerLink]="['edit', e.employeeId]" class="btn btn-secondary">
+                <i class="fas fa-edit"></i>
+                <span>Sửa</span>
+              </a>
+              <button (click)="deleteEmployee(e.employeeId)" class="btn btn-danger">
+                <i class="fas fa-trash-alt"></i>
+                <span>Xóa</span>
+              </button>
+            </div>
           </td>
         </tr>
-        <tr *ngIf="employees.length === 0">
-          <td colspan="6" class="text-center">
-            Không có dữ liệu nhân viên để hiển thị.
-          </td>
+
+        <tr *ngIf="employees?.length === 0">
+          <td colspan="5" class="empty">Không có dữ liệu nhân viên để hiển thị.</td>
         </tr>
       </tbody>
     </table>

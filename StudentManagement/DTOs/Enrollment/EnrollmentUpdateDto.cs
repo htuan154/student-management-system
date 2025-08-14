@@ -8,22 +8,19 @@ namespace StudentManagementSystem.DTOs.Enrollment
         public int EnrollmentId { get; set; }
 
         [Required]
-        [StringLength(10)]
         public string StudentId { get; set; } = string.Empty;
 
         [Required]
-        [StringLength(10)]
         public string CourseId { get; set; } = string.Empty;
 
-        [StringLength(10)]
-        public string? TeacherId { get; set; }
 
-        [StringLength(20)]
-        public string? Semester { get; set; }
+        [Required]
+        public int TeacherCourseId { get; set; }
 
-        public int? Year { get; set; }
+        [Required]
+        public int SemesterId { get; set; }
 
-        [StringLength(20)]
-        public string Status { get; set; } = "Enrolled";
+        [Required]
+        public string Status { get; set; } = string.Empty;
     }
 }

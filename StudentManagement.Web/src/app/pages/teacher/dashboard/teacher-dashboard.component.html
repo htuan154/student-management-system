@@ -42,25 +42,32 @@
               <th>Môn học</th>
               <th>Học kỳ</th>
               <th>Năm học</th>
-              <th>Sĩ số</th>
-              <th>Số lượng đậu</th>
-              <th>Số lượng rớt</th>
+              <th>Tổng SV</th>
+              <th>Đậu</th>
+              <th>Rớt</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let stat of courseStatistics">
-              <td>{{ stat.courseId }}</td>
+              <td>{{ stat.courseName }}</td>
               <td>{{ stat.semester }}</td>
-              <td>{{ stat.year }}</td>
+              <td>{{ stat.academicYear }}</td> <!-- ✅ SỬA: Đổi từ stat.year thành stat.academicYear -->
               <td>{{ stat.totalStudents }}</td>
-              <td class="text-success">{{ stat.passedStudents }}</td>
-              <td class="text-danger">{{ stat.failedStudents }}</td>
-            </tr>
-            <tr *ngIf="courseStatistics.length === 0">
-              <td colspan="6" class="text-center">Không có dữ liệu thống kê để hiển thị.</td>
+              <td>{{ stat.passedStudents }}</td>
+              <td>{{ stat.failedStudents }}</td>
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <div class="course-item" *ngFor="let course of courseStatistics">
+      <h4>{{ course.courseName }}</h4>
+      <p>Học kỳ: {{ course.semester }} - Năm học: {{ course.academicYear }}</p>
+      <div class="stats">
+        <span>Tổng SV: {{ course.totalStudents }}</span>
+        <span>Đạt: {{ course.passedStudents }}</span>
+        <span>Không đạt: {{ course.failedStudents }}</span>
       </div>
     </div>
   </div>

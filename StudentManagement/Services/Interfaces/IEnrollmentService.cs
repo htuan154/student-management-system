@@ -14,6 +14,9 @@ namespace StudentManagementSystem.Services.Interfaces
         Task<bool> UpdateAsync(EnrollmentUpdateDto dto);
         Task<bool> DeleteAsync(int enrollmentId);
         Task<IEnumerable<EnrollmentWithScoreDto>> GetStudentEnrollmentsWithScoresAsync(string studentId);
-        Task<IEnumerable<EnrollmentDto>> GetUnscoredEnrollmentsForClassAsync(string courseId, string teacherId);
+        Task<IEnumerable<EnrollmentDto>> GetUnscoredEnrollmentsForClassAsync(int teacherCourseId);
+
+        Task<IEnumerable<EnrollmentDto>> GetByTeacherCourseIdAsync(int teacherCourseId);
+        Task<IEnumerable<EnrollmentDto>> GetBySemesterIdAsync(int semesterId);
     }
 }

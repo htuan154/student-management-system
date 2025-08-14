@@ -1,41 +1,70 @@
 <div class="management-container">
+  <!-- Header -->
   <header class="management-header">
-    <h1>Quản lý Vai trò</h1>
-    <button class="btn btn-primary" routerLink="new">
-      Thêm vai trò
-    </button>
+    <div class="title-wrap">
+      <h1>Quản lý Vai trò</h1>
+      <span class="meta-pill">Tổng: {{ roles?.length || 0 }}</span>
+    </div>
+
+    <a routerLink="new" class="btn btn-primary">
+      <i class="fas fa-plus"></i>
+      <span>Thêm mới</span>
+    </a>
   </header>
 
-  <div *ngIf="isLoading" class="loading-indicator">
-    <p>Đang tải dữ liệu...</p>
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="alert info">
+    <i class="fas fa-spinner fa-spin"></i>
+    <span>Đang tải dữ liệu…</span>
   </div>
 
-  <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage }}
+  <!-- Error -->
+  <div *ngIf="errorMessage" class="alert danger">
+    <i class="fas fa-triangle-exclamation"></i>
+    <span>{{ errorMessage }}</span>
   </div>
 
-  <div *ngIf="!isLoading && !errorMessage" class="table-container">
+  <!-- Table -->
+  <div *ngIf="!isLoading && !errorMessage" class="table-card">
     <table class="table">
       <thead>
         <tr>
-          <th>Mã Vai trò</th>
-          <th>Tên Vai trò</th>
+          <th>Mã vai trò</th>
+          <th>Tên vai trò</th>
           <th>Mô tả</th>
-          <th>Hành động</th>
+          <th class="col-actions">Hành động</th>
         </tr>
       </thead>
+
       <tbody>
-        <tr *ngFor="let role of roles">
-          <td>{{ role.roleId }}</td>
-          <td>{{ role.roleName }}</td>
-          <td>{{ role.description || 'Không có mô tả' }}</td>
-          <td class="action-buttons">
-            <button [routerLink]="['edit', role.roleId]" class="btn btn-secondary">Sửa</button>
-            <button (click)="deleteRole(role.roleId)" class="btn btn-danger">Xóa</button>
+        <tr *ngFor="let r of roles; trackBy: trackById">
+          <td><span class="code">{{ r.roleId }}</span></td>
+
+          <td class="name-cell">
+            <span class="avatar">{{ (r.roleName || 'R')[0] | uppercase }}</span>
+            <span class="name">{{ r.roleName }}</span>
+          </td>
+
+          <td>
+            <span class="muted">{{ r.description || '—' }}</span>
+          </td>
+
+          <td class="col-actions">
+            <div class="action-buttons">
+              <a [routerLink]="['edit', r.roleId]" class="btn btn-secondary">
+                <i class="fas fa-edit"></i>
+                <span>Sửa</span>
+              </a>
+              <button (click)="deleteRole(r.roleId)" class="btn btn-danger">
+                <i class="fas fa-trash-alt"></i>
+                <span>Xóa</span>
+              </button>
+            </div>
           </td>
         </tr>
-        <tr *ngIf="roles.length === 0">
-          <td colspan="4" class="text-center">Không có dữ liệu vai trò để hiển thị.</td>
+
+        <tr *ngIf="roles?.length === 0">
+          <td colspan="4" class="empty">Không có dữ liệu vai trò để hiển thị.</td>
         </tr>
       </tbody>
     </table>

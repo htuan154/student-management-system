@@ -1,134 +1,675 @@
+/* Variables */
+$primary: #1976d2;
+$primary-dark: #1565c0;
+$success: #4caf50;
+$warning: #ff9800;
+$danger: #f44336;
+$info: #2196f3;
+$secondary: #6c757d;
+$light-gray: #f5f5f5;
+$border-color: #e0e0e0;
+$text-dark: #333;
+$text-muted: #666;
+$white: #ffffff;
+$shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+$radius: 8px;
 
-$primary-color: #007bff;
-$secondary-color: #6c757d;
-$danger-color: #dc3545;
-$background-color: #f4f7fa;
-$white: #fff;
-$text-dark: #2c3e50;
-$border-color: #dee2e6;
-$active-status-color: #198754;
-$inactive-status-color: #6c757d;
-
-// Container chính cho trang
-.management-container {
-  padding: 2rem;
-  background-color: $background-color;
-  min-height: 100vh;
-}
-
-// Header của trang
-.management-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-
-  h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: $text-dark;
-  }
-}
-
-// Khung trắng chứa bảng
-.table-container {
-  background-color: $white;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-}
-
-// Bảng dữ liệu
-.table {
+:host {
+  display: block;
   width: 100%;
-  border-collapse: collapse;
-
-  thead tr {
-    background-color: $primary-color;
-    color: $white;
-    text-align: left;
-  }
-
-  th, td {
-    padding: 1rem 1.25rem;
-    vertical-align: middle;
-  }
-
-  tbody tr {
-    border-bottom: 1px solid $border-color;
-    &:last-of-type {
-      border-bottom: none;
-    }
-    &:hover {
-      background-color: #f8f9fa;
-    }
-  }
+  height: 100%;
 }
 
-// Các nút hành động
-.action-buttons {
+.management-container {
+  width: 100%;
+  height: 100%;
   display: flex;
-  gap: 0.5rem;
+  flex-direction: column;
 }
 
-// Style chung cho các nút
-.btn {
-  display: inline-flex;
+/* ✅ Header section */
+.management-header {
+  background: $white;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid $border-color;
+  box-shadow: $shadow;
+  flex-shrink: 0;
+
+  .header-top {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:1rem;
+
+    h1 { margin:0; }
+    .header-stats { display:flex; gap:1.5rem; font-size:.8rem; }
+  }
+
+  .header-actions {
+    display:flex;
+    align-items:center;
+    justify-content:space-between; // tách trái / phải
+    gap:1rem;
+    width:100%;
+
+    .search-box {
+      position:relative;
+      flex:1;                 // chiếm toàn bộ bên trái
+      max-width:600px;
+      margin-right:auto;      // đẩy nút sang phải
+      .search-input {
+        width:100%;
+        padding:0.6rem 2.4rem 0.6rem .9rem;
+        border:2px solid $border-color;
+        border-radius:$radius;
+        font-size:.85rem;
+        &:focus { outline:none; border-color:$primary; box-shadow:0 0 0 3px rgba($primary,.12); }
+      }
+      .search-icon {
+        position:absolute;
+        right:.75rem;
+        top:50%;
+        transform:translateY(-50%);
+        color:$text-muted;
+        font-size:.85rem;
+      }
+    }
+
+    .btn-primary {
+      flex-shrink:0;
+      display:inline-flex;
+      align-items:center;
+      gap:.4rem;
+      background:$primary;
+      padding:.65rem 1.2rem;
+      border-radius:$radius;
+      color:#fff;
+      font-size:.85rem;
+      font-weight:500;
+      text-decoration:none;
+      &:hover { background:$primary-dark; }
+    }
+  }
+}
+
+/* ✅ Filters section */
+.filters-section {
+  background: $white;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid $border-color;
+  display: flex;
+  gap: 2rem;
   align-items: center;
-  gap: 0.5rem;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  text-decoration: none;
+  flex-shrink: 0;
+
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: $text-dark;
+      white-space: nowrap;
+    }
+
+    .filter-select {
+      padding: 0.5rem 2rem 0.5rem 0.75rem;
+      border: 1px solid $border-color;
+      border-radius: $radius;
+      font-size: 0.875rem;
+      background: $white;
+      min-width: 150px;
+      cursor: pointer;
+
+      &:focus {
+        outline: none;
+        border-color: $primary;
+      }
+    }
+  }
 }
 
-.btn-primary {
-  background-color: $primary-color;
-  color: white;
-  &:hover { background-color: darken($primary-color, 10%); }
-}
-.btn-secondary {
-  background-color: $secondary-color;
-  color: white;
-  &:hover { background-color: darken($secondary-color, 10%); }
-}
-.btn-danger {
-  background-color: $danger-color;
-  color: white;
-  &:hover { background-color: darken($danger-color, 10%); }
-}
-
-// Trạng thái người dùng
-.status-active, .status-inactive {
-  padding: 0.25rem 0.6rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: $white;
-}
-
-.status-active {
-  background-color: $active-status-color;
-}
-
-.status-inactive {
-  background-color: $inactive-status-color;
-}
-
-
-// Các chỉ báo và thông báo
-.loading-indicator, .error-message, .text-center {
+/* ✅ Loading & Error states */
+.loading-indicator, .error-message {
+  padding: 3rem 2rem;
   text-align: center;
-  padding: 1.5rem;
+  background: $white;
+  margin: 1rem;
+  border-radius: $radius;
+  box-shadow: $shadow;
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid $border-color;
+    border-top: 4px solid $primary;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+  }
 }
 
 .error-message {
-  color: $danger-color;
-  background-color: lighten($danger-color, 35%);
-  border: 1px solid lighten($danger-color, 30%);
-  border-radius: 5px;
+  color: $danger;
+
+  i {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.table-container {
+  flex: 1;
+  background: $white;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ✅ Desktop table */
+.desktop-table {
+  flex: 1;
+  overflow: auto;
+
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    margin: 0;
+
+    thead {
+      background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
+      color: $white;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+
+      th {
+        padding: 1rem 0.75rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: none;
+        white-space: nowrap;
+
+        // ✅ Column widths optimized
+        &.col-id { width: 8%; min-width: 100px; }
+        &.col-username { width: 18%; min-width: 160px; }
+        &.col-email { width: 22%; min-width: 200px; }
+        &.col-role { width: 12%; min-width: 100px; }
+        &.col-linked { width: 15%; min-width: 120px; }
+        &.col-status { width: 10%; min-width: 100px; }
+        &.col-actions { width: 15%; min-width: 200px; } // ✅ Giảm width cho actions
+
+        .select-all-checkbox {
+          margin-right: 0.5rem;
+        }
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid $border-color;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background: rgba($primary, 0.05);
+        }
+
+        &.selected {
+          background: rgba($primary, 0.1);
+        }
+
+        td {
+          padding: 1rem 0.75rem;
+          vertical-align: middle;
+          border: none;
+
+          // ✅ Username cell with avatar
+          .username-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+
+            .avatar {
+              width: 32px;
+              height: 32px;
+              border-radius: 50%;
+              background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
+              color: $white;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-weight: 600;
+              font-size: 0.875rem;
+              flex-shrink: 0;
+            }
+          }
+
+          // ✅ Role badges
+          .role-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+
+            &[data-role="R001"] { background: #e3f2fd; color: #1976d2; }
+            &[data-role="R002"] { background: #f3e5f5; color: #7b1fa2; }
+            &[data-role="R003"] { background: #e8f5e8; color: #388e3c; }
+            &[data-role="R004"] { background: #fff3e0; color: #f57c00; }
+          }
+
+          // ✅ Link badges
+          .linked-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+          }
+
+          .link-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+
+            &.student { background: #e3f2fd; color: #1976d2; }
+            &.teacher { background: #f3e5f5; color: #7b1fa2; }
+            &.employee { background: #e8f5e8; color: #388e3c; }
+            &.none { background: #f5f5f5; color: #666; }
+
+            i {
+              font-size: 0.75rem;
+            }
+          }
+
+          // ✅ Status indicators
+          .status-active, .status-inactive {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            font-size: 0.8rem;
+
+            i {
+              font-size: 1rem;
+            }
+          }
+
+          .status-active {
+            color: $success;
+          }
+
+          .status-inactive {
+            color: $danger;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* ✅ Action buttons - compact và clean */
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-start;
+  flex-wrap: nowrap; // ✅ Không wrap để giữ trong 1 hàng
+
+  .btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    min-height: 32px;
+    min-width: 70px; // ✅ Min width để đồng đều
+    justify-content: center;
+
+    i {
+      font-size: 0.875rem;
+      flex-shrink: 0;
+    }
+
+    .btn-text {
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    // ✅ Button variants - màu sắc rõ ràng
+    &.btn-info {
+      background: $info;
+      color: $white;
+      &:hover {
+        background: darken($info, 8%);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba($info, 0.3);
+      }
+    }
+
+    &.btn-warning {
+      background: $warning;
+      color: $white;
+      &:hover {
+        background: darken($warning, 8%);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba($warning, 0.3);
+      }
+    }
+
+    &.btn-danger {
+      background: $danger;
+      color: $white;
+      &:hover {
+        background: darken($danger, 8%);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba($danger, 0.3);
+      }
+    }
+  }
+}
+
+/* ✅ Mobile responsive */
+.mobile-cards {
+  display: none;
+}
+
+/* ✅ Bulk actions */
+.bulk-actions {
+  background: $white;
+  padding: 1rem 2rem;
+  border-top: 1px solid $border-color;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+
+  .selected-count {
+    font-weight: 500;
+    color: $primary;
+    font-size: 0.875rem;
+  }
+
+  .bulk-buttons {
+    display: flex;
+    gap: 0.5rem;
+
+    .btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      border: none;
+      border-radius: $radius;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+
+      &.btn-danger {
+        background: $danger;
+        color: $white;
+        &:hover {
+          background: darken($danger, 10%);
+          transform: translateY(-1px);
+          box-shadow: 0 3px 8px rgba($danger, 0.3);
+        }
+      }
+    }
+  }
+}
+
+/* ✅ Pagination */
+.pagination-container {
+  background: $white;
+  padding: 1rem 2rem;
+  border-top: 1px solid $border-color;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+
+  .pagination-info {
+    font-size: 0.875rem;
+    color: $text-muted;
+  }
+
+  .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .btn {
+      padding: 0.5rem 1rem;
+      background: $white;
+      border: 1px solid $border-color;
+      border-radius: $radius;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover:not(:disabled) {
+        background: $primary;
+        color: $white;
+        border-color: $primary;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    .page-info {
+      font-weight: 500;
+      color: $text-dark;
+    }
+  }
+}
+
+/* ✅ No data state */
+.no-data {
+  padding: 4rem 2rem;
+  text-align: center;
+  background: $white;
+  margin: 1rem;
+
+  .no-data-icon {
+    font-size: 4rem;
+    color: $text-muted;
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    margin: 0 0 0.5rem;
+    color: $text-dark;
+  }
+
+  p {
+    color: $text-muted;
+    margin-bottom: 2rem;
+  }
+
+  .btn {
+    background: $primary;
+    color: $white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: $radius;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: $primary-dark;
+      transform: translateY(-2px);
+    }
+  }
+}
+
+/* ✅ Responsive design */
+@media (max-width: 1200px) {
+  .management-header {
+    padding: 1rem 1.5rem;
+
+    .header-actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.75rem;
+
+      .search-box {
+        max-width: none;
+      }
+    }
+  }
+
+  .filters-section {
+    padding: 1rem 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .action-buttons {
+    .btn .btn-text {
+      display: none; // Chỉ hiển thị icon
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  // ✅ Hide desktop table, show mobile cards
+  .desktop-table {
+    display: none;
+  }
+
+  .mobile-cards {
+    display: block;
+    padding: 1rem;
+    flex: 1;
+    overflow-y: auto;
+
+    .user-card {
+      background: $white;
+      border-radius: $radius;
+      box-shadow: $shadow;
+      margin-bottom: 1rem;
+      overflow: hidden;
+
+      .card-header {
+        background: $light-gray;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .user-info {
+          display: flex;
+          gap: 1rem;
+          align-items: center;
+
+          .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: $primary;
+            color: $white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+          }
+
+          .user-details {
+            h3 {
+              margin: 0 0 0.25rem;
+              font-size: 1rem;
+            }
+
+            p {
+              margin: 0 0 0.25rem;
+              color: $text-muted;
+              font-size: 0.875rem;
+            }
+
+            .user-id {
+              font-size: 0.75rem;
+              color: $text-muted;
+            }
+          }
+        }
+      }
+
+      .card-body {
+        padding: 1rem;
+
+        .info-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 0.75rem;
+
+          .label {
+            font-weight: 500;
+            color: $text-dark;
+          }
+        }
+      }
+
+      .card-actions {
+        padding: 1rem;
+        background: $light-gray;
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+
+        .btn {
+          flex: 1;
+          min-width: 60px;
+          justify-content: center;
+        }
+      }
+    }
+  }
+
+  .bulk-actions, .pagination-container {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+/* ✅ Animations */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ✅ Print styles */
+@media print {
+  .management-header .header-actions,
+  .filters-section,
+  .bulk-actions,
+  .action-buttons {
+    display: none !important;
+  }
+
+  .table {
+    font-size: 10px;
+  }
 }

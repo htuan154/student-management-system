@@ -1,0 +1,182 @@
+// ===== Palette =====
+$primary: #3b82f6;
+$primary-600: #2563eb;
+$danger-600: #dc2626;
+$border: #e5e7eb;
+$bg: #f7f9fc;
+$text: #0f172a;
+$muted: #64748b;
+
+// ===== Layout =====
+.management-container {
+  padding: 16px 20px 28px;
+  background: $bg;
+  min-height: 100%;
+}
+
+// ===== Card Container =====
+.card {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(2, 6, 23, 0.04);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+
+  h1, h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: $text;
+  }
+}
+
+// ===== Toolbar =====
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+
+  input {
+    padding: 8px 12px;
+    border: 1px solid $border;
+    border-radius: 8px;
+    min-width: 260px;
+    font-size: 14px;
+
+    &:focus {
+      outline: 2px solid $primary;
+      outline-offset: 2px;
+      border-color: $primary;
+    }
+  }
+}
+
+// ===== Table =====
+.table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead th {
+    background: $primary !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    font-size: 13px;
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  tbody td {
+    padding: 12px;
+    font-size: 14px;
+    color: $text;
+    border-bottom: 1px solid $border;
+    vertical-align: middle;
+  }
+
+  tbody tr:hover {
+    background: #fafcff;
+  }
+}
+
+// ===== Content Styles =====
+.title-cell {
+  .title {
+    font-weight: 600;
+    color: $text;
+    margin-bottom: 4px;
+  }
+
+  .sub {
+    color: $muted;
+    font-size: 12px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 520px;
+  }
+}
+
+// ===== Status & Empty States =====
+.empty {
+  text-align: center;
+  color: $muted;
+  padding: 28px 0;
+  font-style: italic;
+}
+
+.loading {
+  padding: 28px;
+  text-align: center;
+  color: $muted;
+}
+
+.muted {
+  color: $muted;
+}
+
+// ===== Buttons =====
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 13px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: 0.15s ease;
+  text-decoration: none;
+  background: #fff;
+
+  &.primary {
+    background: $primary;
+    color: #fff;
+    border-color: $primary;
+    &:hover { background: $primary-600; }
+  }
+
+  &.danger {
+    background: #fff0f1;
+    border-color: #fecdd3;
+    color: $danger-600;
+    &:hover { background: #ffe4e6; }
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    &:hover {
+      background: #fff;
+    }
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+// ===== Pagination =====
+.pager {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid $border;
+
+  span {
+    font-size: 14px;
+    color: $muted;
+  }
+}

@@ -1,106 +1,102 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+
+import { TeacherCourse } from '../../../../models/teacher-course.model';
+import { Semester } from '../../../../models/Semester.model';
 import { TeacherCourseService } from '../../../../services/teacher-course.service';
+import { SemesterService } from '../../../../services/semester.service';
 import { TeacherService } from '../../../../services/teacher.service';
 import { CourseService } from '../../../../services/course.service';
-import { Teacher, Course } from '../../../../models';
-import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+
 @Component({
   selector: 'app-teacher-course-form',
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    FormsModule,
-    RouterModule
-  ],
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './teacher-course-form.component.html',
   styleUrls: ['./teacher-course-form.component.scss']
 })
 export class TeacherCourseFormComponent implements OnInit {
-  assignmentForm!: FormGroup;
+  form: any; // khai báo form
+
   isEditMode = false;
-  assignmentId: number | null = null;
+  id: number | null = null;
   isLoading = false;
   errorMessage: string | null = null;
 
-  // Data for dropdowns
-  teachers: Teacher[] = [];
-  courses: Course[] = [];
+  teachers: any[] = [];
+  courses: any[] = [];
+  semesters: Semester[] = [];
 
   constructor(
     private fb: FormBuilder,
-    private teacherCourseService: TeacherCourseService,
-    private teacherService: TeacherService,
-    private courseService: CourseService,
+    private route: ActivatedRoute,
     private router: Router,
-    private route: ActivatedRoute
-  ) { }
-
-  ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.assignmentId = +id;
-      this.isEditMode = true;
-    }
-
-    this.initForm();
-    this.loadRelatedData();
-
-    if (this.isEditMode && this.assignmentId) {
-      this.loadAssignmentData(this.assignmentId);
-    }
-  }
-
-  initForm(): void {
-    this.assignmentForm = this.fb.group({
-      teacherId: ['', [Validators.required]],
-      courseId: ['', [Validators.required]],
-      semester: ['', [Validators.maxLength(20)]],
-      year: [null],
+    private teacherCourseService: TeacherCourseService,
+    private semesterService: SemesterService,
+    private teacherService: TeacherService,
+    private courseService: CourseService
+  ) {
+    // Khởi tạo form trong constructor sau khi fb được inject
+    this.form = this.fb.group({
+      teacherId: ['', Validators.required],
+      courseId: ['', Validators.required],
+      semesterId: [null as number | null, Validators.required],
       isActive: [true]
     });
   }
 
-  loadRelatedData(): void {
-    this.teacherService.getAllTeachers().subscribe(data => this.teachers = data);
-    this.courseService.getAllCourses().subscribe(data => this.courses = data);
+  ngOnInit(): void {
+    const param = this.route.snapshot.paramMap.get('id');
+    if (param) {
+      this.id = +param;
+      this.isEditMode = true;
+    }
+    this.loadLookups();
+
+    if (this.isEditMode && this.id) {
+      this.isLoading = true;
+      this.teacherCourseService.getTeacherCourseById(this.id).subscribe({
+        next: (tc: TeacherCourse) => {
+          this.form.patchValue({
+            teacherId: tc.teacherId,
+            courseId: tc.courseId,
+            semesterId: tc.semesterId,
+            isActive: tc.isActive
+          });
+          this.isLoading = false;
+        },
+        error: () => {
+          this.errorMessage = 'Không thể tải dữ liệu phân công.';
+          this.isLoading = false;
+        }
+      });
+    }
   }
 
-  loadAssignmentData(id: number): void {
-    this.isLoading = true;
-    this.teacherCourseService.getTeacherCourseById(id).subscribe({
-      next: (data) => {
-        this.assignmentForm.patchValue(data);
-        this.isLoading = false;
-      },
-      error: () => {
-        this.errorMessage = "Could not load assignment data.";
-        this.isLoading = false;
-      }
-    });
+  loadLookups(): void {
+    this.teacherService.getAllTeachers().subscribe(r => this.teachers = r || []);
+    this.courseService.getAllCourses().subscribe(r => this.courses = r || []);
+    this.semesterService.getAllSemesters().subscribe(r => this.semesters = r || []);
   }
 
-  onSubmit(): void {
-    if (this.assignmentForm.invalid) {
+  submit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
-
     this.isLoading = true;
-    const formData = this.assignmentForm.value;
+    const payload = this.form.value;
 
-    const operation = this.isEditMode
-      ? this.teacherCourseService.updateTeacherCourse(this.assignmentId!, formData)
-      : this.teacherCourseService.createTeacherCourse(formData);
+    const req$ = this.isEditMode && this.id
+      ? this.teacherCourseService.updateTeacherCourse(this.id, payload)
+      : this.teacherCourseService.createTeacherCourse(payload);
 
-    operation.subscribe({
-      next: () => {
-        this.router.navigate(['/admin/assignments']);
-      },
-      error: (err) => {
-        this.errorMessage = `An error occurred. ${err.error?.message || ''}`;
+    req$.subscribe({
+      next: () => this.router.navigate(['/admin/assignments']),
+      error: (e) => {
+        this.errorMessage = e?.error?.message || 'Có lỗi xảy ra.';
         this.isLoading = false;
       }
     });

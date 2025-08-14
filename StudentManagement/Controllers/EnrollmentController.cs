@@ -39,6 +39,20 @@ namespace StudentManagementSystem.Controllers
             return Ok(enrollments);
         }
 
+        [HttpGet("teacher-course/{teacherCourseId}")]
+        public async Task<IActionResult> GetByTeacherCourseId(int teacherCourseId)
+        {
+            var enrollments = await _enrollmentService.GetByTeacherCourseIdAsync(teacherCourseId);
+            return Ok(enrollments);
+        }
+
+        [HttpGet("semester/{semesterId}")]
+        public async Task<IActionResult> GetBySemesterId(int semesterId)
+        {
+            var enrollments = await _enrollmentService.GetBySemesterIdAsync(semesterId);
+            return Ok(enrollments);
+        }
+
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string term)
         {
@@ -71,23 +85,6 @@ namespace StudentManagementSystem.Controllers
             if (!result) return NotFound();
             return Ok();
         }
-        [HttpGet("unscored")]
-        public async Task<IActionResult> GetUnscored()
-        {
-            var enrollments = await _enrollmentService.GetUnscoredAsync();
-            return Ok(enrollments);
-        }
-        [HttpGet("unscored-by-class")]
-        public async Task<IActionResult> GetUnscoredByClass([FromQuery] string courseId, [FromQuery] string teacherId)
-        {
-            if (string.IsNullOrEmpty(courseId) || string.IsNullOrEmpty(teacherId))
-            {
-                return BadRequest("Course ID và Teacher ID là bắt buộc.");
-            }
-
-            var enrollments = await _enrollmentService.GetUnscoredEnrollmentsForClassAsync(courseId, teacherId);
-            return Ok(enrollments);
-        }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
@@ -96,11 +93,40 @@ namespace StudentManagementSystem.Controllers
             if (!result) return NotFound();
             return Ok();
         }
+
+        [HttpGet("unscored")]
+        public async Task<IActionResult> GetUnscored()
+        {
+            var enrollments = await _enrollmentService.GetUnscoredAsync();
+            return Ok(enrollments);
+        }
+
+        [HttpGet("unscored-by-class")]
+        public async Task<IActionResult> GetUnscoredByClass([FromQuery] int teacherCourseId)
+        {
+            if (teacherCourseId <= 0)
+            {
+                return BadRequest("TeacherCourse ID là bắt buộc và phải lớn hơn 0.");
+            }
+
+            var enrollments = await _enrollmentService.GetUnscoredEnrollmentsForClassAsync(teacherCourseId);
+            return Ok(enrollments);
+        }
+
         [HttpGet("student/{studentId}/with-scores")]
         public async Task<IActionResult> GetStudentEnrollmentsWithScores(string studentId)
         {
-            var enrollmentsWithScores = await _enrollmentService.GetStudentEnrollmentsWithScoresAsync(studentId);
-            return Ok(enrollmentsWithScores);
+            try
+            {
+                var data = await _enrollmentService.GetStudentEnrollmentsWithScoresAsync(studentId);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                // TODO: log ex (ex.ToString()) bằng ILogger
+                return Problem(detail: ex.Message, statusCode: 500,
+                    title: "Server error in GetStudentEnrollmentsWithScores");
+            }
         }
     }
 }

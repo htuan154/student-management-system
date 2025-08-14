@@ -18,13 +18,8 @@ namespace StudentManagementSystem.Models
         [StringLength(10)]
         public string CourseId { get; set; } = string.Empty;
 
-        [StringLength(10)]
-        public string? TeacherId { get; set; }
-
-        [StringLength(20)]
-        public string? Semester { get; set; }
-
-        public int? Year { get; set; }
+        // Thêm trường này theo database schema
+        public int? TeacherCourseId { get; set; }
 
         [StringLength(20)]
         public string Status { get; set; } = "Enrolled";
@@ -36,9 +31,13 @@ namespace StudentManagementSystem.Models
         [ForeignKey("CourseId")]
         public virtual Course Course { get; set; } = null!;
 
-        [ForeignKey("TeacherId")]
-        public virtual Teacher? Teacher { get; set; }
-
+        [ForeignKey("TeacherCourseId")]
+        public virtual TeacherCourse? TeacherCourse { get; set; }
         public virtual Score? Score { get; set; }
+        [Required]
+        public int SemesterId { get; set; }
+
+        [ForeignKey("SemesterId")]
+        public virtual Semester Semester { get; set; } = null!;
     }
 }
