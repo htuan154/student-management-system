@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin, of } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 
 import { Course, Enrollment, TeacherCourse } from '../../../models';
 import { CourseService } from '../../../services/course.service';
@@ -41,8 +41,8 @@ export class CourseRegistrationComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const tokenPayload = this.authService.getDecodedToken();
-    this.studentId = tokenPayload?.studentId;
+    const tokenPayload = this.authService.getDecodedToken?.();
+    this.studentId = tokenPayload?.studentId ?? tokenPayload?.sub ?? null;
 
     if (!this.studentId) {
       this.errorMessage = 'Không thể xác định thông tin sinh viên.';
@@ -50,27 +50,36 @@ export class CourseRegistrationComponent implements OnInit {
     }
 
     this.isLoading = true;
-    this.semesterService.getActiveSemesters().pipe(
-      map(sems => sems.map(s => ({
-        semesterId: s.semesterId,
-        semesterName: s.semesterName,
-        academicYear: s.academicYear,
-        startDate: s.startDate,
-        endDate: s.endDate,
-        isActive: s.isActive,
-        courseCount: s.teacherCourses?.length ?? 0
-      }) as StudentSemesterSummary)),
-      switchMap((summaries: StudentSemesterSummary[]) => {
-        this.semesters = summaries.sort((a, b) => a.startDate.localeCompare(b.startDate));
-        const active = this.semesters.find(s => s.isActive);
-        this.selectedSemesterId = active
-          ? active.semesterId
-          : (this.semesters.length ? this.semesters[this.semesters.length - 1].semesterId : null);
 
-        return this.loadInitialData();
+    // Chỉ tải danh sách kỳ học; KHÔNG tự chọn kỳ
+    this.semesterService.getActiveSemesters().pipe(
+      map(sems =>
+        sems.map(
+          s =>
+            ({
+              semesterId: s.semesterId,
+              semesterName: s.semesterName,
+              academicYear: s.academicYear,
+              startDate: s.startDate,
+              endDate: s.endDate,
+              isActive: s.isActive,
+              courseCount: s.teacherCourses?.length ?? 0
+            }) as StudentSemesterSummary
+        )
+      ),
+      map((summaries: StudentSemesterSummary[]) => {
+        this.semesters = summaries.sort((a, b) => (a.startDate || '').localeCompare(b.startDate || ''));
+        // Mặc định không chọn kỳ
+        this.selectedSemesterId = null;
+
+        // Dọn dữ liệu bảng
+        this.availableCourses = [];
+        this.myEnrollments = [];
+        this.teacherCoursesInSem = [];
+        this.isLoading = false;
+        return null;
       })
     ).subscribe({
-      next: () => (this.isLoading = false),
       error: (err: HttpErrorResponse) => {
         console.error(err);
         this.errorMessage = 'Không tải được dữ liệu kỳ học.';
@@ -80,9 +89,13 @@ export class CourseRegistrationComponent implements OnInit {
   }
 
   onSemesterChange(value: string) {
-  this.selectedSemesterId = value ? +value : null;
-  this.loadInitialData().subscribe();
-}
+    this.selectedSemesterId = value ? +value : null;
+    this.successMessage = null;
+    this.errorMessage = null;
+
+    // Chỉ load khi đã có selectedSemesterId
+    this.loadInitialData().subscribe();
+  }
 
   private loadInitialData() {
     if (!this.studentId || !this.selectedSemesterId) {

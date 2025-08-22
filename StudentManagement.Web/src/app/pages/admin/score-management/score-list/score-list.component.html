@@ -18,7 +18,7 @@
     <button (click)="errorMessage = null" class="btn-close">×</button>
   </div>
 
-  <!-- TẦNG 1: CHỌN MÔN HỌC - DẠNG LIST -->
+  <!-- TẦNG 1: CHỌN MÔN HỌC -->
   <div *ngIf="level === 1 && !isLoading" class="level-container">
     <div class="level-header">
       <h2>Chọn môn học</h2>
@@ -51,6 +51,38 @@
           </tr>
         </tbody>
       </table>
+
+      <!-- ⬇️ Footer phân trang cho Level 1 -->
+      <div class="table-footer">
+        <div class="hint">
+          Hiển thị
+          {{ (totalCount === 0) ? 0 : ((currentPage - 1) * pageSize + 1) }}
+          –
+          {{ ((currentPage * pageSize) > totalCount) ? totalCount : (currentPage * pageSize) }}
+          trong tổng số {{ totalCount }} môn học
+        </div>
+
+        <div class="pager">
+          <select class="page-size"
+                  [ngModel]="pageSize"
+                  (ngModelChange)="changePageSize(+$event)">
+            <option [ngValue]="5">5 / trang</option>
+            <option [ngValue]="10">10 / trang</option>
+            <option [ngValue]="20">20 / trang</option>
+            <option [ngValue]="50">50 / trang</option>
+          </select>
+
+          <button class="page-btn" (click)="prev()" [disabled]="currentPage === 1">&laquo;</button>
+          <button class="page-btn"
+                  *ngFor="let p of pages"
+                  (click)="goToPage(p)"
+                  [class.is-active]="currentPage === p">
+            {{ p }}
+          </button>
+          <button class="page-btn" (click)="next()" [disabled]="currentPage >= totalPages">&raquo;</button>
+        </div>
+      </div>
+      <!-- ⬆️ Hết footer -->
     </div>
 
     <div *ngIf="courses.length === 0" class="no-data">
@@ -110,18 +142,8 @@
         </h2>
       </div>
       <div class="header-actions">
-        <button
-          class="btn btn-primary"
-          (click)="navigateToAddScore()"
-          title="Thêm điểm cho sinh viên">
-          ➕ Thêm điểm
-        </button>
-        <button
-          class="btn btn-success"
-          (click)="saveAllScores()"
-          [disabled]="scores.length === 0">
-          💾 Lưu tất cả điểm
-        </button>
+        <button class="btn btn-primary" (click)="navigateToAddScore()" title="Thêm điểm cho sinh viên">➕ Thêm điểm</button>
+        <button class="btn btn-success" (click)="saveAllScores()" [disabled]="scores.length === 0">💾 Lưu tất cả điểm</button>
       </div>
     </div>
 
@@ -144,34 +166,16 @@
             <td>{{ score.studentId }}</td>
             <td>{{ score.fullName }}</td>
             <td>
-              <input
-                type="number"
-                [(ngModel)]="score.processScore"
-                min="0"
-                max="10"
-                step="0.1"
-                class="score-input"
-                (input)="score.totalScore = calculateTotalScore(score); score.isPassed = score.totalScore >= 4">
+              <input type="number" [(ngModel)]="score.processScore" min="0" max="10" step="0.1" class="score-input"
+                     (input)="score.totalScore = calculateTotalScore(score); score.isPassed = score.totalScore >= 4">
             </td>
             <td>
-              <input
-                type="number"
-                [(ngModel)]="score.midtermScore"
-                min="0"
-                max="10"
-                step="0.1"
-                class="score-input"
-                (input)="score.totalScore = calculateTotalScore(score); score.isPassed = score.totalScore >= 4">
+              <input type="number" [(ngModel)]="score.midtermScore" min="0" max="10" step="0.1" class="score-input"
+                     (input)="score.totalScore = calculateTotalScore(score); score.isPassed = score.totalScore >= 4">
             </td>
             <td>
-              <input
-                type="number"
-                [(ngModel)]="score.finalScore"
-                min="0"
-                max="10"
-                step="0.1"
-                class="score-input"
-                (input)="score.totalScore = calculateTotalScore(score); score.isPassed = score.totalScore >= 4">
+              <input type="number" [(ngModel)]="score.finalScore" min="0" max="10" step="0.1" class="score-input"
+                     (input)="score.totalScore = calculateTotalScore(score); score.isPassed = score.totalScore >= 4">
             </td>
             <td class="total-score">{{ score.totalScore?.toFixed(2) || '0.00' }}</td>
             <td>
@@ -180,12 +184,7 @@
               </span>
             </td>
             <td>
-              <button
-                class="btn btn-danger btn-sm"
-                (click)="deleteScore(score.scoreId)"
-                title="Xóa điểm">
-                Xóa
-              </button>
+              <button class="btn btn-danger btn-sm" (click)="deleteScore(score.scoreId)" title="Xóa điểm">Xóa</button>
             </td>
           </tr>
         </tbody>

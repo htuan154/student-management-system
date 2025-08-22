@@ -6,9 +6,8 @@
 
       <div class="top-right">
         <div class="stats">
-          <span>Tổng: <strong>{{ students?.length || 0 }}</strong></span>
+          <span>Tổng: <strong>{{ totalCount }}</strong></span>
           <span class="sep"></span>
-
         </div>
         <a routerLink="new" class="btn btn-primary">
           <i class="fas fa-plus"></i>
@@ -16,10 +15,6 @@
         </a>
       </div>
     </div>
-
-    
-
-
   </header>
 
   <!-- Loading -->
@@ -70,7 +65,6 @@
 
           <td>
             <span class="status active">Hoạt động</span>
-            <!-- đổi class 'inactive' nếu cần -->
           </td>
 
           <td class="col-actions">
@@ -88,12 +82,35 @@
     </table>
 
     <div class="table-footer">
-      <div class="hint">Hiển thị 1–10 trong tổng số {{ students?.length || 0 }} sinh viên</div>
+      <div class="hint">
+        Hiển thị
+        {{ (currentPage - 1) * pageSize + (students.length ? 1 : 0) }}
+        –
+        {{ (currentPage - 1) * pageSize + students.length }}
+        trong tổng số {{ totalCount }} sinh viên
+      </div>
+
       <div class="pager">
-        <button class="page-btn" disabled>&laquo;</button>
-        <button class="page-btn is-active">1</button>
-        <button class="page-btn">2</button>
-        <button class="page-btn">&raquo;</button>
+        <!-- Chọn page size (client) -->
+        <select class="page-size"
+                [ngModel]="pageSize"
+                (ngModelChange)="changePageSize($event)">
+          <option [ngValue]="5">5 / trang</option>
+          <option [ngValue]="10">10 / trang</option>
+          <option [ngValue]="20">20 / trang</option>
+          <option [ngValue]="50">50 / trang</option>
+        </select>
+
+        <button class="page-btn" (click)="prev()" [disabled]="currentPage === 1">&laquo;</button>
+
+        <button class="page-btn"
+                *ngFor="let p of pages"
+                (click)="goToPage(p)"
+                [class.is-active]="currentPage === p">
+          {{ p }}
+        </button>
+
+        <button class="page-btn" (click)="next()" [disabled]="currentPage === totalPages">&raquo;</button>
       </div>
     </div>
   </div>

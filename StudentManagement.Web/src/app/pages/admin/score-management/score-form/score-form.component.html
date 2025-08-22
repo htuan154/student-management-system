@@ -8,11 +8,10 @@
   <div *ngIf="errorMessage" class="warn-message">{{ errorMessage }}</div>
 
   <form [formGroup]="scoreForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading" class="form-body">
-
     <div class="form-group full-width">
       <label for="enrollmentId">Lượt đăng ký (Sinh viên - Môn học)</label>
       <select id="enrollmentId" formControlName="enrollmentId" class="form-control">
-        <option [ngValue]="null" disabled>Chọn một lượt đăng ký</option>
+        <option value="" disabled selected>Chọn một lượt đăng ký</option>
         <option *ngFor="let enrollment of enrollments" [value]="enrollment.enrollmentId">
           {{ enrollment.studentId }} - {{ enrollment.courseId }}
         </option>
@@ -22,22 +21,22 @@
     <div class="score-inputs full-width">
       <div class="form-group">
         <label for="processScore">Điểm quá trình</label>
-        <input id="processScore" type="number" formControlName="processScore" class="form-control">
+        <input id="processScore" type="number" formControlName="processScore" class="form-control" step="0.01" min="0" max="10">
       </div>
 
       <div class="form-group">
         <label for="midtermScore">Điểm giữa kỳ</label>
-        <input id="midtermScore" type="number" formControlName="midtermScore" class="form-control">
+        <input id="midtermScore" type="number" formControlName="midtermScore" class="form-control" step="0.01" min="0" max="10">
       </div>
 
       <div class="form-group">
         <label for="finalScore">Điểm cuối kỳ</label>
-        <input id="finalScore" type="number" formControlName="finalScore" class="form-control">
+        <input id="finalScore" type="number" formControlName="finalScore" class="form-control" step="0.01" min="0" max="10">
       </div>
     </div>
 
     <div class="form-actions">
-      <button type="submit" class="btn btn-primary" [disabled]="scoreForm.invalid || isLoading">
+      <button type="submit" class="btn btn-primary" [disabled]="scoreForm.invalid || isLoading || isSaving">
         {{ isEditMode ? 'Cập nhật' : 'Lưu điểm' }}
       </button>
     </div>

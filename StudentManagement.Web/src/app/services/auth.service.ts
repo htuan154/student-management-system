@@ -1,19 +1,17 @@
+// src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { environment } from '../../environments/environment';
-
 import { LoginDto, TokenResponse, RefreshTokenDto } from '../models/auth';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
   private apiUrl = `${environment.apiUrl}/Auth`;
-
   constructor(private http: HttpClient) {}
 
+  // ---------- Auth APIs ----------
   login(loginData: LoginDto): Observable<TokenResponse> {
     return this.http.post<TokenResponse>(`${this.apiUrl}/login`, loginData).pipe(
       tap(tokens => this.saveTokens(tokens))
@@ -32,128 +30,87 @@ export class AuthService {
     localStorage.removeItem('refresh_token');
   }
 
-  // 🔍 Giải mã token hiện tại
+  // ---------- Helpers ----------
   private decodeToken(): any | null {
     const token = this.getAccessToken();
-    try {
-      return token ? jwtDecode(token) : null;
-    } catch (e) {
-      return null;
+    try { return token ? jwtDecode(token) : null; } catch { return null; }
+  }
+
+  getDecodedToken(): any | null { return this.decodeToken(); }
+
+  /** Đọc 1 claim trong token với nhiều key có thể có */
+  private getClaim(keys: string[]): string | null {
+    const p = this.decodeToken();
+    if (!p) return null;
+    for (const k of keys) {
+      const v = (p as any)[k];
+      if (typeof v === 'string' && v.trim()) return v;
     }
+    return null;
   }
 
-  /**
-   * Lấy thông tin từ access token đã giải mã.
-   * Dùng để lấy các thông tin như studentId, username...
-   */
-  getDecodedToken(): any | null {
-    return this.decodeToken();
-  }
-
-  /**
-   * Lấy vai trò người dùng hiện tại từ access token.
-   */
   getUserRole(): string | null {
-    const decoded = this.decodeToken();
-    return decoded?.['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ?? null;
+    return this.getClaim([
+      'http://schemas.microsoft.com/ws/2008/06/identity/claims/role',
+      'role',
+      'roles'
+    ]);
   }
 
-  /**
-   * Lấy ID người dùng hiện tại từ access token.
-   */
-  getCurrentUserId(): string | null {
-    const decoded = this.decodeToken();
-    if (!decoded) return null;
-
-    // Thử các trường phổ biến cho user ID trong JWT token
-    return decoded.sub ||
-           decoded.userId ||
-           decoded.id ||
-           decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] ||
-           decoded.nameid ||
-           null;
+  getUsername(): string | null {
+    return this.getClaim([
+      'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name',
+      'unique_name',
+      'username',
+      'name'
+    ]);
   }
-
-  /**
-   * Lấy username từ access token.
-   */
   getCurrentUsername(): string | null {
-    const decoded = this.decodeToken();
-    if (!decoded) return null;
-
-    return decoded.username ||
-           decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] ||
-           decoded.name ||
-           null;
+    return this.getUsername();
   }
 
-  /**
-   * Lấy email từ access token.
-   */
+  /** Quan trọng: chuẩn hoá lấy UserId */
+  getCurrentUserId(): string | null {
+    return this.getClaim([
+      'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier',
+      'nameidentifier',
+      'nameid',
+      'sub',
+      'userId',
+      'uid',
+      'id'
+    ]);
+  }
+  // alias
+  getUserId(): string | null { return this.getCurrentUserId(); }
+
+  getTeacherId(): string | null {
+    return this.getClaim(['teacherId', 'TeacherId', 'tId']);
+  }
+  getStudentId(): string | null {
+    return this.getClaim(['studentId', 'StudentId', 'sId']);
+  }
+
   getCurrentUserEmail(): string | null {
-    const decoded = this.decodeToken();
-    if (!decoded) return null;
-
-    return decoded.email ||
-           decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] ||
-           null;
+    return this.getClaim([
+      'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress',
+      'email'
+    ]);
   }
 
-  /**
-   * Kiểm tra người dùng đã đăng nhập hay chưa (token còn hạn hay không).
-   */
   isAuthenticated(): boolean {
-    const decoded = this.decodeToken();
-    if (!decoded || !decoded.exp) return false;
-    return decoded.exp * 1000 > Date.now();
+    const p = this.decodeToken();
+    return !!(p?.exp && p.exp * 1000 > Date.now());
   }
 
-  /**
-   * Lấy access token hiện tại từ localStorage.
-   */
-  getAccessToken(): string | null {
-    return localStorage.getItem('access_token');
-  }
+  getAccessToken(): string | null { return localStorage.getItem('access_token'); }
+  getRefreshToken(): string | null { return localStorage.getItem('refresh_token'); }
 
-  /**
-   * Lấy refresh token hiện tại từ localStorage.
-   */
-  getRefreshToken(): string | null {
-    return localStorage.getItem('refresh_token');
-  }
+  hasRole(role: string): boolean { return this.getUserRole() === role; }
+  isAdmin(): boolean { return this.hasRole('Admin') || this.hasRole('SuperAdmin'); }
+  isTeacher(): boolean { return this.hasRole('Teacher'); }
+  isStudent(): boolean { return this.hasRole('Student'); }
 
-  /**
-   * Kiểm tra người dùng có vai trò cụ thể hay không.
-   */
-  hasRole(role: string): boolean {
-    const userRole = this.getUserRole();
-    return userRole === role;
-  }
-
-  /**
-   * Kiểm tra người dùng có phải là Admin hay không.
-   */
-  isAdmin(): boolean {
-    return this.hasRole('Admin') || this.hasRole('SuperAdmin');
-  }
-
-  /**
-   * Kiểm tra người dùng có phải là Teacher hay không.
-   */
-  isTeacher(): boolean {
-    return this.hasRole('Teacher');
-  }
-
-  /**
-   * Kiểm tra người dùng có phải là Student hay không.
-   */
-  isStudent(): boolean {
-    return this.hasRole('Student');
-  }
-
-  /**
-   * Lưu access và refresh token vào localStorage.
-   */
   private saveTokens(tokens: TokenResponse): void {
     localStorage.setItem('access_token', tokens.access_token);
     localStorage.setItem('refresh_token', tokens.refresh_token);

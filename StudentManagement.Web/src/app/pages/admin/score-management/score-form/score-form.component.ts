@@ -1,142 +1,101 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ScoreService } from '../../../../services/score.service';
 import { EnrollmentService } from '../../../../services/enrollment.service';
-import { Enrollment } from '../../../../models';
+import { ScoreService } from '../../../../services/score.service';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ReactiveFormsModule } from '@angular/forms';
+type EnrollmentLite = {
+  enrollmentId: number;
+  studentId: string;
+  courseId: string;
+  teacherCourseId?: number | null;
+  student?: { fullName?: string };
+  course?: { courseName?: string };
+};
 
 @Component({
   selector: 'app-score-form',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    FormsModule,
-    RouterModule
-  ],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './score-form.component.html',
   styleUrls: ['./score-form.component.scss']
 })
 export class ScoreFormComponent implements OnInit {
-  scoreForm!: FormGroup;
-  isEditMode = false;
-  scoreId: number | null = null;
+  // trạng thái
   isLoading = false;
+  isSaving = false;
+  isEditMode = false; // template cần biến này
   errorMessage: string | null = null;
 
-  enrollments: Enrollment[] = [];
+  // query params
+  courseId!: string;
+  teacherId!: string;
+  teacherCourseId!: number;
 
-  private courseId: string | null = null;
-  private teacherId: string | null = null;
-  teacherCourseId: number = 0; // ⬅ SỬA: Khởi tạo với 0 thay vì null
+  // form + data
+  scoreForm!: FormGroup;
+  enrollments: EnrollmentLite[] = []; // khớp với template
 
   constructor(
     private fb: FormBuilder,
-    private scoreService: ScoreService,
-    private enrollmentService: EnrollmentService,
+    private route: ActivatedRoute,
     private router: Router,
-    private route: ActivatedRoute
-  ) {
-    // ✅ KHỞI TẠO FORM NGAY TRONG CONSTRUCTOR
-    this.initForm();
-  }
+    private enrollmentService: EnrollmentService,
+    private scoreService: ScoreService
+  ) {}
 
   ngOnInit(): void {
-    // Lấy params từ query string
-    this.route.queryParams.subscribe(params => {
-      this.courseId = params['courseId'];
-      this.teacherId = params['teacherId'];
-
-      console.log('Query params:', { courseId: this.courseId, teacherId: this.teacherId });
-
-      if (this.courseId && this.teacherId) {
-        this.loadEnrollmentsForClass();
-      }
-    });
-
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.isEditMode = true;
-      this.scoreId = +id;
-      this.loadScoreData(this.scoreId);
-    } else {
-      this.isEditMode = false;
-    }
-  }
-
-  initForm(): void {
     this.scoreForm = this.fb.group({
-      enrollmentId: [{ value: null, disabled: this.isEditMode }, Validators.required],
+      enrollmentId: [null, Validators.required],
       processScore: [null, [Validators.min(0), Validators.max(10)]],
       midtermScore: [null, [Validators.min(0), Validators.max(10)]],
-      finalScore: [null, [Validators.min(0), Validators.max(10)]]
+      finalScore:   [null, [Validators.min(0), Validators.max(10)]],
     });
-  }
 
-  loadEnrollmentsForClass(): void {
+    const qp = this.route.snapshot.queryParamMap;
+    this.courseId = qp.get('courseId') || '';
+    this.teacherId = qp.get('teacherId') || '';
+
     if (!this.courseId || !this.teacherId) {
-      this.errorMessage = "URL không hợp lệ, thiếu mã môn học hoặc mã giảng viên.";
+      this.errorMessage = 'URL không hợp lệ: thiếu courseId hoặc teacherId.';
       return;
     }
 
-    this.isLoading = true;
+    this.loadData();
+  }
 
-    // ✅ SỬA: Sử dụng method từ enrollment service
+  private loadData(): void {
+    this.isLoading = true;
+    this.errorMessage = null;
+
+    // 1) Resolve TeacherCourseId từ teacherId + courseId
     this.enrollmentService.getTeacherCourseByIds(this.teacherId, this.courseId).subscribe({
-      next: (teacherCourse) => {
-        if (!teacherCourse) {
-          this.errorMessage = "Không tìm thấy phân công giảng dạy phù hợp.";
+      next: (tc: any) => {
+        if (!tc || !tc.teacherCourseId) {
           this.isLoading = false;
+          this.errorMessage = 'Không tìm thấy lớp (TeacherCourse) phù hợp.';
           return;
         }
+        this.teacherCourseId = tc.teacherCourseId;
 
-        console.log('Found TeacherCourse:', teacherCourse);
-        this.teacherCourseId = teacherCourse.teacherCourseId;
-
-        // Lấy sinh viên chưa có điểm
-        this.loadUnscoredStudents(this.teacherCourseId);
+        // 2) Lấy danh sách ENROLLMENT CHƯA CÓ ĐIỂM
+        this.enrollmentService.getUnscoredEnrollmentsForClass(this.teacherCourseId).subscribe({
+          next: (rows) => {
+            // rows thường có kiểu Enrollment[] -> ép về EnrollmentLite để tránh TS2322
+            this.enrollments = (rows || []) as unknown as EnrollmentLite[];
+            this.isLoading = false;
+          },
+          error: (err) => {
+            console.error('getUnscoredEnrollmentsForClass error', err);
+            this.errorMessage = 'Không tải được danh sách lượt đăng ký.';
+            this.isLoading = false;
+          }
+        });
       },
-      error: (error) => {
-        console.error('Error finding teacher course:', error);
-        this.errorMessage = "Không thể tìm thông tin phân công giảng dạy.";
-        this.isLoading = false;
-      }
-    });
-  }
-
-  loadUnscoredStudents(teacherCourseId: number): void {
-    this.enrollmentService.getUnscoredEnrollmentsForClass(teacherCourseId).subscribe({
-      next: (enrollments) => {
-        console.log('Unscored enrollments:', enrollments);
-        this.enrollments = enrollments;
-        this.isLoading = false;
-
-        if (enrollments.length === 0) {
-          this.errorMessage = "Tất cả sinh viên trong lớp này đã được nhập điểm.";
-        } else {
-          this.errorMessage = null;
-        }
-      },
-      error: (error) => {
-        console.error('Error getting unscored enrollments:', error);
-        this.errorMessage = "Không thể tải danh sách sinh viên chưa có điểm.";
-        this.isLoading = false;
-      }
-    });
-  }
-
-  loadScoreData(id: number): void {
-    this.isLoading = true;
-    this.scoreService.getScoreById(id).subscribe({
-      next: (scoreData) => {
-        this.scoreForm.patchValue(scoreData);
-        this.isLoading = false;
-      },
-      error: () => {
-        this.errorMessage = "Không thể tải dữ liệu điểm.";
+      error: (err) => {
+        console.error('getTeacherCourseByIds error', err);
+        this.errorMessage = 'Không xác định được lớp (TeacherCourse).';
         this.isLoading = false;
       }
     });
@@ -147,25 +106,27 @@ export class ScoreFormComponent implements OnInit {
       this.scoreForm.markAllAsTouched();
       return;
     }
+    this.isSaving = true;
+    const v = this.scoreForm.value;
 
-    this.isLoading = true;
-    const formData = this.scoreForm.getRawValue();
+    const payload = {
+      enrollmentId: v.enrollmentId,
+      processScore: v.processScore ?? null,
+      midtermScore: v.midtermScore ?? null,
+      finalScore:   v.finalScore ?? null
+    };
 
-    console.log('Form data:', formData);
-
-    const operation = this.isEditMode
-      ? this.scoreService.updateScore(this.scoreId!, formData)
-      : this.scoreService.createScore(formData);
-
-    operation.subscribe({
+    this.scoreService.createScore(payload).subscribe({
       next: () => {
-        alert('Lưu điểm thành công!');
-        this.router.navigate(['/admin/scores']);
+        this.isSaving = false;
+        // reload lại danh sách "chưa có điểm" để item vừa nhập biến mất
+        this.loadData();
+        this.scoreForm.reset();
       },
       error: (err) => {
-        console.error('Error saving score:', err);
-        this.errorMessage = `Đã có lỗi xảy ra. ${err.error?.message || ''}`;
-        this.isLoading = false;
+        console.error('createScore error', err);
+        this.errorMessage = 'Lưu điểm thất bại. Vui lòng thử lại.';
+        this.isSaving = false;
       }
     });
   }

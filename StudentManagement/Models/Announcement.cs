@@ -17,7 +17,7 @@ namespace StudentManagementSystem.Models
         public string Content { get; set; } = string.Empty;
 
         [Required]
-        [StringLength(10)]
+        [StringLength(100)]
         public string CreatedBy { get; set; } = string.Empty;
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;

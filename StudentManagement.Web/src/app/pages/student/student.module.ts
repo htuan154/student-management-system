@@ -11,6 +11,7 @@ import { MyScoresComponent } from './my-scores/my-scores.component';
 import { CourseRegistrationComponent } from './course-registration/course-registration.component';
 import { ProfileStudentComponent } from './profile/profilestudent.component';
 import { ScheduleComponent } from './schedule/schedule.component';
+import { StudentAnnouncementsComponent } from './announcements/student-announcements.component';
 @NgModule({
 
   imports: [
@@ -24,7 +25,8 @@ import { ScheduleComponent } from './schedule/schedule.component';
     MyScoresComponent,
     CourseRegistrationComponent,
     ProfileStudentComponent,
-    ScheduleComponent
+    ScheduleComponent,
+    StudentAnnouncementsComponent
   ]
 })
 export class StudentModule { }

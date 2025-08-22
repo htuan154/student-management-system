@@ -2,9 +2,10 @@
   <!-- Header của trang -->
   <header class="management-header">
     <h1>Quản lý Lớp học</h1>
-    <a routerLink="new" class="btn btn-primary">
-      Thêm lớp học
-    </a>
+    <div class="header-actions">
+      <span class="meta-pill">Tổng: {{ totalCount }}</span>
+      <a routerLink="new" class="btn btn-primary">Thêm lớp học</a>
+    </div>
   </header>
 
   <!-- Chỉ báo tải dữ liệu -->
@@ -33,14 +34,13 @@
       </thead>
       <tbody>
         <!-- Lặp qua danh sách lớp học -->
-        <tr *ngFor="let c of classes">
+        <tr *ngFor="let c of classes; trackBy: trackById">
           <td>{{ c.classId }}</td>
           <td>{{ c.className }}</td>
           <td>{{ c.major }}</td>
           <td>{{ c.academicYear }}</td>
           <td>{{ c.semester?.semesterName }}</td>
           <td>
-            <!-- Hiển thị trạng thái với màu sắc tương ứng -->
             <span [ngClass]="{ 'active-status': c.isActive, 'inactive-status': !c.isActive }">
               {{ c.isActive ? 'Hoạt động' : 'Ngưng hoạt động' }}
             </span>
@@ -56,5 +56,37 @@
         </tr>
       </tbody>
     </table>
+
+    <!-- Footer: hiển thị range + pager -->
+    <div class="table-footer">
+      <div class="hint">
+        Hiển thị
+        {{ (currentPage - 1) * pageSize + (classes.length ? 1 : 0) }}
+        –
+        {{ (currentPage - 1) * pageSize + classes.length }}
+        trong tổng số {{ totalCount }} lớp học
+      </div>
+
+      <div class="pager">
+        <!-- chọn page size -->
+        <select class="page-size"
+                [ngModel]="pageSize"
+                (ngModelChange)="changePageSize(+$event)">
+          <option [ngValue]="5">5 / trang</option>
+          <option [ngValue]="10">10 / trang</option>
+          <option [ngValue]="20">20 / trang</option>
+          <option [ngValue]="50">50 / trang</option>
+        </select>
+
+        <button class="page-btn" (click)="prev()" [disabled]="currentPage === 1">&laquo;</button>
+        <button class="page-btn"
+                *ngFor="let p of pages"
+                (click)="goToPage(p)"
+                [class.is-active]="currentPage === p">
+          {{ p }}
+        </button>
+        <button class="page-btn" (click)="next()" [disabled]="currentPage === totalPages">&raquo;</button>
+      </div>
+    </div>
   </div>
 </div>

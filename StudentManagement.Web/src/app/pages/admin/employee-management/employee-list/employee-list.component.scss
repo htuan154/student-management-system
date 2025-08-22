@@ -286,3 +286,64 @@ a:focus {
   outline: 2px solid $primary;
   outline-offset: 2px;
 }
+.table-footer {
+  margin-top: 12px;
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #555;
+  background: #fafafa;
+  border-top: 1px solid #ddd;
+
+  .hint {
+    font-style: italic;
+  }
+
+  .pager {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    .page-size {
+      padding: 4px 8px;
+      font-size: 13px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-right: 8px;
+      background: #fff;
+      cursor: pointer;
+
+      &:focus {
+        outline: none;
+        border-color: #3b82f6;
+      }
+    }
+
+    .page-btn {
+      padding: 4px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.2s;
+
+      &:hover:not(:disabled) {
+        background: #f0f0f0;
+      }
+
+      &.is-active {
+        background: #3b82f6;
+        color: #fff;
+        border-color: #3b82f6;
+      }
+
+      &:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+    }
+  }
+}

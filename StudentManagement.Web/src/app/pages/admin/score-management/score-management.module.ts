@@ -9,7 +9,6 @@ import { ScoreFormComponent } from './score-form/score-form.component';
 
 @NgModule({
   declarations: [
-    // ❌ XÓA ScoreListComponent và ScoreFormComponent vì chúng là standalone
   ],
   imports: [
     CommonModule,
@@ -17,7 +16,6 @@ import { ScoreFormComponent } from './score-form/score-form.component';
     FormsModule,
     RouterModule,
     ScoreManagementRoutingModule
-    // ❌ KHÔNG import ScoreListComponent vào đây vì nó là standalone component
   ]
 })
 export class ScoreManagementModule { }

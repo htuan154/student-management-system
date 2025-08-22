@@ -11,9 +11,10 @@ export interface Enrollment {
   studentId: string;
   courseId: string;
   teacherCourseId?: number | null;
-  status: string; // "Enrolled", "Dropped", "Completed", etc.
+  status: string;
   semesterId: number;
-
+  teacherName?: string;
+  teacherId?: string;
   // Navigation properties
   student?: Student;
   course?: Course;

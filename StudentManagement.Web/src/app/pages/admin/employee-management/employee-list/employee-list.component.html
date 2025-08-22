@@ -3,7 +3,7 @@
   <header class="management-header">
     <div class="title-wrap">
       <h1>Quản lý Nhân viên</h1>
-      <span class="meta-pill">Tổng: {{ employees?.length || 0 }}</span>
+      <span class="meta-pill">Tổng: {{ totalCount }}</span>
     </div>
 
     <a routerLink="new" class="btn btn-primary">
@@ -39,32 +39,24 @@
 
       <tbody>
         <tr *ngFor="let e of employees; trackBy: trackById">
-          <td>
-            <span class="code">{{ e.employeeId }}</span>
-          </td>
+          <td><span class="code">{{ e.employeeId }}</span></td>
 
           <td class="name-cell">
             <span class="avatar">{{ (e.fullName || 'NV')[0] | uppercase }}</span>
             <span class="name">{{ e.fullName }}</span>
           </td>
 
-          <td>
-            <a class="link" href="mailto:{{ e.email }}">{{ e.email }}</a>
-          </td>
+          <td><a class="link" href="mailto:{{ e.email }}">{{ e.email }}</a></td>
 
-          <td>
-            <span class="badge badge-id">{{e.department || 'N/A' }}</span>
-          </td>
+          <td><span class="badge badge-id">{{ e.department || 'N/A' }}</span></td>
 
           <td class="col-actions">
             <div class="action-buttons">
               <a [routerLink]="['edit', e.employeeId]" class="btn btn-secondary">
-                <i class="fas fa-edit"></i>
-                <span>Sửa</span>
+                <i class="fas fa-edit"></i><span>Sửa</span>
               </a>
               <button (click)="deleteEmployee(e.employeeId)" class="btn btn-danger">
-                <i class="fas fa-trash-alt"></i>
-                <span>Xóa</span>
+                <i class="fas fa-trash-alt"></i><span>Xóa</span>
               </button>
             </div>
           </td>
@@ -75,5 +67,39 @@
         </tr>
       </tbody>
     </table>
+
+    <!-- Footer: hiển thị range + pager -->
+    <div class="table-footer">
+      <div class="hint">
+        Hiển thị
+        {{ (currentPage - 1) * pageSize + (employees.length ? 1 : 0) }}
+        –
+        {{ (currentPage - 1) * pageSize + employees.length }}
+        trong tổng số {{ totalCount }} nhân viên
+      </div>
+
+      <div class="pager">
+        <!-- chọn page size -->
+        <select class="page-size"
+                [ngModel]="pageSize"
+                (ngModelChange)="changePageSize(+$event)">
+          <option [ngValue]="5">5 / trang</option>
+          <option [ngValue]="10">10 / trang</option>
+          <option [ngValue]="20">20 / trang</option>
+          <option [ngValue]="50">50 / trang</option>
+        </select>
+
+        <button class="page-btn" (click)="prev()" [disabled]="currentPage === 1">&laquo;</button>
+
+        <button class="page-btn"
+                *ngFor="let p of pages"
+                (click)="goToPage(p)"
+                [class.is-active]="currentPage === p">
+          {{ p }}
+        </button>
+
+        <button class="page-btn" (click)="next()" [disabled]="currentPage === totalPages">&raquo;</button>
+      </div>
+    </div>
   </div>
 </div>

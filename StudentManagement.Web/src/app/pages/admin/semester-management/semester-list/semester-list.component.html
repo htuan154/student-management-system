@@ -3,6 +3,7 @@
     <h2>Danh sách học kỳ</h2>
     <a class="btn primary" [routerLink]="['/admin/semester-management/new']">Thêm học kỳ</a>
   </div>
+
   <table class="table">
     <thead>
       <tr>
@@ -30,6 +31,41 @@
           <button (click)="deleteSemester(s.semesterId)" class="btn danger">Xóa</button>
         </td>
       </tr>
+      <tr *ngIf="semesters.length === 0">
+        <td colspan="6" class="text-center">Không có dữ liệu học kỳ để hiển thị.</td>
+      </tr>
     </tbody>
   </table>
+
+  <!-- Footer: hiển thị range + pager (client-side như Student) -->
+  <div class="table-footer">
+    <div class="hint">
+      Hiển thị
+      {{ (totalCount === 0) ? 0 : ((currentPage - 1) * pageSize + 1) }}
+      –
+      {{ ((currentPage * pageSize) > totalCount) ? totalCount : (currentPage * pageSize) }}
+      trong tổng số {{ totalCount }} học kỳ
+    </div>
+
+    <div class="pager">
+      <!-- chọn page size -->
+      <select class="page-size"
+              [ngModel]="pageSize"
+              (ngModelChange)="changePageSize(+$event)">
+        <option [ngValue]="5">5 / trang</option>
+        <option [ngValue]="10">10 / trang</option>
+        <option [ngValue]="20">20 / trang</option>
+        <option [ngValue]="50">50 / trang</option>
+      </select>
+
+      <button class="page-btn" (click)="prev()" [disabled]="currentPage === 1">&laquo;</button>
+      <button class="page-btn"
+              *ngFor="let p of pages"
+              (click)="goToPage(p)"
+              [class.is-active]="currentPage === p">
+        {{ p }}
+      </button>
+      <button class="page-btn" (click)="next()" [disabled]="currentPage >= totalPages">&raquo;</button>
+    </div>
+  </div>
 </div>

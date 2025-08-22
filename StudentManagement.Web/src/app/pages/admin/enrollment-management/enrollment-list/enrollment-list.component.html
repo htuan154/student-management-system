@@ -2,20 +2,14 @@
   <!-- Header -->
   <header class="management-header">
     <h1>Quản lý Đăng ký học phần</h1>
-    <a routerLink="new" class="btn btn-primary">
-      Thêm đăng ký
-    </a>
+    <a routerLink="new" class="btn btn-primary">Thêm đăng ký</a>
   </header>
 
   <!-- Loading -->
-  <div *ngIf="isLoading" class="loading-indicator">
-    Đang tải dữ liệu...
-  </div>
+  <div *ngIf="isLoading" class="loading-indicator">Đang tải dữ liệu...</div>
 
   <!-- Error -->
-  <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage }}
-  </div>
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
 
   <!-- Bảng dữ liệu -->
   <div *ngIf="!isLoading && !errorMessage" class="table-container">
@@ -38,8 +32,7 @@
           <td>{{ enrollment.course?.courseName || enrollment.courseId }}</td>
           <td>{{ enrollment.teacherCourseId ?? 'Chưa phân công' }}</td>
           <td>
-            {{ (enrollment.teacherCourseId != null && teacherNames[enrollment.teacherCourseId])
-                || 'N/A' }}
+            {{ (enrollment.teacherCourseId != null && teacherNames[enrollment.teacherCourseId]) || 'N/A' }}
           </td>
           <td>
             {{ (enrollment.semesterId != null && semesterNames[enrollment.semesterId]?.name) || 'N/A' }}
@@ -58,5 +51,45 @@
         </tr>
       </tbody>
     </table>
+
+    <!-- Footer: hiển thị range + pager (giống Student) -->
+    <div class="table-footer">
+      <div class="hint">
+        Hiển thị
+        {{ (totalCount === 0) ? 0 : ((currentPage - 1) * pageSize + 1) }}
+        –
+        {{ (currentPage * pageSize) > totalCount ? totalCount : (currentPage * pageSize) }}
+
+        trong tổng số {{ totalCount }} đăng ký
+      </div>
+
+      <div class="pager">
+        <!-- Chọn page size -->
+        <select class="page-size"
+                [ngModel]="pageSize"
+                (ngModelChange)="changePageSize(+$event)">
+          <option [ngValue]="5">5 / trang</option>
+          <option [ngValue]="10">10 / trang</option>
+          <option [ngValue]="20">20 / trang</option>
+          <option [ngValue]="50">50 / trang</option>
+        </select>
+
+        <!-- Điều hướng -->
+        <button class="page-btn" (click)="prev()" [disabled]="currentPage === 1">&laquo;</button>
+
+        <button class="page-btn"
+                *ngFor="let p of pages"
+                (click)="goToPage(p)"
+                [class.is-active]="currentPage === p">
+          {{ p }}
+        </button>
+
+        <button class="page-btn"
+                (click)="next()"
+                [disabled]="currentPage >= totalPages">
+          &raquo;
+        </button>
+      </div>
+    </div>
   </div>
 </div>

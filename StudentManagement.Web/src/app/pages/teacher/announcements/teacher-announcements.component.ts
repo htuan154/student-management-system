@@ -27,27 +27,13 @@ export class TeacherAnnouncementsComponent implements OnInit {
   userId: string | null = null;
   announcements: UiAnnouncement[] = [];
   filtered: UiAnnouncement[] = [];
+
   searchTerm = '';
   showOnlyUnread = false;
+  hideExpired = false;
 
   private get storageKey(): string {
     return `teacher_read_announcements_${this.userId ?? 'unknown'}`;
-  }
-
-  ngOnInit(): void {
-    const payload = this.auth.getDecodedToken();
-    this.userId =
-      payload?.userId ||
-      payload?.sub ||
-      payload?.id ||
-      payload?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] ||
-      null;
-
-    if (!this.userId) {
-      this.errorMessage = 'Không thể xác định người dùng.';
-      return;
-    }
-    this.loadAnnouncements();
   }
 
   constructor(
@@ -56,57 +42,73 @@ export class TeacherAnnouncementsComponent implements OnInit {
     private auth: AuthService
   ) {}
 
+  ngOnInit(): void {
+    const p = this.auth.getDecodedToken();
+
+    this.userId =
+      p?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] ||
+      p?.userId || p?.sub || p?.id || null;
+
+    if (!this.userId) {
+      this.errorMessage = 'Không thể xác định người dùng.';
+      return;
+    }
+    this.loadAnnouncements();
+  }
+
   loadAnnouncements(): void {
     this.isLoading = true;
     this.errorMessage = null;
 
-    this.annDetails.getUserAnnouncementDetails(this.userId!).pipe(
-      catchError(() => of([] as AnnouncementDetail[]))
-    ).subscribe({
-      next: (details) => {
-        const ids = Array.from(new Set((details || []).map(d => d.announcementId).filter(x => x != null))) as number[];
-        if (ids.length === 0) {
-          this.announcements = [];
-          this.applyFilter();
-          this.isLoading = false;
-          return;
-        }
+    this.annDetails
+      .getUserAnnouncementDetails(this.userId!)
+      .pipe(catchError(() => of([] as AnnouncementDetail[])))
+      .subscribe({
+        next: (details) => {
+          const ids = Array.from(
+            new Set((details || []).map(d => d.announcementId).filter((x): x is number => x != null))
+          );
 
-        forkJoin(ids.map(id =>
-          this.anns.getAnnouncementById(id).pipe(catchError(() => of(null as unknown as Announcement)))
-        )).subscribe({
-          next: (list) => {
-            const readSet = new Set<number>(JSON.parse(localStorage.getItem(this.storageKey) || '[]'));
-            const now = new Date();
-
-            const items: UiAnnouncement[] = (list || [])
-              .filter(a => !!a)
-              // chỉ lấy thông báo chưa hết hạn (hoặc không có expiryDate)
-              .filter(a => !a.expiryDate || new Date(a.expiryDate) >= now)
-              // map UI fields
-              .map(a => ({
-                ...a,
-                isRead: readSet.has(a.announcementId),
-                isExpanded: false
-              }))
-              // sắp xếp mới nhất trước
-              .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
-
-            this.announcements = items;
+          if (ids.length === 0) {
+            this.announcements = [];
             this.applyFilter();
             this.isLoading = false;
-          },
-          error: () => {
-            this.errorMessage = 'Không thể tải nội dung thông báo.';
-            this.isLoading = false;
+            return;
           }
-        });
-      },
-      error: () => {
-        this.errorMessage = 'Không thể tải danh sách thông báo.';
-        this.isLoading = false;
-      }
-    });
+
+          forkJoin(
+            ids.map(id =>
+              this.anns.getAnnouncementById(id).pipe(catchError(() => of(null as unknown as Announcement)))
+            )
+          ).subscribe({
+            next: (list) => {
+              const readSet = new Set<number>(JSON.parse(localStorage.getItem(this.storageKey) || '[]'));
+
+              const items: UiAnnouncement[] = (list || [])
+                .filter(a => !!a)
+
+                .map(a => ({
+                  ...a,
+                  isRead: readSet.has(a.announcementId),
+                  isExpanded: false
+                }))
+                .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
+
+              this.announcements = items;
+              this.applyFilter();
+              this.isLoading = false;
+            },
+            error: () => {
+              this.errorMessage = 'Không thể tải nội dung thông báo.';
+              this.isLoading = false;
+            }
+          });
+        },
+        error: () => {
+          this.errorMessage = 'Không thể tải danh sách thông báo.';
+          this.isLoading = false;
+        }
+      });
   }
 
   toggleExpand(item: UiAnnouncement): void {
@@ -119,17 +121,36 @@ export class TeacherAnnouncementsComponent implements OnInit {
     const set = new Set<number>(JSON.parse(localStorage.getItem(this.storageKey) || '[]'));
     set.add(item.announcementId);
     localStorage.setItem(this.storageKey, JSON.stringify(Array.from(set)));
-    this.applyFilter(); // cập nhật bộ lọc Unread nếu đang bật
+    this.applyFilter();
+  }
+
+
+  private isSameOrAfterToday(dateStr: string): boolean {
+    const d = new Date(dateStr);
+    const dd = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const today = new Date();
+    const t0 = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    return dd >= t0;
   }
 
   applyFilter(): void {
     const kw = this.searchTerm.trim().toLowerCase();
-    const data = this.announcements.filter(a => {
-      const matchKw = !kw || a.title?.toLowerCase().includes(kw) || a.content?.toLowerCase().includes(kw);
+
+    this.filtered = this.announcements.filter(a => {
+      const matchKw =
+        !kw ||
+        a.title?.toLowerCase().includes(kw) ||
+        a.content?.toLowerCase().includes(kw);
+
       const matchUnread = !this.showOnlyUnread || !a.isRead;
-      return matchKw && matchUnread;
+
+      const matchExpired =
+        !this.hideExpired ||
+        !a.expiryDate ||
+        this.isSameOrAfterToday(a.expiryDate);
+
+      return matchKw && matchUnread && matchExpired;
     });
-    this.filtered = data;
   }
 
   clearSearch(): void {
@@ -140,6 +161,6 @@ export class TeacherAnnouncementsComponent implements OnInit {
   isNew(createdAt: string): boolean {
     const created = new Date(createdAt);
     const diff = (Date.now() - +created) / (1000 * 60 * 60 * 24);
-    return diff <= 3; // trong 3 ngày xem là "Mới"
+    return diff <= 3;
   }
 }
