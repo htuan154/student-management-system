@@ -67,8 +67,7 @@ export class AnnouncementService {
     return this.http.get<Announcement[]>(`${this.apiUrl}/expired`);
   }
 
-  // ✅ CHỈ GIỮ 1 HÀM createAnnouncement
-  createAnnouncement(dto: CreateAnnouncementDto): Observable<Announcement> {
+  createAnnouncement(dto: CreateAnnouncementDto) {
     return this.http.post<Announcement>(this.apiUrl, dto);
   }
 

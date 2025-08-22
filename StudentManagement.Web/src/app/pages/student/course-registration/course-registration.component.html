@@ -1,42 +1,38 @@
 <div class="management-container">
   <header class="management-header">
-  <h1>Đăng ký học phần</h1>
+    <h1>Đăng ký học phần</h1>
 
-  <div class="semester-select">
-    <label for="semesterSelect">Kỳ học</label>
+    <div class="semester-select">
+      <label for="semesterSelect">Kỳ học</label>
 
-    <div class="select-wrap" [class.disabled]="isLoading">
-      <select id="semesterSelect"
-              [value]="selectedSemesterId ?? ''"
-              (change)="onSemesterChange($any($event.target).value)"
-              [disabled]="isLoading || !semesters?.length">
-        <option value="">-- Chọn kỳ --</option>
-        <option *ngFor="let s of semesters; trackBy: trackBySemesterId" [value]="s.semesterId">
-          {{ s.academicYear }} · {{ s.semesterName }}
-        </option>
-      </select>
-      <span class="chevron" aria-hidden="true">▾</span>
+      <div class="select-wrap" [class.disabled]="isLoading">
+        <select id="semesterSelect"
+                [value]="selectedSemesterId ?? ''"
+                (change)="onSemesterChange($any($event.target).value)"
+                [disabled]="isLoading || !semesters?.length">
+          <option value="">-- Chọn kỳ --</option>
+          <option *ngFor="let s of semesters; trackBy: trackBySemesterId" [value]="s.semesterId">
+            {{ s.academicYear }} · {{ s.semesterName }}
+          </option>
+        </select>
+        <span class="chevron" aria-hidden="true">▾</span>
+      </div>
+
+      <small class="hint" *ngIf="!isLoading && (!semesters || semesters.length === 0)">
+        Chưa có kỳ học khả dụng.
+      </small>
+      <small class="hint" *ngIf="isLoading">Đang tải kỳ học…</small>
     </div>
+  </header>
 
-    <small class="hint"
-           *ngIf="!isLoading && (!semesters || semesters.length === 0)">
-      Chưa có kỳ học khả dụng.
-    </small>
-    <small class="hint" *ngIf="isLoading">Đang tải kỳ học…</small>
-  </div>
-</header>
-
-
+  <!-- Loading -->
   <div *ngIf="isLoading" class="loading-indicator">
     <p>Đang tải danh sách môn học...</p>
   </div>
 
-  <div *ngIf="successMessage" class="alert alert-success">
-    {{ successMessage }}
-  </div>
-  <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage }}
-  </div>
+  <!-- Alerts -->
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
 
   <!-- Khi chưa chọn kỳ -->
   <div *ngIf="!isLoading && !errorMessage && !selectedSemesterId" class="hint">

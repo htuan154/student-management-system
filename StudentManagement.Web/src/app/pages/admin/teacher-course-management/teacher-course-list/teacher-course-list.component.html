@@ -35,5 +35,40 @@
         </tr>
       </tbody>
     </table>
+
+    <!-- Footer: hiển thị range + pager (client-side như Student) -->
+    <div class="table-footer">
+      <div class="hint">
+        Hiển thị
+        {{ (allAssignments.length === 0) ? 0 : ((currentPage - 1) * pageSize + 1) }}
+        –
+        {{ (currentPage * pageSize) > allAssignments.length
+     ? allAssignments.length
+     : (currentPage * pageSize) }}
+
+        trong tổng số {{ allAssignments.length }} phân công
+      </div>
+
+      <div class="pager">
+        <!-- chọn page size -->
+        <select class="page-size"
+                [ngModel]="pageSize"
+                (ngModelChange)="changePageSize(+$event)">
+          <option [ngValue]="5">5 / trang</option>
+          <option [ngValue]="10">10 / trang</option>
+          <option [ngValue]="20">20 / trang</option>
+          <option [ngValue]="50">50 / trang</option>
+        </select>
+
+        <button class="page-btn" (click)="prev()" [disabled]="currentPage === 1">&laquo;</button>
+        <button class="page-btn"
+                *ngFor="let p of pages"
+                (click)="goToPage(p)"
+                [class.is-active]="currentPage === p">
+          {{ p }}
+        </button>
+        <button class="page-btn" (click)="next()" [disabled]="currentPage >= totalPages">&raquo;</button>
+      </div>
+    </div>
   </div>
 </div>

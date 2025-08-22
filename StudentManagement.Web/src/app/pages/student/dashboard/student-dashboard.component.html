@@ -46,12 +46,10 @@
           </thead>
           <tbody>
             <tr *ngFor="let enrollment of recentEnrollments">
-              <!-- Giả định model Enrollment có chứa các đối tượng lồng nhau -->
+
               <td>{{ enrollment.course?.courseName || enrollment.courseId }}</td>
               <td>
-                {{ enrollment.teacherCourse?.teacher?.teacherId
-                   || enrollment.teacherCourseId
-                   || 'Chưa phân công' }}
+                {{ enrollment.teacherName || enrollment.teacherId || enrollment.teacherCourseId || 'Chưa phân công' }}
               </td>
               <td>{{ enrollment.semester?.semesterName || 'N/A' }}</td>
               <td>{{ enrollment.semester?.academicYear || 'N/A' }}</td>

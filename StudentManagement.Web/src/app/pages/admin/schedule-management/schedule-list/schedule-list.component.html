@@ -122,4 +122,35 @@
       </table>
     </div>
   </div>
+  <!-- Footer: phân trang -->
+<div class="table-footer">
+  <div class="hint">
+    Hiển thị
+    {{ (totalCount === 0) ? 0 : ((currentPage - 1) * pageSize + 1) }}
+    –
+    {{ ((currentPage * pageSize) > totalCount) ? totalCount : (currentPage * pageSize) }}
+    trong tổng số {{ totalCount }} lịch học
+  </div>
+
+  <div class="pager">
+    <select class="page-size"
+            [ngModel]="pageSize"
+            (ngModelChange)="changePageSize(+$event)">
+      <option [ngValue]="5">5 / trang</option>
+      <option [ngValue]="10">10 / trang</option>
+      <option [ngValue]="20">20 / trang</option>
+      <option [ngValue]="50">50 / trang</option>
+    </select>
+
+    <button class="page-btn" (click)="prev()" [disabled]="currentPage === 1">&laquo;</button>
+    <button class="page-btn"
+            *ngFor="let p of pages"
+            (click)="goToPage(p)"
+            [class.is-active]="currentPage === p">
+      {{ p }}
+    </button>
+    <button class="page-btn" (click)="next()" [disabled]="currentPage >= totalPages">&raquo;</button>
+  </div>
+</div>
+
 </div>

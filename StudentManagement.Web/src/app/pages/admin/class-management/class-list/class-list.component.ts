@@ -7,16 +7,25 @@ import { SemesterService } from '../../../../services/semester.service';
 
 import { of, forkJoin } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-class-list',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './class-list.component.html',
   styleUrls: ['./class-list.component.scss']
 })
 export class ClassListComponent implements OnInit {
+  // dữ liệu đầy đủ + dữ liệu theo trang
+  allClasses: any[] = [];
   classes: any[] = [];
+
+  // phân trang (client-side)
+  pageSize = 10;
+  currentPage = 1;
+
+  // UI state
   isLoading = false;
   errorMessage: string | null = null;
 
@@ -29,6 +38,21 @@ export class ClassListComponent implements OnInit {
     this.loadClasses();
   }
 
+  // tổng số bản ghi
+  get totalCount(): number {
+    return this.allClasses.length;
+  }
+
+  // tổng số trang
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.totalCount / this.pageSize));
+  }
+
+  // mảng số trang cho *ngFor
+  get pages(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
   /** Tải danh sách lớp và join thông tin Học kỳ theo semesterId (FE-only) */
   loadClasses(): void {
     this.isLoading = true;
@@ -37,17 +61,21 @@ export class ClassListComponent implements OnInit {
     this.classService.getAllClasses().subscribe({
       next: (data) => {
         const list = (data || []) as any[];
-        this.classes = list;
+        // lưu full để phân trang client
+        this.allClasses = list;
 
         // Lấy các semesterId duy nhất (bỏ null/undefined)
         const ids = Array.from(
           new Set(
-            list.map(c => c?.semesterId ?? c?.semester?.semesterId)
-                .filter((x: any) => x != null)
+            list
+              .map(c => c?.semesterId ?? c?.semester?.semesterId)
+              .filter((x: any) => x != null)
           )
         );
 
         if (ids.length === 0) {
+          this.currentPage = 1;
+          this.applyPagination();       // ⬅️ cắt trang ngay khi không có semester
           this.isLoading = false;
           return;
         }
@@ -63,12 +91,15 @@ export class ClassListComponent implements OnInit {
             const semMap = new Map<number, any>();
             (semList || []).forEach(s => { if (s?.semesterId != null) semMap.set(s.semesterId, s); });
 
-            this.classes = list.map(c => {
+            const merged = list.map(c => {
               const sid = c?.semesterId ?? c?.semester?.semesterId;
               const semester = sid != null ? (semMap.get(sid) || c.semester || null) : c.semester || null;
               return { ...c, semester };
             });
 
+            this.allClasses = merged;
+            this.currentPage = 1;        // reset về trang 1 sau khi merge
+            this.applyPagination();
             this.isLoading = false;
           },
           error: () => {
@@ -84,11 +115,44 @@ export class ClassListComponent implements OnInit {
     });
   }
 
+  /** Cắt mảng theo trang hiện tại */
+  applyPagination(): void {
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    this.classes = this.allClasses.slice(start, end);
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    this.applyPagination();
+  }
+
+  prev(): void {
+    this.goToPage(this.currentPage - 1);
+  }
+
+  next(): void {
+    this.goToPage(this.currentPage + 1);
+  }
+
+  changePageSize(size: number | string): void {
+    this.pageSize = Number(size);
+    this.currentPage = 1;
+    this.applyPagination();
+  }
+
   /** Xoá lớp (giữ nguyên API hiện có) */
   deleteClass(id: number): void {
     if (!confirm('Bạn có chắc muốn xóa lớp này?')) return;
     this.classService.deleteClass(id.toString()).subscribe({
-      next: () => this.loadClasses(),
+      next: () => {
+        // cập nhật client-side để mượt (không bắt buộc)
+        this.allClasses = this.allClasses.filter(c => (c.classId ?? c.id) !== id);
+        const maxPage = Math.max(1, Math.ceil(this.totalCount / this.pageSize));
+        if (this.currentPage > maxPage) this.currentPage = maxPage;
+        this.applyPagination();
+      },
       error: () => alert('Xóa không thành công. Vui lòng thử lại.')
     });
   }

@@ -24,7 +24,7 @@ export class AnnouncementDetailService {
   getAllAnnouncementDetails(): Observable<AnnouncementDetail[]> {
     return this.http.get<AnnouncementDetail[]>(this.apiUrl);
   }
-
+  
   /** Lấy chi tiết thông báo theo ID */
   getAnnouncementDetailById(id: number): Observable<AnnouncementDetail> {
     return this.http.get<AnnouncementDetail>(`${this.apiUrl}/${id}`);

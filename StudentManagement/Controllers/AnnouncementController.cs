@@ -2,7 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StudentManagementSystem.DTOs.Announcement;
 using StudentManagementSystem.Services.Interfaces;
-
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 namespace StudentManagementSystem.Controllers
 {
     [Authorize]
@@ -89,9 +90,13 @@ namespace StudentManagementSystem.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            // Lấy createdBy từ User.Identity.Name hoặc truyền cứng nếu chưa có xác thực
-            var createdBy = User?.Identity?.Name ?? "system";
-            var result = await _announcementService.CreateAsync(dto, createdBy);
+
+            var userId =
+                User?.FindFirst("userId")?.Value ??                              
+                User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ??                 // fallback
+                User?.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ??               // fallback
+                null;
+            var result = await _announcementService.CreateAsync(dto, userId);
             return CreatedAtAction(nameof(GetById), new { id = result.AnnouncementId }, result);
         }
 

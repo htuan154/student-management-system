@@ -3,7 +3,7 @@
   <header class="management-header">
     <div class="title-wrap">
       <h1>Quản lý Giảng viên</h1>
-      <span class="meta-pill">Tổng: {{ teachers?.length || 0 }}</span>
+      <span class="meta-pill">Tổng: {{ totalCount }}</span>
     </div>
 
     <a routerLink="new" class="btn btn-primary">
@@ -39,41 +39,60 @@
 
       <tbody>
         <tr *ngFor="let t of teachers; trackBy: trackById">
-          <td>
-            <span class="code">{{ t.teacherId }}</span>
-          </td>
-
+          <td><span class="code">{{ t.teacherId }}</span></td>
           <td class="name-cell">
             <span class="avatar">{{ (t.fullName || 'GV')[0] | uppercase }}</span>
             <span class="name">{{ t.fullName }}</span>
           </td>
-
           <td>
             <a class="link" href="mailto:{{ t.email }}">{{ t.email }}</a>
           </td>
-
-          <td>
-            <span class="badge badge-id">{{ t.department || 'N/A' }}</span>
-          </td>
-
+          <td><span class="badge badge-id">{{ t.department || 'N/A' }}</span></td>
           <td class="col-actions">
             <div class="action-buttons">
               <a [routerLink]="['edit', t.teacherId]" class="btn btn-secondary">
-                <i class="fas fa-edit"></i>
-                <span>Sửa</span>
+                <i class="fas fa-edit"></i><span>Sửa</span>
               </a>
               <button (click)="deleteTeacher(t.teacherId)" class="btn btn-danger">
-                <i class="fas fa-trash-alt"></i>
-                <span>Xóa</span>
+                <i class="fas fa-trash-alt"></i><span>Xóa</span>
               </button>
             </div>
           </td>
         </tr>
-
         <tr *ngIf="teachers?.length === 0">
           <td colspan="5" class="empty">Không có dữ liệu giảng viên để hiển thị.</td>
         </tr>
       </tbody>
     </table>
+
+    <div class="table-footer">
+      <div class="hint">
+        Hiển thị
+        {{ (currentPage - 1) * pageSize + (teachers.length ? 1 : 0) }}
+        –
+        {{ (currentPage - 1) * pageSize + teachers.length }}
+        trong tổng số {{ totalCount }} giảng viên
+      </div>
+
+      <div class="pager">
+        <select class="page-size"
+                [ngModel]="pageSize"
+                (ngModelChange)="changePageSize(+$event)">
+          <option [ngValue]="5">5 / trang</option>
+          <option [ngValue]="10">10 / trang</option>
+          <option [ngValue]="20">20 / trang</option>
+          <option [ngValue]="50">50 / trang</option>
+        </select>
+
+        <button class="page-btn" (click)="prev()" [disabled]="currentPage === 1">&laquo;</button>
+        <button class="page-btn"
+                *ngFor="let p of pages"
+                (click)="goToPage(p)"
+                [class.is-active]="currentPage === p">
+          {{ p }}
+        </button>
+        <button class="page-btn" (click)="next()" [disabled]="currentPage === totalPages">&raquo;</button>
+      </div>
+    </div>
   </div>
 </div>

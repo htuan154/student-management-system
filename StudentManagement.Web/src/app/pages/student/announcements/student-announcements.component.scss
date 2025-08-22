@@ -1,0 +1,89 @@
+.ann-page {
+  display: grid;
+  gap: 16px;
+
+  .header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 12px;
+
+    h2 { margin: 0; }
+
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+
+      .search {
+        position: relative;
+        input {
+          padding: 8px 36px 8px 12px;
+          border: 1px solid #e3e7ef;
+          border-radius: 8px;
+          outline: none;
+          min-width: 320px;
+        }
+        .clear {
+          position: absolute;
+          right: 6px;
+          top: 50%;
+          transform: translateY(-50%);
+          border: 0;
+          background: transparent;
+          cursor: pointer;
+          opacity: .7;
+        }
+      }
+
+      .filter {
+        display: flex; gap: 6px; align-items: center;
+        user-select: none;
+      }
+    }
+  }
+
+  .loading, .error, .empty { padding: 10px; }
+  .error { color: #c62828; background: #fdecea; border-radius: 6px; }
+  .empty { color: #607d8b; background: #f4f6f8; border-radius: 6px; }
+
+  .list {
+    display: grid; gap: 10px;
+
+    .item {
+      background: #fff;
+      border: 1px solid #e7ecf3;
+      border-radius: 10px;
+      overflow: hidden;
+
+      .item-head {
+        padding: 12px 14px;
+        display: flex; align-items: center; justify-content: space-between;
+        cursor: pointer;
+
+        .title-wrap { display: flex; align-items: center; gap: 8px; }
+        .title { margin: 0; font-size: 16px; font-weight: 600; }
+        .badge {
+          padding: 2px 8px; border-radius: 999px; font-size: 12px;
+          &.new { background: #e3f2fd; color: #1565c0; }
+          &.unread { background: #e8f5e9; color: #1b5e20; }
+        }
+        .meta { display: flex; align-items: center; gap: 10px; color: #607d8b; }
+        .expand-btn { border: none; background: transparent; cursor: pointer; }
+      }
+
+      .content {
+        padding: 12px 16px;
+        border-top: 1px solid #e7ecf3;
+
+        .meta-row {
+          margin-top: 8px;
+          display: flex; gap: 16px; color: #607d8b; font-size: 13px;
+        }
+
+        .rich :is(p, ul, ol) { margin: 0 0 8px; }
+      }
+    }
+  }
+}
+

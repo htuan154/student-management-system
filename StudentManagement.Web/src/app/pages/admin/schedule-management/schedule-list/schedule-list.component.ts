@@ -11,16 +11,23 @@ import { Schedule } from '../../../../models/Schedule.model';
 import { TeacherCourse } from '../../../../models/teacher-course.model';
 import { of, forkJoin } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { FormsModule } from '@angular/forms'; // ⬅️ dùng ngModel
 
 @Component({
   selector: 'app-schedule-list',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './schedule-list.component.html',
   styleUrls: ['./schedule-list.component.scss']
 })
 export class ScheduleListComponent implements OnInit {
-  schedules: Schedule[] = [];
+  allSchedules: Schedule[] = [];   // toàn bộ dữ liệu
+  schedules: Schedule[] = [];      // dữ liệu hiển thị theo trang
+
+  // phân trang
+  currentPage = 1;
+  pageSize = 10;
+
   isLoading = false;
   errorMessage: string | null = null;
 
@@ -40,6 +47,35 @@ export class ScheduleListComponent implements OnInit {
     this.loadSchedules();
   }
 
+  get totalCount(): number {
+    return this.allSchedules.length;
+  }
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.totalCount / this.pageSize));
+  }
+  get pages(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  private applyPagination(): void {
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    this.schedules = this.allSchedules.slice(start, end);
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    this.applyPagination();
+  }
+  prev(): void { this.goToPage(this.currentPage - 1); }
+  next(): void { this.goToPage(this.currentPage + 1); }
+  changePageSize(size: number | string): void {
+    this.pageSize = Number(size);
+    this.currentPage = 1;
+    this.applyPagination();
+  }
+
   /** Tải lịch + join TeacherCourse + fallback lấy Course/Teacher nếu thiếu */
   private loadSchedules(): void {
     this.isLoading = true;
@@ -47,20 +83,20 @@ export class ScheduleListComponent implements OnInit {
 
     this.scheduleService.getAllSchedules().subscribe({
       next: (data) => {
-        const schedules = (data || []) as Schedule[];
+        const source = (data || []) as Schedule[];
 
-        // Lấy danh sách teacherCourseId duy nhất
         const tcIds = Array.from(
-          new Set(schedules.map(s => s.teacherCourseId).filter((x): x is number => x != null))
+          new Set(source.map(s => s.teacherCourseId).filter((x): x is number => x != null))
         );
 
         if (tcIds.length === 0) {
-          this.schedules = schedules;
+          this.allSchedules = source;
+          this.currentPage = 1;
+          this.applyPagination();
           this.isLoading = false;
           return;
         }
 
-        // 1) Lấy TeacherCourse theo từng ID (tránh 405 ở GET /TeacherCourse)
         forkJoin(
           tcIds.map(id =>
             this.teacherCourseService.getTeacherCourseById(id)
@@ -71,7 +107,6 @@ export class ScheduleListComponent implements OnInit {
             const tcMap = new Map<number, TeacherCourse>();
             (tcList || []).forEach(tc => { if (tc && tc.teacherCourseId != null) tcMap.set(tc.teacherCourseId, tc); });
 
-            // 2) Fallback: nếu thiếu course/teacher -> lấy toàn bộ 1 lượt rồi map
             forkJoin({
               courses: this.courseService.getAllCourses().pipe(catchError(() => of([]))),
               teachers: this.teacherService.getAllTeachers().pipe(catchError(() => of([])))
@@ -79,18 +114,18 @@ export class ScheduleListComponent implements OnInit {
               const courseMap = new Map<string, any>((courses || []).map(c => [c.courseId, c]));
               const teacherMap = new Map<string, any>((teachers || []).map(t => [t.teacherId, t]));
 
-              // Bổ sung navigation nếu BE không trả
               tcMap.forEach((tc) => {
                 if (tc && !tc.course && tc.courseId)  (tc as any).course  = courseMap.get(tc.courseId)  || null;
                 if (tc && !tc.teacher && tc.teacherId) (tc as any).teacher = teacherMap.get(tc.teacherId) || null;
               });
 
-              // 3) Gán teacherCourse vào từng schedule để HTML hiển thị
-              this.schedules = schedules.map(s => ({
+              this.allSchedules = source.map(s => ({
                 ...s,
                 teacherCourse: s.teacherCourseId != null ? (tcMap.get(s.teacherCourseId) || null) : null
               })) as Schedule[];
 
+              this.currentPage = 1;
+              this.applyPagination();
               this.isLoading = false;
             });
           },
@@ -109,12 +144,10 @@ export class ScheduleListComponent implements OnInit {
     });
   }
 
-  /** Định dạng giờ HH:mm (ẩn giây) */
   fmt(t?: string): string {
     return (t || '').slice(0, 5);
   }
 
-  /** Xoá lịch học */
   deleteSchedule(id: number): void {
     if (!confirm('Bạn có chắc chắn muốn xóa lịch học này?')) return;
     this.scheduleService.deleteSchedule(id).subscribe({
@@ -126,6 +159,5 @@ export class ScheduleListComponent implements OnInit {
     });
   }
 
-  /** trackBy cho *ngFor */
   trackById = (_: number, s: Schedule) => s.scheduleId;
 }
