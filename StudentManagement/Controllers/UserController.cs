@@ -79,6 +79,32 @@ namespace StudentManagementSystem.Controllers
         {
             var (users, totalCount) = await _userService.GetPagedUsersAsync(pageNumber, pageSize, searchTerm, isActive);
             return Ok(new { users, totalCount });
+
         }
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+
+            var currentUserId = User?.FindFirst("nameidentifier")?.Value
+                ?? User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+
+            var isAdmin = User?.IsInRole("Admin") ?? false;
+            if (!isAdmin && !string.Equals(currentUserId, dto.UserId, StringComparison.OrdinalIgnoreCase))
+                return Forbid();
+
+            var (success, error) = await _userService.ChangePasswordAsync(dto.UserId, dto.CurrentPassword, dto.NewPassword);
+            if (!success)
+            {
+                if (string.Equals(error, "User not found.", StringComparison.OrdinalIgnoreCase))
+                    return NotFound(error);
+                return BadRequest(error);
+            }
+
+            return Ok(new { message = "Đổi mật khẩu thành công." });
+        }
+
     }
 }

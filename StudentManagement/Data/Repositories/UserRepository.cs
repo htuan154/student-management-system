@@ -64,7 +64,15 @@ namespace StudentManagementSystem.Data.Repositories
 
             return (users, totalCount);
         }
+        public async Task<bool> ChangePasswordAsync(string userId, string newPasswordHash)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            if (user == null) return false;
 
+            user.PasswordHash = newPasswordHash;
+            await _context.SaveChangesAsync();
+            return true;
+        }
         public async Task<User?> GetByRefreshTokenAsync(string refreshToken)
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);

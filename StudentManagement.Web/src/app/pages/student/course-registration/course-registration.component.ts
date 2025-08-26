@@ -23,7 +23,7 @@ export class CourseRegistrationComponent implements OnInit {
   myEnrollments: Enrollment[] = [];
   teacherCoursesInSem: TeacherCourse[] = [];
 
-  semesters: StudentSemesterSummary[] = [];
+  semesters: StudentSemesterSummary[] = [];        // CHỈ còn các kỳ đang diễn ra (ongoing)
   selectedSemesterId: number | null = null;
 
   studentId: string | null = null;
@@ -51,32 +51,40 @@ export class CourseRegistrationComponent implements OnInit {
 
     this.isLoading = true;
 
-    // Chỉ tải danh sách kỳ học; KHÔNG tự chọn kỳ
+    // Tải các kỳ đang diễn ra (lọc theo ngày)
     this.semesterService.getActiveSemesters().pipe(
-      map(sems =>
-        sems.map(
-          s =>
-            ({
-              semesterId: s.semesterId,
-              semesterName: s.semesterName,
-              academicYear: s.academicYear,
-              startDate: s.startDate,
-              endDate: s.endDate,
-              isActive: s.isActive,
-              courseCount: s.teacherCourses?.length ?? 0
-            }) as StudentSemesterSummary
-        )
-      ),
+      map(sems => sems.map(s => ({
+        semesterId: s.semesterId,
+        semesterName: s.semesterName,
+        academicYear: s.academicYear,
+        startDate: s.startDate,
+        endDate: s.endDate,
+        isActive: s.isActive,
+        courseCount: s.teacherCourses?.length ?? 0
+      }) as StudentSemesterSummary)),
       map((summaries: StudentSemesterSummary[]) => {
-        this.semesters = summaries.sort((a, b) => (a.startDate || '').localeCompare(b.startDate || ''));
-        // Mặc định không chọn kỳ
-        this.selectedSemesterId = null;
+        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        const ongoing = summaries.filter(s => {
+          const sd = (s.startDate || '').slice(0, 10);
+          const ed = (s.endDate || '').slice(0, 10);
+          if (sd && ed) return sd <= today && today <= ed;
+          // fallback nếu thiếu ngày: dùng cờ isActive
+          return !!s.isActive;
+        });
 
-        // Dọn dữ liệu bảng
+        this.semesters = ongoing.sort((a, b) => (a.startDate || '').localeCompare(b.startDate || ''));
+
+        // Tự động chọn kỳ đang diễn ra (nếu có) và nạp danh sách
+        this.selectedSemesterId = this.semesters.length ? this.semesters[0].semesterId : null;
+
         this.availableCourses = [];
         this.myEnrollments = [];
         this.teacherCoursesInSem = [];
         this.isLoading = false;
+
+        if (this.selectedSemesterId) {
+          this.loadInitialData().subscribe();
+        }
         return null;
       })
     ).subscribe({
@@ -93,8 +101,15 @@ export class CourseRegistrationComponent implements OnInit {
     this.successMessage = null;
     this.errorMessage = null;
 
-    // Chỉ load khi đã có selectedSemesterId
-    this.loadInitialData().subscribe();
+    // Bảo vệ: chỉ cho phép chọn những kỳ đang diễn ra có trong this.semesters
+    if (this.selectedSemesterId && !this.semesters.some(s => s.semesterId === this.selectedSemesterId)) {
+      this.errorMessage = 'Kỳ học không hợp lệ. Chỉ được đăng ký trong kỳ đang diễn ra.';
+      this.selectedSemesterId = null;
+      this.availableCourses = [];
+      this.myEnrollments = [];
+    } else {
+      this.loadInitialData().subscribe();
+    }
   }
 
   private loadInitialData() {
@@ -130,9 +145,20 @@ export class CourseRegistrationComponent implements OnInit {
     return this.myEnrollments.some(e => e.courseId === courseId);
   }
 
+  private isSelectedSemesterOngoing(): boolean {
+    if (!this.selectedSemesterId) return false;
+    return this.semesters.some(s => s.semesterId === this.selectedSemesterId);
+  }
+
   registerForCourse(courseId: string): void {
     if (!this.studentId || !this.selectedSemesterId) {
       this.errorMessage = 'Vui lòng chọn kỳ học trước khi đăng ký.';
+      return;
+    }
+
+    // Chặn đăng ký nếu kỳ không phải đang diễn ra (phòng trường hợp UI bị can thiệp)
+    if (!this.isSelectedSemesterOngoing()) {
+      this.errorMessage = 'Bạn chỉ được đăng ký trong kỳ đang diễn ra.';
       return;
     }
 

@@ -1,86 +1,134 @@
-<div class="dashboard-container">
-  <div class="dashboard-header">
-    <h1 class="dashboard-title">
-      <i class="fas fa-tachometer-alt"></i>
-      Bảng điều khiển
-    </h1>
-    <p class="dashboard-subtitle">Tổng quan hệ thống quản lý</p>
-  </div>
-
-  <!-- Hiển thị khi đang tải dữ liệu -->
-  <div *ngIf="isLoading" class="loading-container">
-    <div class="loading-spinner">
-      <div class="spinner"></div>
+<div class="dashboard">
+  <!-- Header -->
+  <header class="dash-header">
+    <div class="titles">
+      <h1><i class="fas fa-tachometer-alt"></i> Bảng điều khiển</h1>
+      <p class="subtitle">Tổng quan hệ thống quản lý</p>
     </div>
-    <p class="loading-text">Đang tải dữ liệu...</p>
-  </div>
+  </header>
 
-  <!-- Hiển thị khi có lỗi -->
-  <div *ngIf="errorMessage" class="error-container">
-    <div class="error-card">
-      <i class="fas fa-exclamation-triangle"></i>
-      <p class="error-message">{{ errorMessage }}</p>
-    </div>
-  </div>
+  <!-- Loading -->
+  <section *ngIf="isLoading" class="state-block">
+    <div class="spinner"></div>
+    <p>Đang tải dữ liệu…</p>
+  </section>
 
-  <!-- Lưới hiển thị các thẻ thống kê -->
-  <div *ngIf="!isLoading && !errorMessage" class="dashboard-content">
+  <!-- Error -->
+  <section *ngIf="!isLoading && errorMessage" class="state-block error">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>{{ errorMessage }}</p>
+  </section>
+
+  <!-- Content -->
+  <section *ngIf="!isLoading && !errorMessage" class="dash-content">
+    <!-- Stats cards -->
     <div class="stats-grid">
-      <!-- Thẻ Người dùng -->
-      <div class="stat-card users">
-        <div class="card-header">
-          <div class="card-icon">
-            <i class="fas fa-users"></i>
-          </div>
+      <article class="stat-card accent-blue">
+        <div class="icon"><i class="fas fa-users"></i></div>
+        <div class="meta">
+          <div class="value">{{ stats.users | number }}</div>
+          <div class="label">Tổng người dùng</div>
+          <small class="hint">Đang hoạt động</small>
         </div>
-        <div class="card-content">
-          <div class="stat-number">{{ stats.users | number }}</div>
-          <div class="stat-label">Tổng người dùng</div>
-          <div class="stat-description">Đang hoạt động</div>
-        </div>
-      </div>
+      </article>
 
-      <!-- Thẻ Sinh viên -->
-      <div class="stat-card students">
-        <div class="card-header">
-          <div class="card-icon">
-            <i class="fas fa-user-graduate"></i>
-          </div>
+      <article class="stat-card accent-green">
+        <div class="icon"><i class="fas fa-user-graduate"></i></div>
+        <div class="meta">
+          <div class="value">{{ stats.students | number }}</div>
+          <div class="label">Sinh viên</div>
+          <small class="hint">Đã đăng ký</small>
         </div>
-        <div class="card-content">
-          <div class="stat-number">{{ stats.students | number }}</div>
-          <div class="stat-label">Sinh viên</div>
-          <div class="stat-description">Đã đăng ký</div>
-        </div>
-      </div>
+      </article>
 
-      <!-- Thẻ Giáo viên -->
-      <div class="stat-card teachers">
-        <div class="card-header">
-          <div class="card-icon">
-            <i class="fas fa-chalkboard-teacher"></i>
-          </div>
+      <article class="stat-card accent-cyan">
+        <div class="icon"><i class="fas fa-chalkboard-teacher"></i></div>
+        <div class="meta">
+          <div class="value">{{ stats.teachers | number }}</div>
+          <div class="label">Giáo viên</div>
+          <small class="hint">Đang giảng dạy</small>
         </div>
-        <div class="card-content">
-          <div class="stat-number">{{ stats.teachers | number }}</div>
-          <div class="stat-label">Giáo viên</div>
-          <div class="stat-description">Đang giảng dạy</div>
-        </div>
-      </div>
+      </article>
 
-      <!-- Thẻ Khóa học -->
-      <div class="stat-card courses">
-        <div class="card-header">
-          <div class="card-icon">
-            <i class="fas fa-book"></i>
-          </div>
+      <article class="stat-card accent-amber">
+        <div class="icon"><i class="fas fa-book"></i></div>
+        <div class="meta">
+          <div class="value">{{ stats.courses | number }}</div>
+          <div class="label">Khóa học</div>
+          <small class="hint">Đang mở</small>
         </div>
-        <div class="card-content">
-          <div class="stat-number">{{ stats.courses | number }}</div>
-          <div class="stat-label">Khóa học</div>
-          <div class="stat-description">Đang mở</div>
-        </div>
-      </div>
+      </article>
     </div>
-  </div>
+
+    <!-- Top students -->
+    <article class="card">
+      <header class="card-head">
+        <div class="card-title">
+          <i class="fas fa-trophy"></i>
+          <h2>Top sinh viên theo điểm trung bình</h2>
+        </div>
+
+        <div class="pager" aria-label="Điều hướng trang Top sinh viên">
+          <button class="btn" (click)="goPrev()" [disabled]="!canPrev()">
+            <i class="fas fa-angle-left"></i> Trước
+          </button>
+          <span class="page-indicator">Trang <strong>{{ topPage }}</strong> / {{ totalPages }}</span>
+          <button class="btn" (click)="goNext()" [disabled]="!canNext()">
+            Sau <i class="fas fa-angle-right"></i>
+          </button>
+        </div>
+      </header>
+
+      <div class="card-body">
+        <div *ngIf="topLoading" class="inline-loading">
+          <div class="spinner sm"></div>
+          <span>Đang tải Top sinh viên…</span>
+        </div>
+
+        <div *ngIf="topError" class="inline-error">
+          <i class="fas fa-info-circle"></i> {{ topError }}
+        </div>
+
+        <div class="table-wrap" *ngIf="!topLoading && !topError">
+          <table class="table">
+            <colgroup>
+              <col style="width:72px">
+              <col style="width:140px">
+              <col>
+              <col style="width:140px">
+              <col style="width:140px">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>MSSV</th>
+                <th>Họ tên</th>
+                <th>Lớp</th>
+                <th>Điểm TB</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of topStudents; let i = index">
+                <td>{{ (topPage - 1) * topSize + i + 1 }}</td>
+                <td><span class="mono">{{ s.studentId }}</span></td>
+                <td>{{ s.fullName }}</td>
+                <td>{{ s.className }}</td>
+                <td>
+                  <span class="chip"
+                        [class.good]="s.averageScore >= 8"
+                        [class.medium]="s.averageScore >= 6 && s.averageScore < 8"
+                        [class.bad]="s.averageScore < 6">
+                    {{ s.averageScore | number:'1.2-2' }}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="topStudents.length === 0">
+                <td colspan="5" class="empty">Chưa có dữ liệu.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </article>
+  </section>
 </div>

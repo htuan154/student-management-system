@@ -133,6 +133,23 @@ namespace StudentManagementSystem.Services
             await _cacheService.SetDataAsync(cacheKey, dto, System.DateTimeOffset.Now.AddMinutes(10));
             return dto;
         }
+        public async Task<(bool Success, string? Error)> ChangePasswordAsync(string userId, string currentPassword, string newPassword)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null) return (false, "User not found.");
+
+            var ok = BCrypt.Net.BCrypt.Verify(currentPassword, user.PasswordHash);
+            if (!ok) return (false, "Mật khẩu hiện tại không đúng.");
+
+            var newHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            var result = await _userRepository.ChangePasswordAsync(userId, newHash);
+
+            if (!result) return (false, "Không thể đổi mật khẩu.");
+
+            await InvalidateUserCache(user.UserId, user.Username);
+            return (true, null);
+        }
+
 
         public async Task<UserDto?> GetByUsernameAsync(string username)
         {

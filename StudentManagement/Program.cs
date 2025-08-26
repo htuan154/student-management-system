@@ -18,6 +18,7 @@ using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // --- 1. Cấu hình Serilog cơ bản ---
@@ -108,6 +109,7 @@ builder.Services.AddScoped<IAnnouncementRepository, AnnouncementRepository>();
 builder.Services.AddScoped<IAnnouncementDetailRepository, AnnouncementDetailRepository>();
 builder.Services.AddScoped<ISemesterRepository, SemesterRepository>();
 builder.Services.AddScoped<IScheduleRepository, ScheduleRepository>();
+builder.Services.AddScoped<IStudentAnalyticsRepository, StudentAnalyticsRepository>();
 // Service Pattern DI
 builder.Services.AddScoped<IClassService, ClassService>();
 builder.Services.AddScoped<IStudentService, StudentService>();

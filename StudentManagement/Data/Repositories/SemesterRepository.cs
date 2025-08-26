@@ -47,7 +47,13 @@ namespace StudentManagementSystem.Data.Repositories
 
         public async Task<bool> IsSemesterNameExistsAsync(string semesterName, string academicYear, int? excludeSemesterId = null)
         {
-            var query = _dbSet.Where(s => s.SemesterName == semesterName && s.AcademicYear == academicYear);
+             var normName = (semesterName ?? string.Empty).Trim().ToLower();
+            var normYear = (academicYear ?? string.Empty).Trim().ToLower();
+
+            var query = _dbSet.AsNoTracking().Where(s =>
+                s.SemesterName.ToLower() == normName &&
+                s.AcademicYear.ToLower() == normYear
+            );
 
             if (excludeSemesterId.HasValue)
             {

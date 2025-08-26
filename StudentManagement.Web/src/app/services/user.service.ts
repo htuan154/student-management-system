@@ -63,4 +63,8 @@ export class UserService {
     const url = `${this.apiUrl}/${id}`;
     return this.http.delete(url);
   }
+  changePassword(payload: { userId: string; currentPassword: string; newPassword: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/change-password`, payload);
+  }
+
 }

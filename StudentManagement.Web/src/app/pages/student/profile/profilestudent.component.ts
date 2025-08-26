@@ -211,9 +211,18 @@ export class ProfileStudentComponent implements OnInit {
   /**
    * Đổi mật khẩu
    */
+  public onSubmitPassword(): void {
+    this.changePassword();
+  }
+
   changePassword(): void {
+
     if (this.passwordForm.invalid) {
       this.markFormGroupTouched(this.passwordForm);
+      return;
+    }
+    if (!this.userInfo?.userId) {
+      this.passwordError = 'Không xác định được tài khoản người dùng.';
       return;
     }
 
@@ -221,24 +230,28 @@ export class ProfileStudentComponent implements OnInit {
     this.passwordError = '';
     this.passwordMessage = '';
 
-    // Gọi API đổi mật khẩu (cần implement trong AuthService)
-    const passwordData = {
+    const payload = {
+      userId: this.userInfo.userId,
       currentPassword: this.passwordForm.value.currentPassword,
       newPassword: this.passwordForm.value.newPassword
     };
 
-    // Tạm thời mock API call - cần implement thật
-    setTimeout(() => {
-      this.isLoading = false;
-      this.passwordMessage = 'Đổi mật khẩu thành công!';
-      this.passwordForm.reset();
-      this.isChangingPassword = false;
+    this.userService.changePassword(payload).subscribe({
+      next: (res) => {
+        this.isLoading = false;
+        this.passwordMessage = (res?.message || 'Đổi mật khẩu thành công!');
+        this.passwordForm.reset();
+        this.isChangingPassword = false;
 
-      setTimeout(() => {
-        this.passwordMessage = '';
-      }, 3000);
-    }, 1000);
+        setTimeout(() => (this.passwordMessage = ''), 3000);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.passwordError = (err?.error || 'Không thể đổi mật khẩu. Vui lòng thử lại.');
+      }
+    });
   }
+
 
   /**
    * Mark tất cả field trong form đã được touch để hiển thị validation
