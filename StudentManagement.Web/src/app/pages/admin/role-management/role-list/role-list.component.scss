@@ -1,261 +1,244 @@
-// ===== Palette =====
-$primary: #3b82f6;
-$primary-600: #2563eb;
-$danger-600: #dc2626;
-$border: #e5e7eb;
-$bg: #f7f9fc;
-$text: #0f172a;
-$muted: #64748b;
-$table-head: #0b3b7e;
-
-// ===== Layout =====
+/* ==== Layout chung (giống trang Môn học) ==== */
 .management-container {
-  padding: 16px 20px 28px;
-  background: $bg;
-  min-height: 100%;
+  width: 100%;
+  padding: 16px 20px;
+  box-sizing: border-box;
 }
 
+/* Header */
 .management-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 
   .title-wrap {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 
     h1 {
       margin: 0;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 700;
-      color: $text;
+      color: #111827;
     }
 
     .meta-pill {
-      font-size: 12px;
-      color: $muted;
-      background: #eef2ff;
-      border: 1px dashed #c7d2fe;
-      border-radius: 999px;
+      display: inline-block;
       padding: 4px 10px;
+      font-size: 12px;
+      color: #374151;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 999px;
     }
   }
 }
 
-// ===== Alerts =====
-.alert {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 14px;
+/* ==== Card + Table (match Course list) ==== */
+.table-card,
+.table-container {
+  background: #fff;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
-  border: 1px solid $border;
-  background: #fff;
-  margin-bottom: 10px;
-  font-size: 14px;
-
-  &.info {
-    border-color: #bfdbfe;
-    background: #eff6ff;
-    color: #1d4ed8;
-  }
-  &.danger {
-    border-color: #fecaca;
-    background: #fff1f2;
-    color: $danger-600;
-  }
+  overflow: hidden; /* bo góc phần header xanh */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .04);
 }
 
-// ===== Table Card =====
-.table-card {
-  background: #fff;
-  border: 1px solid $border;
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 4px 16px rgba(2, 6, 23, 0.04);
-}
-
+/* Bảng */
 .table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
 
   thead th {
-    background: $primary !important;     // ✅ SỬA: Đổi từ #e8f0ff sang màu xanh đậm
-    color: #ffffff !important;           // ✅ SỬA: Chữ trắng thay vì xanh đậm
-    font-weight: 700;
-    font-size: 13px;
+    background: #3b82f6;           /* xanh như mẫu môn học */
+    color: #fff;
+    font-weight: 600;
     text-align: left;
-    padding: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2); // ✅ SỬA: Border trắng mờ
-
-    &.col-actions {
-      width: 220px;
-      text-align: right;
-    }
+    padding: 12px 16px;
+    white-space: nowrap;
   }
 
   tbody td {
-    padding: 12px;
-    font-size: 14px;
-    color: $text;
-    border-bottom: 1px solid $border;
+    padding: 14px 16px;
+    border-bottom: 1px solid #eef2f7;
     vertical-align: middle;
-
-    &.col-actions { text-align: right; }
+    color: #111827;
   }
 
-  tbody tr:hover { background: #fafcff; }
+  tbody tr:hover {
+    background: #f9fafb;
+  }
 
+  /* Cột hành động nhỏ gọn */
+  .col-actions {
+    width: 1%;
+    white-space: nowrap;
+  }
+
+  /* Ô rỗng */
   .empty {
     text-align: center;
-    color: $muted;
-    padding: 28px 0;
+    color: #6b7280;
+    padding: 24px 12px;
   }
 }
 
-// ===== Cells =====
+/* ==== Thành phần trong các ô ==== */
 .name-cell {
   display: flex;
   align-items: center;
   gap: 10px;
 
   .avatar {
-    width: 32px;           // ✅ SỬA: Lớn hơn giống teacher
+    width: 32px;
     height: 32px;
-    border-radius: 999px;
-    background: $primary;  // ✅ SỬA: Màu xanh primary giống teacher
-    color: #ffffff;        // ✅ SỬA: Chữ trắng giống teacher
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     font-weight: 700;
-    display: grid;
-    place-items: center;
-    font-size: 14px;       // ✅ SỬA: Font lớn hơn giống teacher
+    font-size: 14px;
+    color: #3b82f6;
+    background: #eef2ff;
+    border: 1px solid #e5e7eb;
   }
 
   .name {
     font-weight: 600;
-    color: $text;
+    color: #111827;
   }
 }
 
 .code {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 8px;
-  background: #eef2ff;
-  color: #3730a3;
+   padding: 0;           /* bỏ khoảng đệm của pill */
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: #111827;       /* màu chữ đậm */
   font-weight: 600;
-  font-size: 12px;
-  border: 1px solid #c7d2fe;
 }
 
-.muted { color: $muted; }
+.muted {
+  color: #6b7280;
+}
 
-// ===== Buttons =====
+/* ==== Nút theo mẫu (primary/secondary/danger) ==== */
 .btn {
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all .15s ease;
   display: inline-flex;
   align-items: center;
+  gap: 6px;
+
+  &:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: #fff;
+  border-color: #3b82f6;
+
+  &:hover { filter: brightness(0.95); }
+}
+
+.btn-secondary {
+  background: #fff;
+  color: #1f2937;
+  border-color: #d1d5db;
+
+  &:hover { background: #f9fafb; }
+}
+
+.btn-danger {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fecaca;
+
+  &:hover { background: #fecaca; }
+}
+
+.action-buttons {
+  display: inline-flex;
   gap: 8px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  font-weight: 600;
-  font-size: 13px;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: 0.15s ease;
-  text-decoration: none;
-
-  &-primary {
-    background: $primary;
-    color: #fff;
-    &:hover { background: $primary-600; }
-  }
-
-  &-secondary {
-    background: #fff;
-    border-color: #c7d2fe;
-    color: #3730a3;
-    &:hover { background: #eef2ff; }
-  }
-
-  &-danger {
-    background: #fff0f1;
-    border-color: #fecdd3;
-    color: $danger-600;
-    &:hover { background: #ffe4e6; }
-  }
 }
 
-.action-buttons { display: inline-flex; gap: 8px; }
-
-// ✅ THÊM: Link style giống teacher
-.link {
-  color: $primary-600;
-  text-decoration: none;
-  &:hover {
-    text-decoration: underline;
-    color: $primary;
-  }
-}
-.table-footer {
-  margin-top: 12px;
-  padding: 8px 12px;
+/* ==== Alert (loading/error) ==== */
+.alert {
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  font-size: 14px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  font-size: 13px;
-  color: #555;
-  background: #fafafa;
-  border-top: 1px solid #ddd;
+  gap: 8px;
+
+  &.info {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+  }
+  &.danger {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+  }
+}
+
+/* ==== Footer phân trang (y như trang Môn học) ==== */
+.table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
 
   .hint {
-    font-style: italic;
+    color: #6b7280;
+    font-size: 13px;
   }
 
   .pager {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
 
     .page-size {
-      padding: 4px 8px;
-      font-size: 13px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      margin-right: 8px;
+      height: 32px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
       background: #fff;
-      cursor: pointer;
-
-      &:focus {
-        outline: none;
-        border-color: #3b82f6;
-      }
+      color: #111827;
+      margin-right: 6px;
     }
 
     .page-btn {
-      padding: 4px 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      min-width: 32px;
+      height: 32px;
+      padding: 0 10px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
       background: #fff;
-      font-size: 13px;
+      color: #111827;
       cursor: pointer;
-      transition: background 0.2s;
 
-      &:hover:not(:disabled) {
-        background: #f0f0f0;
-      }
+      &:hover { background: #f3f4f6; }
 
       &.is-active {
         background: #3b82f6;
-        color: #fff;
         border-color: #3b82f6;
-      }
-
-      &:disabled {
-        cursor: not-allowed;
-        opacity: 0.5;
+        color: #fff;
       }
     }
   }

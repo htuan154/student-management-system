@@ -4,25 +4,30 @@
     <a class="btn" routerLink="/admin/schedule-management">Quay lại</a>
   </div>
 
+  <div *ngIf="errorMessage" class="alert error">
+    {{ errorMessage }}
+    <button type="button" class="close" (click)="errorMessage = null">×</button>
+  </div>
+
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
     <div class="grid">
-      <!-- TeacherCourse -->
+      <!-- Phân công: dùng danh sách đã lọc (không bao gồm TC đã có lịch) -->
       <div class="col">
         <label>Giảng viên - Môn học <span class="req">*</span></label>
         <select formControlName="teacherCourseId"
-                [class.invalid]="teacherCourseId?.touched && teacherCourseId?.invalid">
+                [class.invalid]="form.get('teacherCourseId')?.touched && form.get('teacherCourseId')?.invalid">
           <option value="">-- Chọn giảng viên - môn học --</option>
           <option *ngFor="let tc of teacherCourses; trackBy: trackTc"
                   [value]="tc.teacherCourseId">
             {{ labelTC(tc) }}
           </option>
         </select>
-        <div class="field-error" *ngIf="teacherCourseId?.touched && teacherCourseId?.invalid">
+        <div class="field-error" *ngIf="form.get('teacherCourseId')?.touched && form.get('teacherCourseId')?.invalid">
           Vui lòng chọn phân công giảng dạy.
         </div>
       </div>
 
-      <!-- Day of week -->
+      <!-- Thứ -->
       <div class="col">
         <label>Thứ <span class="req">*</span></label>
         <select formControlName="dayOfWeek">
@@ -30,40 +35,42 @@
         </select>
       </div>
 
-      <!-- Time range -->
-      <div class="col inline">
-        <label>Thời gian <span class="req">*</span></label>
-        <div class="time-group">
-          <input class="time" type="time" formControlName="startTime" />
-          <span class="time-sep">—</span>
-          <input class="time" type="time" formControlName="endTime" />
-        </div>
-        <div class="field-error" *ngIf="form.errors?.['timeRange']">
-          {{ form.errors?.['timeRange'] }}
+      <!-- Khung giờ: 4 option cố định -->
+      <div class="col">
+        <label>Khung giờ <span class="req">*</span></label>
+        <select formControlName="timeSlot">
+          <option value="">-- Chọn khung giờ --</option>
+          <option *ngFor="let slot of timeSlots" [value]="slot.value">
+            {{ slot.label }}
+          </option>
+        </select>
+        <div class="field-error" *ngIf="form.get('timeSlot')?.touched && form.get('timeSlot')?.invalid">
+          Vui lòng chọn khung giờ.
         </div>
       </div>
 
-      <!-- Room -->
+      <!-- Phòng -->
       <div class="col">
         <label>Phòng</label>
         <input type="text" formControlName="roomNumber" placeholder="VD: A101" />
       </div>
 
-      <!-- Location -->
+      <!-- Địa điểm -->
       <div class="col">
         <label>Địa điểm</label>
-        <input type="text" formControlName="location" placeholder="VD: CS1, CS2..." />
+        <input type="text" formControlName="location" placeholder="VD: Cơ sở 1" />
       </div>
 
-      <!-- Actions -->
       <div class="actions">
-        <a class="btn" routerLink="/admin/schedule-management">Hủy</a>
+        <a class="btn" (click)="cancel()">Hủy</a>
         <button type="submit" class="btn primary" [disabled]="form.invalid || isLoading">
-          {{ isLoading ? 'Đang lưu...' : (isEdit ? 'Cập nhật' : 'Tạo mới') }}
+          {{ isEdit ? 'Cập nhật' : 'Tạo mới' }}
         </button>
       </div>
-
-      <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
     </div>
   </form>
+
+  <div class="overlay" *ngIf="isLoading">
+    <div class="spinner"></div>
+  </div>
 </div>

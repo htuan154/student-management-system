@@ -39,7 +39,7 @@
           <tr>
             <th>STT</th>
             <th>Mã SV</th>
-            <th>Họ tên</th> <!-- ✅ THÊM: Cột tên sinh viên -->
+            <th>Họ tên</th>
             <th>Điểm QT</th>
             <th>Điểm GK</th>
             <th>Điểm CK</th>
@@ -51,7 +51,7 @@
           <tr *ngFor="let score of scores; let i = index">
             <td>{{ i + 1 }}</td>
             <td>{{ score.enrollment?.student?.studentId || score.studentId || 'N/A' }}</td>
-            <td>{{ score.enrollment?.student?.fullName || 'N/A' }}</td> <!-- ✅ THÊM: Hiển thị tên -->
+            <td>{{ score.enrollment?.student?.fullName || 'N/A' }}</td> 
             <td>
               <input
                 type="number"

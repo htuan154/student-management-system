@@ -10,5 +10,6 @@ namespace StudentManagementSystem.Data.Interfaces
         Task<IEnumerable<User>> SearchUsersAsync(string searchTerm);
         Task<(IEnumerable<User> Users, int TotalCount)> GetPagedUsersAsync(int pageNumber, int pageSize, string? searchTerm = null, bool? isActive = null);
         Task<User?> GetByRefreshTokenAsync(string refreshToken);
+        Task<bool> ChangePasswordAsync(string userId, string newPasswordHash);
     }
 }

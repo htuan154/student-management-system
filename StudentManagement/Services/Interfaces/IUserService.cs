@@ -17,5 +17,6 @@ namespace StudentManagementSystem.Services.Interfaces
         Task<bool> CheckPasswordAsync(string username, string password);
         Task UpdateRefreshTokenAsync(string userId, string refreshToken, DateTime expiryTime);
         Task<UserDto?> GetByRefreshTokenAsync(string refreshToken);
+        Task<(bool Success, string? Error)> ChangePasswordAsync(string userId, string currentPassword, string newPassword);
     }
 }

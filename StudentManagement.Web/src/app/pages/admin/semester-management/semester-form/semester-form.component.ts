@@ -1,6 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, AbstractControl, ValidationErrors } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  Validators,
+  FormGroup,
+  AbstractControl,
+  ValidationErrors,
+} from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { SemesterService } from '../../../../services/semester.service';
 import { Semester } from '../../../../models/Semester.model';
@@ -31,7 +38,7 @@ export class SemesterFormComponent implements OnInit {
         academicYear: ['', Validators.required],
         startDate: ['', Validators.required],    // input type="date"
         endDate:   ['', Validators.required],    // input type="date"
-        isActive:  [true]
+        isActive:  [true],
       },
       { validators: [this.dateRangeValidator] }
     );
@@ -49,7 +56,7 @@ export class SemesterFormComponent implements OnInit {
             academicYear: s.academicYear,
             startDate: this.toInputDate(s.startDate),
             endDate:   this.toInputDate(s.endDate),
-            isActive:  s.isActive
+            isActive:  s.isActive,
           });
           // đồng bộ trạng thái ngay lần đầu
           this.syncActiveByExpiry();
@@ -62,14 +69,14 @@ export class SemesterFormComponent implements OnInit {
       });
     }
 
-    // Mỗi khi ngày kết thúc đổi -> auto đồng bộ trạng thái
+    // Khi endDate đổi → tự đồng bộ isActive (hết hạn thì khóa & off)
     this.form.get('endDate')?.valueChanges.subscribe(() => this.syncActiveByExpiry());
   }
 
-  // == Helpers ==
+  // ===== Helpers =====
   private toInputDate(iso?: string | null): string {
     if (!iso) return '';
-    if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso; // đã đúng
+    if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso; // đã đúng định dạng input
     const d = new Date(iso);
     if (isNaN(d.getTime())) return '';
     const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -101,7 +108,7 @@ export class SemesterFormComponent implements OnInit {
       if (isActiveCtl.value !== false) isActiveCtl.setValue(false, { emitEvent: false });
     } else {
       if (isActiveCtl.disabled) isActiveCtl.enable({ emitEvent: false });
-      // không tự bật, để người dùng quyết định khi chưa hết hạn
+      // không tự bật khi chưa hết hạn — để người dùng quyết định
     }
   }
 
@@ -111,13 +118,22 @@ export class SemesterFormComponent implements OnInit {
     if (!s || !e) return null;
     const sd = new Date(s); sd.setHours(0,0,0,0);
     const ed = new Date(e); ed.setHours(0,0,0,0);
-    return ed.getTime() >= sd.getTime() ? null : { dateRange: 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.' };
+    return ed.getTime() >= sd.getTime()
+      ? null
+      : { dateRange: 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.' };
   }
 
-  // == Submit ==
+  // ===== Submit =====
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      return;
+    }
+
+    // Báo sớm nếu thiếu token để tránh 401 khó hiểu
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      this.errorMessage = 'Token is invalid or missing. Vui lòng đăng nhập lại.';
       return;
     }
 
@@ -128,20 +144,23 @@ export class SemesterFormComponent implements OnInit {
       semesterName: String(this.form.value.semesterName).trim(),
       academicYear: String(this.form.value.academicYear).trim(),
       startDate: String(this.form.value.startDate), // YYYY-MM-DD
-      endDate:   String(this.form.value.endDate),   // YYYY-MM-DD
+      endDate: String(this.form.value.endDate),     // YYYY-MM-DD
       // bảo vệ lần cuối: hết hạn thì luôn false
-      isActive: !this.isExpired(this.form.value.endDate) && !!this.form.value.isActive
+      isActive: !this.isExpired(this.form.value.endDate) && !!this.form.value.isActive,
     };
 
-    const req$ = this.isEdit && this.id
-      ? this.semesterService.updateSemester(this.id!, value)
-      : this.semesterService.createSemester(value);
+    const req$ =
+      this.isEdit && this.id
+        ? this.semesterService.updateSemester(this.id!, value)
+        : this.semesterService.createSemester(value);
 
     req$.subscribe({
       next: () => this.router.navigate(['/admin/semester-management']),
       error: (err) => {
-        if (err?.status === 400 && err?.error?.errors) {
-          const msgs = Object.values(err.error.errors).flat() as string[];
+        if (err?.status === 401) {
+          this.errorMessage = 'Phiên đăng nhập hết hạn hoặc thiếu quyền. Vui lòng đăng nhập lại.';
+        } else if (err?.status === 400 && err?.error?.errors) {
+          const msgs = (Object.values(err.error.errors).flat() as string[]) ?? [];
           this.errorMessage = msgs.join(' ');
         } else if (typeof err?.error === 'string') {
           this.errorMessage = err.error;
@@ -149,7 +168,7 @@ export class SemesterFormComponent implements OnInit {
           this.errorMessage = err?.error?.message || 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại.';
         }
         this.isLoading = false;
-      }
+      },
     });
   }
 }

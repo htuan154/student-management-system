@@ -85,7 +85,7 @@ namespace StudentManagementSystem.Data
                 .HasIndex(s => s.EnrollmentId)
                 .IsUnique();
 
-            // ✅ BỔ SUNG CẤU HÌNH CHO TRIGGER
+            // BỔ SUNG CẤU HÌNH CHO TRIGGER
             // Thông báo cho EF Core biết bảng "Scores" có trigger, để nó sử dụng
             // một phương pháp lưu dữ liệu khác tương thích hơn.
             modelBuilder.Entity<Score>()
@@ -188,14 +188,14 @@ namespace StudentManagementSystem.Data
                     "[StartTime] < [EndTime]"
                 ));
 
-            // ✅ THÊM CẤU HÌNH CHO ANNOUNCEMENT DETAIL
+            // THÊM CẤU HÌNH CHO ANNOUNCEMENT DETAIL
             modelBuilder.Entity<AnnouncementDetail>()
                 .ToTable(t => t.HasCheckConstraint(
                     "CK_AnnouncementDetail_AtLeastOneTarget",
                     "[RoleId] IS NOT NULL OR [ClassId] IS NOT NULL OR [CourseId] IS NOT NULL OR [UserId] IS NOT NULL"
                 ));
 
-            // ✅ THÊM RELATIONSHIPS CHO SEMESTER
+            // THÊM RELATIONSHIPS CHO SEMESTER
             modelBuilder.Entity<Class>()
                 .HasOne(c => c.Semester)
                 .WithMany(s => s.Classes)
@@ -214,28 +214,28 @@ namespace StudentManagementSystem.Data
                 .HasForeignKey(e => e.SemesterId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ✅ SỬA - TeacherCourse relationship trong Enrollment
+            // SỬA - TeacherCourse relationship trong Enrollment
             modelBuilder.Entity<Enrollment>()
                 .HasOne(e => e.TeacherCourse)
                 .WithMany(tc => tc.Enrollments)
                 .HasForeignKey(e => e.TeacherCourseId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // ✅ THÊM RELATIONSHIPS CHO SCHEDULE
+            // THÊM RELATIONSHIPS CHO SCHEDULE
             modelBuilder.Entity<Schedule>()
                 .HasOne(s => s.TeacherCourse)
                 .WithMany(tc => tc.Schedules)
                 .HasForeignKey(s => s.TeacherCourseId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // ✅ THÊM RELATIONSHIPS CHO ANNOUNCEMENT
+            // THÊM RELATIONSHIPS CHO ANNOUNCEMENT
             modelBuilder.Entity<Announcement>()
                 .HasOne(a => a.User)
                 .WithMany(u => u.Announcements)
                 .HasForeignKey(a => a.CreatedBy)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ✅ THÊM RELATIONSHIPS CHO ANNOUNCEMENT DETAIL
+            // THÊM RELATIONSHIPS CHO ANNOUNCEMENT DETAIL
             modelBuilder.Entity<AnnouncementDetail>()
                 .HasOne(ad => ad.Announcement)
                 .WithMany(a => a.AnnouncementDetails)
@@ -266,7 +266,7 @@ namespace StudentManagementSystem.Data
                 .HasForeignKey(ad => ad.UserId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // ✅ SỬA - User constraint (cho phép Admin users)
+            // SỬA - User constraint (cho phép Admin users)
             modelBuilder.Entity<User>()
                 .ToTable(t => t.HasCheckConstraint(
                     "CK_User_OneRoleType",
@@ -298,7 +298,7 @@ namespace StudentManagementSystem.Data
                 .HasIndex(s => s.EnrollmentId)
                 .IsUnique();
 
-            // ✅ BỔ SUNG CẤU HÌNH CHO TRIGGER
+            // BỔ SUNG CẤU HÌNH CHO TRIGGER
             // Thông báo cho EF Core biết bảng "Scores" có trigger, để nó sử dụng
             // một phương pháp lưu dữ liệu khác tương thích hơn.
             modelBuilder.Entity<Score>()
@@ -401,14 +401,13 @@ namespace StudentManagementSystem.Data
                     "[StartTime] < [EndTime]"
                 ));
 
-            // ✅ THÊM CẤU HÌNH CHO ANNOUNCEMENT DETAIL
             modelBuilder.Entity<AnnouncementDetail>()
                 .ToTable(t => t.HasCheckConstraint(
                     "CK_AnnouncementDetail_AtLeastOneTarget",
                     "[RoleId] IS NOT NULL OR [ClassId] IS NOT NULL OR [CourseId] IS NOT NULL OR [UserId] IS NOT NULL"
                 ));
 
-            // ✅ THÊM RELATIONSHIPS CHO SEMESTER
+            // THÊM RELATIONSHIPS CHO SEMESTER
             modelBuilder.Entity<Class>()
                 .HasOne(c => c.Semester)
                 .WithMany(s => s.Classes)
@@ -427,28 +426,28 @@ namespace StudentManagementSystem.Data
                 .HasForeignKey(e => e.SemesterId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ✅ SỬA - TeacherCourse relationship trong Enrollment
+            // SỬA - TeacherCourse relationship trong Enrollment
             modelBuilder.Entity<Enrollment>()
                 .HasOne(e => e.TeacherCourse)
                 .WithMany(tc => tc.Enrollments)
                 .HasForeignKey(e => e.TeacherCourseId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // ✅ THÊM RELATIONSHIPS CHO SCHEDULE
+            // THÊM RELATIONSHIPS CHO SCHEDULE
             modelBuilder.Entity<Schedule>()
                 .HasOne(s => s.TeacherCourse)
                 .WithMany(tc => tc.Schedules)
                 .HasForeignKey(s => s.TeacherCourseId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // ✅ THÊM RELATIONSHIPS CHO ANNOUNCEMENT
+            // THÊM RELATIONSHIPS CHO ANNOUNCEMENT
             modelBuilder.Entity<Announcement>()
                 .HasOne(a => a.User)
                 .WithMany(u => u.Announcements)
                 .HasForeignKey(a => a.CreatedBy)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ✅ THÊM RELATIONSHIPS CHO ANNOUNCEMENT DETAIL
+            // THÊM RELATIONSHIPS CHO ANNOUNCEMENT DETAIL
             modelBuilder.Entity<AnnouncementDetail>()
                 .HasOne(ad => ad.Announcement)
                 .WithMany(a => a.AnnouncementDetails)
@@ -479,7 +478,7 @@ namespace StudentManagementSystem.Data
                 .HasForeignKey(ad => ad.UserId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // ✅ SỬA - User constraint (cho phép Admin users)
+            // SỬA - User constraint (cho phép Admin users)
             modelBuilder.Entity<User>()
                 .ToTable(t => t.HasCheckConstraint(
                     "CK_User_OneRoleType",
@@ -491,11 +490,9 @@ namespace StudentManagementSystem.Data
 
             modelBuilder.Entity<Score>(entity =>
             {
-                // ✅ THÊM: Ignore computed properties
                 entity.Ignore(e => e.TotalScore);
                 entity.Ignore(e => e.IsPassed);
-                
-                // Các cấu hình khác...
+
             });
         }
     }

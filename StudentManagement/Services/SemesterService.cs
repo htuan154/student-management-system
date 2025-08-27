@@ -98,37 +98,40 @@ namespace StudentManagementSystem.Services
 
         public async Task<SemesterDto> CreateAsync(CreateSemesterDto createDto)
         {
-            var semester = MapToSemester(createDto);
-            var createdSemester = await _semesterRepository.AddAsync(semester);
+            var semester = new Semester
+    {
+        SemesterName = (createDto.SemesterName ?? string.Empty).Trim(),
+        AcademicYear = (createDto.AcademicYear ?? string.Empty).Trim(),
+        StartDate = createDto.StartDate,
+        EndDate = createDto.EndDate,
+        IsActive = createDto.IsActive
+    };
 
-            // Clear cache
-            await _cacheService.RemoveByPatternAsync("semester");
-
-            _logger.LogInformation("Created new semester with ID {SemesterId}.", createdSemester.SemesterId);
-            return MapToDto(createdSemester);
+    var createdSemester = await _semesterRepository.AddAsync(semester);
+    await _cacheService.RemoveByPatternAsync("semester");
+    _logger.LogInformation("Created new semester with ID {SemesterId}.", createdSemester.SemesterId);
+    return MapToDto(createdSemester);
         }
 
         public async Task<SemesterDto?> UpdateAsync(int id, UpdateSemesterDto updateDto)
         {
             var semester = await _semesterRepository.GetByIdAsync(id);
-            if (semester == null) return null;
+    if (semester == null) return null;
 
-            semester.SemesterName = updateDto.SemesterName;
-            semester.AcademicYear = updateDto.AcademicYear;
-            semester.StartDate = updateDto.StartDate;
-            semester.EndDate = updateDto.EndDate;
-            semester.IsActive = updateDto.IsActive;
+    // chuẩn hóa trước khi lưu
+    semester.SemesterName = (updateDto.SemesterName ?? string.Empty).Trim();
+    semester.AcademicYear = (updateDto.AcademicYear ?? string.Empty).Trim();
+    semester.StartDate = updateDto.StartDate;
+    semester.EndDate = updateDto.EndDate;
+    semester.IsActive = updateDto.IsActive;
 
+    await _semesterRepository.UpdateAsync(semester);
 
-            await _semesterRepository.UpdateAsync(semester);
+    await _cacheService.RemoveDataAsync($"semester_{id}");
+    await _cacheService.RemoveByPatternAsync("semester");
+    _logger.LogInformation("Updated semester with ID {SemesterId}.", id);
 
-            // Clear cache
-            await _cacheService.RemoveDataAsync($"semester_{id}");
-            await _cacheService.RemoveByPatternAsync("semester");
-
-            _logger.LogInformation("Updated semester with ID {SemesterId}.", id);
-
-            return MapToDto(semester);
+    return MapToDto(semester);
         }
 
         public async Task<bool> DeleteAsync(int id)
