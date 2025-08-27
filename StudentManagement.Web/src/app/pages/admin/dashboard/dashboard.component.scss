@@ -270,7 +270,6 @@
   }
 }
 
-/* Giảm chuyển động cho người dùng sensitive */
 @media (prefers-reduced-motion: reduce) {
   .dashboard * { transition: none !important; animation: none !important; }
 }
