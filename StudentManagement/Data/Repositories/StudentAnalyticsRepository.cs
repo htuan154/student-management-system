@@ -23,60 +23,60 @@ namespace StudentManagementSystem.Data.Repositories
             GetTopStudentsAsync(int page, int size, int? semesterId = null)
         {
             const string sql = @"
--- ========= DATA =========
-WITH Enr AS (
-    SELECT e.EnrollmentId, e.StudentId
-    FROM dbo.Enrollments e
-    JOIN dbo.TeacherCourses tc ON e.TeacherCourseId = tc.TeacherCourseId
-    WHERE (@SemesterId IS NULL OR tc.SemesterId = @SemesterId)
-),
-ScoresCalc AS (
-    SELECT  sc.EnrollmentId,
-            CAST(ROUND(
-                CASE WHEN sc.ProcessScore IS NOT NULL
-                       AND sc.MidtermScore IS NOT NULL
-                       AND sc.FinalScore   IS NOT NULL
-                     THEN (sc.ProcessScore*0.2 + sc.MidtermScore*0.3 + sc.FinalScore*0.5)
-                     ELSE NULL END, 2) AS DECIMAL(5,2)) AS TotalScoreCalc
-    FROM dbo.Scores sc
-)
-SELECT  s.StudentId,
-        s.FullName,
-        c.ClassName,
-        CAST(AVG(sx.TotalScoreCalc) AS DECIMAL(5,2)) AS AverageScore
-FROM dbo.Students s
-JOIN dbo.Classes c   ON s.ClassId = c.ClassId
-JOIN Enr e           ON s.StudentId = e.StudentId
-JOIN ScoresCalc sx   ON e.EnrollmentId = sx.EnrollmentId
-GROUP BY s.StudentId, s.FullName, c.ClassName
-ORDER BY AverageScore DESC
-OFFSET @Skip ROWS FETCH NEXT @Take ROWS ONLY;
+            -- ========= DATA =========
+            WITH Enr AS (
+                SELECT e.EnrollmentId, e.StudentId
+                FROM dbo.Enrollments e
+                JOIN dbo.TeacherCourses tc ON e.TeacherCourseId = tc.TeacherCourseId
+                WHERE (@SemesterId IS NULL OR tc.SemesterId = @SemesterId)
+            ),
+            ScoresCalc AS (
+                SELECT  sc.EnrollmentId,
+                        CAST(ROUND(
+                            CASE WHEN sc.ProcessScore IS NOT NULL
+                                AND sc.MidtermScore IS NOT NULL
+                                AND sc.FinalScore   IS NOT NULL
+                                THEN (sc.ProcessScore*0.2 + sc.MidtermScore*0.3 + sc.FinalScore*0.5)
+                                ELSE NULL END, 2) AS DECIMAL(5,2)) AS TotalScoreCalc
+                FROM dbo.Scores sc
+            )
+            SELECT  s.StudentId,
+                    s.FullName,
+                    c.ClassName,
+                    CAST(AVG(sx.TotalScoreCalc) AS DECIMAL(5,2)) AS AverageScore
+            FROM dbo.Students s
+            JOIN dbo.Classes c   ON s.ClassId = c.ClassId
+            JOIN Enr e           ON s.StudentId = e.StudentId
+            JOIN ScoresCalc sx   ON e.EnrollmentId = sx.EnrollmentId
+            GROUP BY s.StudentId, s.FullName, c.ClassName
+            ORDER BY AverageScore DESC
+            OFFSET @Skip ROWS FETCH NEXT @Take ROWS ONLY;
 
--- ========= COUNT =========
-WITH Enr AS (
-    SELECT e.EnrollmentId, e.StudentId
-    FROM dbo.Enrollments e
-    JOIN dbo.TeacherCourses tc ON e.TeacherCourseId = tc.TeacherCourseId
-    WHERE (@SemesterId IS NULL OR tc.SemesterId = @SemesterId)
-),
-ScoresCalc AS (
-    SELECT  sc.EnrollmentId,
-            CAST(ROUND(
-                CASE WHEN sc.ProcessScore IS NOT NULL
-                       AND sc.MidtermScore IS NOT NULL
-                       AND sc.FinalScore   IS NOT NULL
-                     THEN (sc.ProcessScore*0.2 + sc.MidtermScore*0.3 + sc.FinalScore*0.5)
-                     ELSE NULL END, 2) AS DECIMAL(5,2)) AS TotalScoreCalc
-    FROM dbo.Scores sc
-)
-SELECT COUNT(*) FROM (
-    SELECT s.StudentId
-    FROM dbo.Students s
-    JOIN Enr e         ON s.StudentId = e.StudentId
-    JOIN ScoresCalc sx ON e.EnrollmentId = sx.EnrollmentId
-    GROUP BY s.StudentId
-) t;
-";
+            -- ========= COUNT =========
+            WITH Enr AS (
+                SELECT e.EnrollmentId, e.StudentId
+                FROM dbo.Enrollments e
+                JOIN dbo.TeacherCourses tc ON e.TeacherCourseId = tc.TeacherCourseId
+                WHERE (@SemesterId IS NULL OR tc.SemesterId = @SemesterId)
+            ),
+            ScoresCalc AS (
+                SELECT  sc.EnrollmentId,
+                        CAST(ROUND(
+                            CASE WHEN sc.ProcessScore IS NOT NULL
+                                AND sc.MidtermScore IS NOT NULL
+                                AND sc.FinalScore   IS NOT NULL
+                                THEN (sc.ProcessScore*0.2 + sc.MidtermScore*0.3 + sc.FinalScore*0.5)
+                                ELSE NULL END, 2) AS DECIMAL(5,2)) AS TotalScoreCalc
+                FROM dbo.Scores sc
+            )
+            SELECT COUNT(*) FROM (
+                SELECT s.StudentId
+                FROM dbo.Students s
+                JOIN Enr e         ON s.StudentId = e.StudentId
+                JOIN ScoresCalc sx ON e.EnrollmentId = sx.EnrollmentId
+                GROUP BY s.StudentId
+            ) t;
+            ";
 
             var skip = (page - 1) * size;
 

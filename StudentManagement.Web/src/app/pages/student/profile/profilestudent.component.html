@@ -282,14 +282,9 @@
           </div>
 
           <div class="form-actions">
-            <button
-              type="button"
-              class="btn btn-primary"
-              [disabled]="isLoading"
-              (click)="onSubmitPassword()">
-              <i class="fas fa-save"></i>
-              {{ isLoading ? 'Đang đổi...' : 'Đổi mật khẩu' }}
-            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="isLoading || passwordForm.invalid">
+    <i class="fas fa-save"></i>{{ isLoading ? 'Đang đổi...' : 'Đổi mật khẩu' }}
+  </button>
 
           </div>
 

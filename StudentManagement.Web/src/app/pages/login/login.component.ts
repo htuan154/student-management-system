@@ -10,11 +10,7 @@ import { AuthService } from '../../services/auth.service';
   standalone: true,
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    RouterModule
-  ]
+  imports: [CommonModule, ReactiveFormsModule, RouterModule]
 })
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
@@ -25,29 +21,22 @@ export class LoginComponent implements OnInit {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router
-  ) { }
+  ) {}
 
   ngOnInit(): void {
-    // ✅ Kiểm tra nếu đã đăng nhập
     if (this.authService.isAuthenticated()) {
-      console.log('User already authenticated, redirecting...');
       this.navigateToDashboard();
       return;
     }
 
-    // ✅ Khởi tạo form với validation
     this.loginForm = this.fb.group({
-      username: ['admin', [Validators.required, Validators.minLength(3)]], // Default for testing
-      password: ['123456@', [Validators.required, Validators.minLength(6)]] // Default for testing
+      username: ['', [Validators.required, Validators.minLength(3)]],
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
   onSubmit(): void {
-    console.log('Form submitted with values:', this.loginForm.value);
-
-    // ✅ Kiểm tra form validation
     if (this.loginForm.invalid) {
-      console.log('Form is invalid');
       this.markFormGroupTouched();
       return;
     }
@@ -55,24 +44,18 @@ export class LoginComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = null;
 
-    console.log('Sending login request...');
-
-    // ✅ Gọi API login
     this.authService.login(this.loginForm.value).subscribe({
-      next: (response) => {
-        console.log('Login successful:', response);
+      next: () => {
         this.isLoading = false;
         this.navigateToDashboard();
       },
       error: (err: HttpErrorResponse) => {
-        console.error('Login error:', err);
         this.isLoading = false;
         this.handleLoginError(err);
       }
     });
   }
 
-  // ✅ Xử lý lỗi đăng nhập chi tiết
   private handleLoginError(err: HttpErrorResponse): void {
     switch (err.status) {
       case 401:
@@ -92,7 +75,6 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  // ✅ Mark tất cả controls là touched để hiện validation
   private markFormGroupTouched(): void {
     Object.keys(this.loginForm.controls).forEach(key => {
       const control = this.loginForm.get(key);
@@ -100,49 +82,25 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  // ✅ Điều hướng theo role
   private navigateToDashboard(): void {
     const role = this.authService.getUserRole();
-    console.log('User role from token:', role);
-
-    // ✅ Kiểm tra role null/undefined trước
     if (!role) {
-      console.warn('No role found, redirecting to home');
       this.router.navigate(['/']);
       return;
     }
 
-    // ✅ Mapping role với route
     const roleRoutes: { [key: string]: string } = {
-      'Admin': '/admin/dashboard',
-      'SuperAdmin': '/admin/dashboard',
-      'Student': '/student/dashboard',
-      'Teacher': '/teacher/dashboard',
-      'Employee': '/employee/dashboard'
+      Admin: '/admin/dashboard',
+      SuperAdmin: '/admin/dashboard',
+      Student: '/student/dashboard',
+      Teacher: '/teacher/dashboard',
+      Employee: '/employee/dashboard'
     };
 
-    // ✅ Sử dụng role sau khi đã check null
     const targetRoute = roleRoutes[role] || '/';
-    console.log('Navigating to:', targetRoute);
-
-    // ✅ Navigate với error handling
-    this.router.navigate([targetRoute]).then(
-      (success) => {
-        if (success) {
-          console.log('Navigation successful to:', targetRoute);
-        } else {
-          console.warn('Navigation failed to:', targetRoute);
-          this.router.navigate(['/']); // Fallback route
-        }
-      },
-      (error) => {
-        console.error('Navigation error:', error);
-        this.router.navigate(['/']); // Fallback route
-      }
-    );
+    this.router.navigate([targetRoute]).catch(() => this.router.navigate(['/']));
   }
 
-  // ✅ Getter methods cho template validation
   get username() {
     return this.loginForm.get('username');
   }
@@ -151,13 +109,11 @@ export class LoginComponent implements OnInit {
     return this.loginForm.get('password');
   }
 
-  // ✅ Helper method để kiểm tra field có lỗi không
   hasError(fieldName: string, errorType: string): boolean {
     const field = this.loginForm.get(fieldName);
     return !!(field?.hasError(errorType) && field?.touched);
   }
 
-  // ✅ Helper method để lấy error message
   getErrorMessage(fieldName: string): string {
     const field = this.loginForm.get(fieldName);
     if (field?.hasError('required')) {
@@ -170,7 +126,6 @@ export class LoginComponent implements OnInit {
     return '';
   }
 
-  // ✅ Method clear error message
   clearError(): void {
     this.errorMessage = null;
   }

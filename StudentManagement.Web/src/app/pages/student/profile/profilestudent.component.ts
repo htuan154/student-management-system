@@ -216,42 +216,36 @@ export class ProfileStudentComponent implements OnInit {
   }
 
   changePassword(): void {
+  if (this.passwordForm.invalid) { this.markFormGroupTouched(this.passwordForm); return; }
 
-    if (this.passwordForm.invalid) {
-      this.markFormGroupTouched(this.passwordForm);
-      return;
+  const token = this.authService.getDecodedToken?.() || {};
+  const tokenUserId =
+    token.userId || token.sub || token['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+
+  const userId = this.userInfo?.userId || tokenUserId;
+  if (!userId) { this.passwordError = 'Không xác định được tài khoản người dùng.'; return; }
+
+  this.isLoading = true;
+  const payload = {
+    userId,
+    currentPassword: this.passwordForm.value.currentPassword,
+    newPassword: this.passwordForm.value.newPassword
+  };
+  this.userService.changePassword(payload).subscribe({
+    next: (res) => {
+      this.isLoading = false;
+      this.passwordMessage = (res?.message || 'Đổi mật khẩu thành công!');
+      this.passwordForm.reset();
+      this.isChangingPassword = false;
+
+      setTimeout(() => (this.passwordMessage = ''), 3000);
+    },
+    error: (err) => {
+      this.isLoading = false;
+      this.passwordError = (err?.error || 'Không thể đổi mật khẩu. Vui lòng thử lại.');
     }
-    if (!this.userInfo?.userId) {
-      this.passwordError = 'Không xác định được tài khoản người dùng.';
-      return;
-    }
-
-    this.isLoading = true;
-    this.passwordError = '';
-    this.passwordMessage = '';
-
-    const payload = {
-      userId: this.userInfo.userId,
-      currentPassword: this.passwordForm.value.currentPassword,
-      newPassword: this.passwordForm.value.newPassword
-    };
-
-    this.userService.changePassword(payload).subscribe({
-      next: (res) => {
-        this.isLoading = false;
-        this.passwordMessage = (res?.message || 'Đổi mật khẩu thành công!');
-        this.passwordForm.reset();
-        this.isChangingPassword = false;
-
-        setTimeout(() => (this.passwordMessage = ''), 3000);
-      },
-      error: (err) => {
-        this.isLoading = false;
-        this.passwordError = (err?.error || 'Không thể đổi mật khẩu. Vui lòng thử lại.');
-      }
-    });
-  }
-
+  });
+}
 
   /**
    * Mark tất cả field trong form đã được touch để hiển thị validation

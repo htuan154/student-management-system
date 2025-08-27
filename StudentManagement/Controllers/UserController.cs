@@ -82,29 +82,33 @@ namespace StudentManagementSystem.Controllers
 
         }
         [HttpPost("change-password")]
-        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
-        {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+{
+    if (!ModelState.IsValid) return BadRequest(ModelState);
 
+    // Lấy userId từ token theo nhiều khả năng khác nhau
+    var currentUserId =
+        User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value // nameidentifier
+        ?? User?.FindFirst("nameid")?.Value
+        ?? User?.FindFirst("sub")?.Value
+        ?? User?.FindFirst("userId")?.Value;
 
-            var currentUserId = User?.FindFirst("nameidentifier")?.Value
-                ?? User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    var isAdmin = User?.IsInRole("Admin") ?? false;
 
+    // User thường: bỏ qua userId trong body, ép dùng id trong token
+    if (!isAdmin)
+    {
+        if (string.IsNullOrEmpty(currentUserId))
+            return Unauthorized(new { message = "Không xác thực được người dùng." });
 
-            var isAdmin = User?.IsInRole("Admin") ?? false;
-            if (!isAdmin && !string.Equals(currentUserId, dto.UserId, StringComparison.OrdinalIgnoreCase))
-                return Forbid();
+        dto.UserId = currentUserId;
+    }
 
-            var (success, error) = await _userService.ChangePasswordAsync(dto.UserId, dto.CurrentPassword, dto.NewPassword);
-            if (!success)
-            {
-                if (string.Equals(error, "User not found.", StringComparison.OrdinalIgnoreCase))
-                    return NotFound(error);
-                return BadRequest(error);
-            }
+    var (success, error) = await _userService.ChangePasswordAsync(dto.UserId, dto.CurrentPassword, dto.NewPassword);
+    if (!success) return BadRequest(new { message = error });
 
-            return Ok(new { message = "Đổi mật khẩu thành công." });
-        }
+    return Ok(new { message = "Đổi mật khẩu thành công." });
+}
 
     }
 }
