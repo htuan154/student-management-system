@@ -43,6 +43,9 @@ export class StudentFormComponent implements OnInit {
     this.isEditMode = !!this.studentId;
 
     this.initForm();
+    if (!this.isEditMode) {
+      this.studentForm.patchValue({ studentId: this.generateStudentId() });
+    }
     this.loadClasses();
 
     if (this.isEditMode && this.studentId) {
@@ -60,6 +63,11 @@ export class StudentFormComponent implements OnInit {
       address: ['', [Validators.maxLength(255)]],
       classId: ['', [Validators.required]]
     });
+  }
+  private generateStudentId(): string {
+    const timePart = Date.now().toString(36).toUpperCase().slice(-5);
+    const rndPart = Math.random().toString(36).toUpperCase().slice(2, 5);
+    return `SV${timePart}${rndPart}`; // tổng 10 ký tự
   }
 
   loadClasses(): void {

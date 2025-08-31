@@ -44,6 +44,9 @@ export class ClassFormComponent implements OnInit {
     this.isEditMode = !!this.classId;
 
     this.initForm();
+    if (!this.isEditMode) {
+  this.classForm.patchValue({ classId: this.generateClassId() });
+}
     this.loadSemesters(); // <-- tải danh sách học kỳ
 
     if (this.isEditMode && this.classId) this.loadClassData(this.classId);
@@ -52,6 +55,12 @@ export class ClassFormComponent implements OnInit {
     this.classForm.get('semesterId')!.valueChanges.subscribe(() => {
       this.updateAcademicYearFromSelection();
     });
+  }
+  /** Sinh mã lớp ngẫu nhiên (10 ký tự) */
+  private generateClassId(): string {
+    const timePart = Date.now().toString(36).toUpperCase().slice(-5);
+    const rndPart = Math.random().toString(36).toUpperCase().slice(2, 3);
+    return `LH${timePart}${rndPart}`; // 'LH' + 5 + 3 = 10 ký tự
   }
 
   private initForm(): void {

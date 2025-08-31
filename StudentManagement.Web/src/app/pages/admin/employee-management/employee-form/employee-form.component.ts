@@ -35,6 +35,9 @@ export class EmployeeFormComponent implements OnInit {
     this.isEditMode = !!this.employeeId;
 
     this.initForm();
+    if (!this.isEditMode) {
+      this.employeeForm.patchValue({ employeeId: this.generateEmployeeId() });
+    }
 
     if (this.isEditMode && this.employeeId) {
       this.loadEmployeeData(this.employeeId);
@@ -53,6 +56,11 @@ export class EmployeeFormComponent implements OnInit {
       dateOfBirth: [null],
       salary: [null]
     });
+  }
+  private generateEmployeeId(): string {
+    const timePart = Date.now().toString(36).toUpperCase().slice(-5);
+    const rndPart = Math.random().toString(36).toUpperCase().slice(2, 5);
+    return `NV${timePart}${rndPart}`; // tổng 10 ký tự
   }
 
   loadEmployeeData(id: string): void {

@@ -35,7 +35,9 @@ export class RoleFormComponent implements OnInit {
     this.isEditMode = !!this.roleId;
 
     this.initForm();
-
+    if (!this.isEditMode) {
+      this.roleForm.patchValue({ roleId: this.generateRoleId() });
+    }
     if (this.isEditMode && this.roleId) {
       this.loadRoleData(this.roleId);
     }
@@ -47,6 +49,11 @@ export class RoleFormComponent implements OnInit {
       roleName: ['', [Validators.required, Validators.maxLength(50)]],
       description: ['', [Validators.maxLength(255)]]
     });
+  }
+  private generateRoleId(): string {
+    const timePart = Date.now().toString(36).toUpperCase().slice(-5);
+    const rndPart = Math.random().toString(36).toUpperCase().slice(2, 3);
+    return `RL${timePart}${rndPart}`; // 'RL' + 5 + 3 = 10 ký tự
   }
 
   loadRoleData(id: string): void {
