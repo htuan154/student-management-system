@@ -26,7 +26,7 @@ export class CourseFormComponent implements OnInit {
     private router: Router,
     private courseService: CourseService
   ) {}
-
+  
   ngOnInit(): void {
     this.courseForm = this.fb.group({
       courseId: ['', [Validators.required, Validators.maxLength(10)]],
@@ -63,6 +63,7 @@ export class CourseFormComponent implements OnInit {
       });
     }
   }
+
 
   // ---- CÁCH A: Random mã ở FE + kiểm tra không trùng trên server ----
   private makeCourseId(len = 8): string {

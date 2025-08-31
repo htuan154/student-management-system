@@ -36,6 +36,9 @@ export class TeacherFormComponent implements OnInit {
     this.isEditMode = !!this.teacherId;
 
     this.initForm();
+    if (!this.isEditMode) {
+      this.teacherForm.patchValue({ teacherId: this.generateTeacherId() });
+    }
 
     if (this.isEditMode && this.teacherId) {
       this.loadTeacherData(this.teacherId);
@@ -54,6 +57,11 @@ export class TeacherFormComponent implements OnInit {
       hireDate: [new Date().toISOString().split('T')[0], [Validators.required]],
       salary: [null]
     });
+  }
+  private generateTeacherId(): string {
+    const timePart = Date.now().toString(36).toUpperCase().slice(-5);
+    const rndPart = Math.random().toString(36).toUpperCase().slice(2, 5);
+    return `GV${timePart}${rndPart}`; // tổng 10 ký tự
   }
 
   loadTeacherData(id: string): void {

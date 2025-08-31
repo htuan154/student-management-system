@@ -114,18 +114,7 @@
       </div>
     </div>
 
-    <!-- Search inputs for each link type -->
-    <div *ngIf="isStudentLinkType" class="search-section">
-      <label>Tìm sinh viên:</label>
-      <div class="search-box">
-        <input type="text"
-               [(ngModel)]="studentSearchTerm"
-               (input)="searchStudents()"
-               placeholder="Tìm theo mã sinh viên hoặc tên..."
-               class="form-control">
-        <div *ngIf="isSearchingStudents" class="search-spinner"></div>
-      </div>
-    </div>
+   
 
     <!-- Enhanced validation messages -->
     <div *ngIf="hasError('username', 'required')" class="invalid-feedback">
